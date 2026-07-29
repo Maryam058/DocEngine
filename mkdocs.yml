@@ -11,6 +11,7 @@ nav:
 
   - User Guide:
       - Register a Patient: UserGuide/Register a patient.md
+      - Book an Appointment: UserGuide/Book an appointment.md
       - Quick Start: UserGuide/quickstart.md
 
   - API Reference:

@@ -1,60 +1,128 @@
-# Register a Patient
+<div class="hero-box">
 
-This guide helps staff register a new patient and create a complete profile for care coordination.
+<h1> Register a New Patient </h1>
 
-## Before You Begin
+Create a complete patient profile for care coordination by following the registration process below.
 
-Before you begin, make sure you have the following information ready:
+</div>
 
-- The patient's full legal name
-- Date of birth and contact details
-- Preferred phone number and email address
-- Residential address
-- Emergency contact information
-- Insurance or identification details, if required by your organization
 
-## Start a New Registration
+### Step 1 – Sign in to the Portal
 
-1. Sign in to the patient management portal.
-2. Select the option to create a new patient record.
-3. Enter the patient's personal information in the registration form.
-4. Add contact details and emergency contact information.
-5. Enter any required insurance or identification information.
-6. Review the completed details for accuracy.
-7. Submit the registration to create the patient profile.
+<div class="step-card">
 
-## Required Information
+<div class="step-text">
 
-The following fields are typically required during registration:
+Log in to the Patient Management Portal using your authorized username and password.
 
-- Full name
-- Date of birth
-- Gender or title, if applicable
-- Phone number
-- Email address
-- Current address
-- Emergency contact name and phone number
-- Insurance or identification number, if applicable
+<img src="../assets/patient-portal.png"></div>
 
-## Verify the Registration
+</div>
+---
 
-After submitting the form, confirm that the patient record appears in the system and that the status is marked as active or complete.
+### Step 2 – Create a New Patient Record
 
-If any required fields are missing, update the record before scheduling any care-related activity.
+<div class="step-card">
 
-## Screenshot Placeholder
+<div class="step-text">
 
-![Patient registration form placeholder](https://via.placeholder.com/1200x600?text=Patient+Registration)
+Select New Patient from the dashboard to start a new registration.
 
-### Annotation Notes
+<img src="../assets/new-record.png"> </div>
 
-- Screenshot title: Registering a new patient
-- What should be captured: A patient registration form with fields for personal information, contact details, and emergency contact information.
-- Highlight area: The form fields and the Submit button should be emphasized.
-- Arrow placement: Place a single arrow pointing to the Submit button.
-- Callout text: "Complete the form and submit to create the patient record."
-- Caption: "Use the registration form to enter patient details and create a new profile."
+</div>
+
+---
+
+### Step 3 – Enter Personal Information
+
+<div class="info-card">
+
+Fill in the patient's:
+
+<li> 
+- Full Name
+- Date of Birth
+- Gender or Title
+- Phone Number
+- Email Address
+</li>
+
+</div>
+
+---
+
+### Step 4 – Add Contact Details
+
+<div class="info-card">
+
+Provide:
+
+- Current Address
+- Emergency Contact Name
+- Emergency Contact Phone Number
+
+</div>
+
+---
+
+### Step 5 – Insurance Information
+
+<div class="info-card">
+
+Enter any required:
+
+- Insurance Number
+- Identification Number
+
+</div>
+
+---
+
+### Step 6 – Review the Information
+
+<div class="info-card">
+
+Review all entered information carefully before submitting the registration.
+
+</div>
+
+---
+
+### Step 7 – Submit Registration
+
+<div class="step-card">
+
+<div class="step-text">
+
+Click **Submit** to create the patient profile.
+
+After submission, verify that the patient record is successfully created.
+
+</div>
+</div>
+
+<div class="step-image">
+
+![Step 7](../assets/Submit.png)
+
+</div>
+---
+
+# Verify the Registration
+
+> ✔ Confirm the patient record appears in the system.
+
+> ✔ Verify the status is **Active** or **Complete**.
+
+> ✔ If required information is missing, update the record before scheduling appointments.
+
+---
 
 ## Next Steps
 
-After the patient is registered, continue to the next workflow step for appointment scheduling, intake review, or care coordination.
+Once registration is complete, continue with:
+
+- Appointment Scheduling
+- Intake Review
+- Care Coordination

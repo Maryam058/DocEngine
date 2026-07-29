@@ -2,12 +2,6 @@ site_name: DocEngine
 site_description: AI-assisted technical documentation
 site_author: Maryam Rehman
 
-# site_url: https://maryamrehman.github.io/DocEngine/
-
-#repo_name: MaryamRehman/DocEngine
-#repo_url: https://github.com/MaryamRehman/DocEngine
-edit_uri: edit/main/docs/
-
 docs_dir: docs
 site_dir: site
 use_directory_urls: true
@@ -31,57 +25,8 @@ nav:
 
 theme:
   name: material
-  language: en
-
-  logo: assets/logo.png
-  favicon: assets/favicon.png
-
-  font:
-    text: Inter
-    code: JetBrains Mono
-
-  icon:
-    repo: fontawesome/brands/github
-
-  palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: blue
-      toggle:
-        icon: material/weather-night
-        name: Switch to dark mode
-
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: indigo
-      accent: cyan
-      toggle:
-        icon: material/weather-sunny
-        name: Switch to light mode
-
   features:
-    # Top Navigation
     - navigation.tabs
-    - navigation.tabs.sticky
-
-    # Left Sidebar
-    - navigation.sections
-    - navigation.expand
-    - navigation.indexes
-
-    # Table of Contents
-    - toc.follow
-    - toc.integrate
-
-    # Search
-    - search.highlight
-    - search.suggest
-    - search.share
-
-    # Content
-    - content.code.copy
-    - content.tabs.link
 
 plugins:
   - search
@@ -89,46 +34,18 @@ plugins:
 extra_css:
   - stylesheets/extra.css
 
-extra_javascript:
-  - https://unpkg.com/mermaid@10/dist/mermaid.min.js
-  - javascripts/mermaid-init.js
-
-extra:
-  version: 1.0.0
-
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/Maryam058/DocEngine
-
 markdown_extensions:
-  - abbr
   - admonition
   - attr_list
-  - def_list
   - footnotes
   - md_in_html
 
   - toc:
       permalink: true
-      title: On this page
 
   - pymdownx.details
-
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
-
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-
+  - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.snippets
-
-  - pymdownx.tabbed:
-      alternate_style: true
 
 copyright: © 2026 DocEngine

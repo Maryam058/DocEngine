@@ -1,0 +1,4 @@
+Key,Summary,Type,Status
+DOC-101,Added API authentication guide,Story,Done
+DOC-102,Fixed broken navigation links,Bug
+DOC-103,Added Release Notes page,Task

@@ -11,7 +11,7 @@ nav:
 
   - User Guide:
       - Register a Patient: UserGuide/Register a patient.md
-      - Book an Appointment: UserGuide/Book an appointment.md
+      - Book an Appointment: UserGuide/book-appointment.md
       - Quick Start: UserGuide/quickstart.md
 
   - API Reference:
@@ -27,8 +27,13 @@ nav:
 
 theme:
   name: material
+  custom_dir: overrides
+
   features:
     - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
 
 plugins:
   - search

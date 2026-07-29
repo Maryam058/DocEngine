@@ -1,50 +1,24 @@
-# Usage
+# User Guide Overview
 
-This guide walks you through the basic workflow for creating and previewing documentation with DocEngine.
+Welcome to the Patient Management System User Guide.
 
-## Start the Local Preview
+This guide provides step-by-step instructions to help users perform common tasks within the Patient Management System. It is designed for administrative staff, receptionists, healthcare professionals, and other authorized users who manage patient information and daily operations.
 
-1. Open a terminal in the project folder.
-2. Make sure your virtual environment is active.
-3. Start the local preview server:
+The documentation explains the core workflows of the system, including patient registration, appointment scheduling, appointment management, and other essential functions. Each guide includes clear instructions to help users complete tasks accurately and efficiently.
 
-   ```bash
-   python -m mkdocs serve
-   ```
+## What's Included
 
-4. Open the local address shown in the terminal output.
+This User Guide contains documentation for:
 
-## Preview the Site
+- Registering a new patient
+- Booking patient appointments
+- Managing existing appointments
 
-Once the server is running, you can view your documentation in a browser.
+## Purpose
 
-- Refresh the page after editing content.
-- Use the search bar to test navigation.
-- Review the generated pages for formatting and layout issues.
+The purpose of this guide is to:
 
-## Build the Documentation
-
-To generate a static version of the site, run:
-
-```bash
-python -m mkdocs build
-```
-
-The output is written to the `site/` directory.
-
-## Screenshot Placeholder
-
-![Usage screen placeholder](https://via.placeholder.com/1200x600?text=Usage+Screen)
-
-### Annotation Notes
-
-- Screenshot title: Previewing the documentation site locally
-- What should be captured: A browser window showing the local preview page and the documentation navigation panel.
-- Highlight area: The preview URL and the main content area should be emphasized.
-- Arrow placement: Place one arrow pointing to the local URL in the browser address bar and one arrow pointing to the left navigation panel.
-- Callout text: "Open this address in your browser to view the documentation locally."
-- Caption: "Use the local preview to review pages before publishing the documentation site."
-
-## Next Steps
-
-You can now begin editing content, adding new pages, and customizing the documentation experience for your team.
+- Help new users become familiar with the system
+- Provide clear instructions for common tasks
+- Improve consistency in daily workflows
+- Reduce errors by following standard procedures

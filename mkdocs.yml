@@ -10,9 +10,10 @@ nav:
   - Home: index.md
 
   - User Guide:
+      - Quick Start: UserGuide/quickstart.md
       - Register a Patient: UserGuide/Register a patient.md
       - Book an Appointment: UserGuide/book-appointment.md
-      - Quick Start: UserGuide/quickstart.md
+      - Manage Appointments: UserGuide/manage-appointments.md
 
   - API Reference:
       - OpenAPI: api/openapi.md
@@ -27,7 +28,6 @@ nav:
 
 theme:
   name: material
-  custom_dir: overrides
 
   features:
     - navigation.tabs
@@ -40,6 +40,10 @@ plugins:
 
 extra_css:
   - stylesheets/extra.css
+  - stylesheets/doc-authoring.css
+
+extra_javascript:
+  - javascripts/doc-authoring.js
 
 markdown_extensions:
   - admonition

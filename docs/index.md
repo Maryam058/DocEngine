@@ -1,3 +1,4 @@
+<div class="homepage">
 <div class="hero">
 
     <h1>DocEngine</h1>
@@ -70,3 +71,4 @@ Find everything you need to create, maintain and publish professional documentat
 </div>
 
 </section>
+</div>

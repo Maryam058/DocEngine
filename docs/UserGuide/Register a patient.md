@@ -1,54 +1,59 @@
+# Register a Patient
+
 Create a complete patient profile for care coordination by following the registration process below.
 
+## Steps to Follow
 
-# Steps To Follow
+1. Log in to the Patient Management Portal using your authorized username and password.
 
-Log in to the Patient Management Portal using your authorized username and password.
+     ![Patient Login Screen](../assets/patient-portal.png)
 
-Select New Patient from the dashboard to start a new registration.
+2. Select **New Patient** from the dashboard.
 
-Fill in the patient's:
-- Full Name
-- Date of Birth
-- Gender or Title
-- Phone Number
-- Email Address
+    ![New Patient](../assets/new-patient.png)
 
-Provide:
+3. Enter the patient's information:
 
-- Current Address
-- Emergency Contact Name
-- Emergency Contact Phone Number
+    - Full Name
+    - Date of Birth
+    - Gender or Title
+    - Phone Number
+    - Email Address
+
+        ![New Record](../assets/new-record.png)
+
+4. Enter the patient's address details:
+
+    - Current Address
+    - Emergency Contact Name
+    - Emergency Contact Phone Number
+
+5. Enter any required information:
+
+    - Insurance Number
+    - Identification Number
+
+6. Review all entered information.
+
+7. Click **Submit** to create the patient profile.
+
+    ![Submit](../assets/Submit.png)
+
+
+8. Verify that the patient record has been created successfully.
 
 ---
 
-Enter any required:
+## Verify the Registration
 
-- Insurance Number
-- Identification Number
-
-Review all entered information carefully before submitting the registration.
-
-Click **Submit** to create the patient profile.
-
-After submission, verify that the patient record is successfully created.
-
----
-
-# Verify the Registration
-
-> ✔ Confirm the patient record appears in the system.
-
-> ✔ Verify the status is **Active** or **Complete**.
-
-> ✔ If required information is missing, update the record before scheduling appointments.
+- Confirm the patient record appears in the system.
+- Verify the status is **Active** or **Complete**.
+- Update the record if any required information is missing.
 
 ---
 
 ## Next Steps
 
-Once registration is complete, continue with:
-
-- Appointment Scheduling
-- Intake Review
+- Book an Appointment
+- Manage Appointments
 - Care Coordination

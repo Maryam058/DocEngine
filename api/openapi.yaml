@@ -1,4 +1,12 @@
+openapi: 3.0.0
+info:
+  title: Patient Management API
+  version: 1.0.0
+
 paths:
   /patients:
     get:
       summary: Get all patients
+      responses:
+        '200':
+          description: Success

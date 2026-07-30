@@ -15,11 +15,19 @@ Make sure you have the following available:
 
 1. Sign in to the patient management portal.
 2. Open the patient record for the person you are scheduling.
+
+    ![select patient](../assets/select_patient.png)
+
 3. Select the option to book an appointment.
 4. Choose the appropriate clinic, department, or provider.
 5. Select the preferred date and time.
+
+    ![date & time](../assets/date-time.png)
+
 6. Enter the reason for the visit.
 7. Review the appointment details and confirm the booking.
+
+    ![confirm booking](../assets/confirm-booking.png)
 
 ## Confirm the Appointment
 

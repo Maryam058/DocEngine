@@ -104,6 +104,13 @@
 
     const pageTitle = document.querySelector('h1') ? document.querySelector('h1').textContent.trim() : 'Documentation';
     const pageText = extractPageText(contentRoot);
+    // Keep a copy of the original page HTML
+    const originalHtml = contentRoot.innerHTML;
+
+    // Enable editing of the page itself
+    contentRoot.contentEditable = "true";
+    contentRoot.spellcheck = true;
+    contentRoot.classList.add("review-editable-page");
     const docKey = getDocKey();
     const draftKey = docKey + ':draft';
     const approvedKey = docKey + ':approved';
@@ -200,27 +207,35 @@
       differences.textContent = 'Added lines: ' + summary.added + '\nDeleted lines: ' + summary.deleted + '\nModified lines: ' + summary.modified;
     }
 
-    humanEditor.addEventListener('input', function () {
-      renderPreview(humanEditor.value, preview);
-      updateDifferences();
-      const summary = diffSummary(draftContent, humanEditor.value);
-      history.unshift({
-        timestamp: new Date().toLocaleString(),
-        added: summary.added,
-        deleted: summary.deleted,
-        modified: summary.modified
-      });
-      localStorage.setItem(historyKey, JSON.stringify(history));
-      editCount.textContent = String(history.length);
-      renderHistory();
-    });
+    contentRoot.addEventListener('input', function () {
 
+    // Update editor textarea from page
+    humanEditor.value = contentRoot.innerText;
+
+    renderPreview(humanEditor.value, preview);
+    updateDifferences();
+
+    const summary = diffSummary(draftContent, humanEditor.value);
+
+  history.unshift({
+    timestamp: new Date().toLocaleString(),
+    added: summary.added,
+    deleted: summary.deleted,
+    modified: summary.modified
+  });
+
+  localStorage.setItem(historyKey, JSON.stringify(history));
+  editCount.textContent = String(history.length);
+  renderHistory();
+
+});
     saveButton.addEventListener('click', function () {
-      reviewComplete = true;
-      localStorage.setItem(reviewDoneKey, 'true');
-      localStorage.setItem(approvedKey, humanEditor.value);
-      syncSummary();
-    });
+    reviewComplete = true;
+    humanEditor.value = contentRoot.innerText;
+    localStorage.setItem(reviewDoneKey, 'true');
+    localStorage.setItem(approvedKey, humanEditor.value);
+    syncSummary();
+});
 
     publishButton.addEventListener('click', function () {
       if (!reviewComplete) {

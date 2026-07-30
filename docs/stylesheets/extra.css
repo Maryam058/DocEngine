@@ -23,7 +23,7 @@
 .homepage .hero {
     position: relative;
     
-    width:100vw;
+    width:90vw;
     margin-left:calc(50% - 50vw);
     margin-right:calc(50% - 50vw);
 

@@ -1,0 +1,4 @@
+paths:
+  /patients:
+    get:
+      summary: Get all patients

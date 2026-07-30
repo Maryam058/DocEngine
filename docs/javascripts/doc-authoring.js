@@ -5,12 +5,9 @@
   }
 
   function buildDraft(pageTitle, pageText) {
-    const trimmedText = (pageText || '').trim();
-    if (trimmedText) {
-      return trimmedText;
-    }
-
-    return ['# ' + pageTitle, '', 'This draft was generated for review and publication.', '', '## Summary', '', '- Confirm the content is accurate for readers.', '- Review structure, tone, and navigation.', '- Ensure the final page is ready for publication.'].join('\n');
+    const normalizedText = pageText.replace(/\s+/g, ' ').trim();
+    const summary = normalizedText.length > 220 ? normalizedText.slice(0, 220) + '…' : normalizedText;
+    return ['# ' + pageTitle, '', 'This draft was generated for review and publication.', '', '## Summary', '', '- ' + summary, '', '## Key Points', '', '- Confirm the content is accurate for readers.', '- Review structure, tone, and navigation.', '- Ensure the final page is ready for publication.'].join('\n');
   }
 
   function extractPageText(root) {
@@ -18,19 +15,7 @@
     clone.querySelectorAll('.review-workspace, script, style, .md-content__header, .md-content__button').forEach(function (node) {
       node.remove();
     });
-
-    const source = clone.innerHTML || '';
-    return source
-      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-      .replace(/<[^>]+>/g, '\n')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/\r/g, '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
+    return (clone.textContent || '').replace(/\s+/g, ' ').trim();
   }
 
   function escapeHtml(value) {

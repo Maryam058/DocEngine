@@ -19,8 +19,7 @@ nav:
       - OpenAPI: api/api-reference.md
 
   - Release Notes:
-      - Version 1.0.0: release-notes/v1.0.0.md
-      - Version 1.0.1: release-notes/v1.0.1.md
+      - Latest Release Notes: release-notes/latest-release-notes.md
 
   - Glossary: glossary.md
 

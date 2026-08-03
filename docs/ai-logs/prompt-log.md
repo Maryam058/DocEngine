@@ -1,0 +1,523 @@
+---
+
+## Prompt #1
+
+**Date:**
+2026-07-30
+
+**Time:**
+09:18
+
+**Task Summary:**
+Generate a Markdown API reference for a minimal OpenAPI specification.
+
+**Full Prompt:**
+```text
+I have an OpenAPI specification.
+
+Generate a complete API Reference in Markdown for MkDocs.
+
+For each endpoint include:
+- Endpoint
+- HTTP Method
+- Description
+- Parameters
+- Request Body
+- Response Codes
+- Example Request
+- Example Response
+
+Output only Markdown.
+
+openapi: 3.0.0
+info:
+  title: Patient Management API
+  version: 1.0.0
+
+paths:
+  /patients:
+    get:
+      summary: Get all patients
+      responses:
+        '200':
+          description: Success
+```
+
+**Files Created**
+- None
+
+**Files Modified**
+- None
+
+**Actions Performed**
+- Generated a Markdown API reference in chat based on the provided OpenAPI snippet.
+
+**Result**
+- Produced a basic MkDocs-ready API reference for the GET /patients endpoint.
+
+---
+
+## Prompt #2
+
+**Date:**
+2026-07-30
+
+**Time:**
+09:22
+
+**Task Summary:**
+Refine the generated API reference for publication-quality MkDocs output.
+
+**Full Prompt:**
+```text
+Review and refine the following AI-generated API reference. Improve descriptions, add response codes, examples, notes, and formatting. Return the final Markdown for publication in MkDocs.
+```
+
+**Files Created**
+- None
+
+**Files Modified**
+- None
+
+**Actions Performed**
+- Improved the API reference content in chat with clearer descriptions, examples, and notes.
+
+**Result**
+- Produced a more polished API reference suitable for publication.
+
+---
+
+## Prompt #3
+
+**Date:**
+2026-07-30
+
+**Time:**
+15:11
+
+**Task Summary:**
+Generate release notes in Markdown from a Jira CSV export.
+
+**Full Prompt:**
+```text
+You are a technical writer.
+
+Read the attached Jira CSV export.
+
+Generate professional release notes in Markdown.
+
+Rules:
+
+- Group changes into:
+  - New Features
+  - Improvements
+  - Bug Fixes
+  - Security
+  - Known Issues (if applicable)
+
+- Ignore internal implementation details.
+
+- Convert technical Jira summaries into user-friendly language.
+
+- Mention ticket IDs.
+
+- Write concise bullet points.
+
+- Do not invent information.
+
+Return Markdown only.
+```
+
+**Files Created**
+- None
+
+**Files Modified**
+- None
+
+**Actions Performed**
+- Read the Jira CSV export and drafted grouped release notes in chat.
+
+**Result**
+- Produced concise release notes with ticket IDs and user-friendly wording.
+
+---
+
+## Prompt #4
+
+**Date:**
+2026-07-30
+
+**Time:**
+15:12
+
+**Task Summary:**
+Generate release notes in Markdown from another Jira CSV export.
+
+**Full Prompt:**
+```text
+Read the attached Jira CSV export.
+
+Generate professional release notes in Markdown.
+
+Rules:
+
+- Group changes into:
+  - New Features
+  - Improvements
+  - Bug Fixes
+  - Security
+  - Known Issues (if applicable)
+
+- Ignore internal implementation details.
+
+- Convert technical Jira summaries into user-friendly language.
+
+- Mention ticket IDs.
+
+- Write concise bullet points.
+
+- Do not invent information.
+
+Return Markdown only.
+```
+
+**Files Created**
+- None
+
+**Files Modified**
+- None
+
+**Actions Performed**
+- Read the Jira CSV export and drafted grouped release notes in chat.
+
+**Result**
+- Produced concise release notes grouped by change type.
+
+---
+
+## Prompt #5
+
+**Date:**
+2026-07-30
+
+**Time:**
+15:15
+
+**Task Summary:**
+Create the latest release notes Markdown file from a Jira CSV export.
+
+**Full Prompt:**
+````text
+You are an experienced Technical Writer working in a Docs-as-Code project.
+
+Your task is to generate release notes from the attached Jira CSV export.
+
+## Instructions
+
+1. Read the attached Jira CSV file.
+2. Analyze all issues and identify user-facing changes.
+3. Ignore workflow changes, status updates, assignee names, labels, story points, timestamps, and other project-management metadata.
+4. Convert technical Jira summaries into clear, professional, user-friendly release notes.
+5. Do NOT invent or assume any information that is not present in the CSV.
+6. Mention the Jira ticket ID for every change.
+7. Group items into these sections (only include a section if it contains changes):
+
+- New Features
+- Improvements
+- Bug Fixes
+- Security Updates
+- Known Issues
+
+## Output Requirements
+Create a new Markdown file in the repository at:
+
+`docs/release-notes/latest-release-notes.md`
+
+If the file already exists, replace its contents.
+
+Use this structure:
+
+```
+# Latest Release Notes
+
+## Overview
+
+A brief summary of this release based only on the Jira issues.
+
+## New Features
+
+- **PMS-101** – Added...
+
+## Improvements
+
+- **PMS-102** – Improved...
+
+## Bug Fixes
+
+- **PMS-103** – Fixed...
+
+## Security Updates
+
+- ...
+
+## Known Issues
+
+- ...
+```
+
+## Markdown Requirements
+
+- Use valid Markdown syntax.
+- Use headings (#, ##).
+- Use bullet lists.
+- Use bold formatting for Jira IDs.
+- Write concise, user-friendly language suitable for end users.
+- Do not include internal implementation details.
+- Do not include empty sections.
+- Do not wrap the output inside code fences.
+
+## Important
+The final output must be the complete contents of `docs/release-notes/latest-release-notes.md`.
+If your environment supports file creation, create or overwrite that file directly instead of only displaying the Markdown in the chat.
+````
+
+**Files Created**
+- docs/release-notes/latest-release-notes.md
+
+**Files Modified**
+- None
+
+**Actions Performed**
+- Read the Jira CSV export.
+- Created the latest release notes Markdown file in the repository.
+
+**Result**
+- Added a publication-ready latest release notes page based on the CSV contents.
+
+---
+
+## Prompt #6
+
+**Date:**
+2026-07-31
+
+**Time:**
+08:25
+
+**Task Summary:**
+Analyze the DocEngine repository and create a project-specific presentation outline.
+
+**Full Prompt:**
+````text
+You are a Senior Technical Writer and Presentation Designer.
+
+Analyze my entire DocEngine repository.
+
+Repository:
+https://github.com/Maryam058/DocEngine
+
+Your task is NOT to create generic slides.
+
+Read the repository and understand:
+
+- mkdocs.yml
+- docs folder
+- User Guides
+- API documentation
+- Release Notes
+- Style Guide
+- Glossary
+- GitHub Actions workflow
+- Draft Mode implementation
+- JavaScript files related to authoring
+- Documentation structure
+- Assets and screenshots
+
+Then create a professional presentation based ONLY on this project.
+
+The presentation should contain 10–12 slides covering:
+
+1. Project Overview
+2. Objectives
+3. Docs-as-Code Architecture
+4. Repository Structure
+5. Documentation Workflow
+6. AI Draft + Human Editorial Review
+7. API Documentation Generation
+8. Release Notes Automation
+9. User Guides with Annotated Screenshots
+10. GitHub CI/CD Pipeline
+11. Challenges and Solutions
+12. Conclusion
+
+For every slide include:
+
+• Slide title
+• Speaker notes
+• Suggested visuals/icons
+• Key talking points
+• Presenter script (30–60 seconds)
+
+Also create diagrams using Mermaid where appropriate:
+- Documentation workflow
+- CI/CD pipeline
+- Repository structure
+
+Highlight how this project satisfies the Technical Writer Track requirements:
+
+TW — Technical Writer Track
+Docs-as-Code discipline with AI drafting and human editorial judgement.
+Markdown documentation repository.
+Published using CI to a static website.
+Style Guide.
+Terminology Glossary.
+OpenAPI-based API documentation refined by a human.
+Automated Release Notes.
+Two End User Guides with annotated screenshots.
+
+Do not invent features.
+Only use information found in the repository.
+If anything is missing, clearly mention it instead of making assumptions.
+
+The final output should be ready to convert into a Microsoft PowerPoint presentation.
+````
+
+**Files Created**
+- None
+
+**Files Modified**
+- None
+
+**Actions Performed**
+- Analyzed repository configuration, documentation sources, assets, workflows, and authoring scripts.
+- Produced a project-specific presentation outline with Mermaid diagrams in chat.
+
+**Result**
+- Delivered a 12-slide presentation draft grounded in repository contents.
+
+---
+
+## Prompt #7
+
+**Date:**
+2026-07-31
+
+**Time:**
+15:21
+
+**Task Summary:**
+Set up automatic prompt logging for this VS Code session and backfill the session history.
+
+**Full Prompt:**
+````text
+You are my Prompt Logger.
+
+Your job is to automatically maintain a complete history of every prompt I give you during this VS Code session.
+
+Rules:
+
+1. Create a folder named:
+   docs/ai-logs/
+
+2. If it does not already exist, create:
+   docs/ai-logs/prompt-log.md
+
+3. After EVERY prompt I send:
+   - Append a new entry to prompt-log.md.
+   - Never overwrite previous entries.
+   - Keep entries in chronological order.
+
+Use this format:
+
+---
+
+## Prompt #<incrementing number>
+
+**Date:**
+YYYY-MM-DD
+
+**Time:**
+HH:MM
+
+**Task Summary:**
+(One sentence describing what I asked.)
+
+**Full Prompt:**
+```text
+<the exact prompt I wrote>
+```
+
+**Files Created**
+- file1
+- file2
+
+**Files Modified**
+- file1
+- file2
+
+**Actions Performed**
+- Created...
+- Updated...
+- Deleted...
+
+**Result**
+- Short summary of what was completed.
+
+---
+
+4. If no files were changed, write:
+Files Modified
+- None
+
+5. If no files were created, write:
+Files Created
+- None
+
+6. Never remove previous entries.
+
+7. Continue numbering automatically.
+
+8. At the end of every task, silently update prompt-log.md before responding.
+
+9. Also create:
+docs/ai-logs/daily-summary.md
+
+Update it after every prompt with:
+
+# AI Work Summary
+
+## YYYY-MM-DD
+
+- Total prompts today:
+- Files created:
+- Files modified:
+- Documentation pages updated:
+- API docs updated:
+- Release notes updated:
+- User guides updated:
+- Other work completed:
+
+10. Keep both Markdown files clean and readable.
+
+11. Do not ask for confirmation before updating the log.
+
+12. Logging should happen automatically after every request until I explicitly tell you to stop.
+````
+
+**Files Created**
+- docs/ai-logs/prompt-log.md
+- docs/ai-logs/daily-summary.md
+
+**Files Modified**
+- None
+
+**Actions Performed**
+- Recovered prior prompts from the current session history.
+- Created the AI log folder and Markdown log files.
+- Backfilled the prompt log in chronological order.
+- Initialized the daily summary for the days present in this session.
+
+**Result**
+- Enabled ongoing prompt logging for this session and recorded the session history to date.
+
+---

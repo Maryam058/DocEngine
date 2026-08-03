@@ -292,54 +292,6 @@
     border-color: #1976d2;
 }
 
-.review-toolbar{
-    display:flex;
-    gap:10px;
-    margin:20px 0;
-}
-
-.review-toolbar button{
-    padding:10px 18px;
-    border-radius:6px;
-    border:none;
-    cursor:pointer;
-    font-weight:600;
-}
-
-#review-save{
-    background:#1976d2;
-    color:#fff;
-}
-
-#review-publish{
-    background:#2e7d32;
-    color:#fff;
-}
-
-.review-status-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:15px;
-    margin-bottom:20px;
-}
-
-.review-status-card{
-    background:#fff;
-    border:1px solid #ddd;
-    border-radius:8px;
-    padding:15px;
-}
-
-.review-panel{
-    margin-top:25px;
-}
-
-.review-preview{
-    border:1px solid #ddd;
-    padding:20px;
-    border-radius:8px;
-    background:white;
-}
 .review-banner {
     padding: 15px;
     margin-bottom: 20px;
@@ -355,32 +307,11 @@
 
 
 .review-panel {
+    margin-top: 25px;
     padding: 20px;
-    border-radius: 8px;
-    background: white;
+    border-radius: 10px;
+    background: #fff;
     border: 1px solid #ddd;
-}
-
-
-.review-panel button {
-    padding: 10px 16px;
-    margin-right: 10px;
-    cursor: pointer;
-}
-.review-workspace{
-margin-top:30px;
-}
-
-.review-panel{
-
-padding:20px;
-
-border:1px solid #ddd;
-
-border-radius:10px;
-
-background:white;
-
 }
 
 .review-actions{

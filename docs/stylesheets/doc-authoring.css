@@ -579,3 +579,93 @@ button[data-action="publish"]:hover{
     background: #1b5e20;
     transform: translateY(-2px);
 }
+
+/* ======================================================
+   QUILL EDITOR
+====================================================== */
+
+.review-editor-host {
+    border: 1px solid #d8dee9;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #fff;
+    margin: 18px 0;
+}
+
+#review-editor-toolbar.ql-toolbar.ql-snow {
+    border: 0;
+    border-bottom: 1px solid #e5e7eb;
+    background: #f8fbff;
+}
+
+#review-editor-toolbar .ql-formats {
+    margin-right: 12px;
+}
+
+#review-editor-toolbar button.ql-undo,
+#review-editor-toolbar button.ql-redo {
+    width: auto;
+    min-width: 58px;
+    padding: 0 10px;
+    border: 1px solid #d1d9e6;
+    border-radius: 6px;
+    margin-left: 4px;
+    color: #1f2937;
+    font-size: 12px;
+    line-height: 26px;
+}
+
+#review-editor-toolbar button.ql-undo:hover,
+#review-editor-toolbar button.ql-redo:hover {
+    color: #0f62d6;
+    border-color: #9bbcf4;
+    background: #eef5ff;
+}
+
+#review-editor-toolbar button.ql-undo::before,
+#review-editor-toolbar button.ql-redo::before {
+    display: none;
+}
+
+#review-quill-editor.ql-container.ql-snow {
+    border: 0;
+    min-height: 420px;
+    font-family: var(--md-text-font, "Segoe UI", sans-serif);
+}
+
+#review-quill-editor .ql-editor {
+    min-height: 420px;
+    font-size: 16px;
+    line-height: 1.7;
+    color: var(--md-default-fg-color, #222);
+}
+
+#review-quill-editor .ql-editor img {
+    max-width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+#review-quill-editor .ql-editor blockquote {
+    border-left: 4px solid #1976d2;
+    padding-left: 14px;
+    color: #334155;
+    margin-left: 0;
+}
+
+#review-quill-editor .ql-editor pre.ql-syntax {
+    background: #263238;
+    border-radius: 10px;
+    padding: 16px;
+}
+
+@media (max-width: 900px) {
+    #review-quill-editor.ql-container.ql-snow,
+    #review-quill-editor .ql-editor {
+        min-height: 320px;
+    }
+
+    #review-editor-toolbar.ql-toolbar.ql-snow {
+        padding: 8px;
+    }
+}

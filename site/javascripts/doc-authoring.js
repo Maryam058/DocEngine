@@ -1,577 +1,499 @@
 (function () {
-    "use strict";
+  "use strict";
 
-    /* ======================================================
-       DOCUMENT KEY
-    ====================================================== */
+  const QUILL_CSS_URL =
+    "https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css";
+  const QUILL_JS_URL =
+    "https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js";
 
-    function getDocKey() {
+  function getDocKey() {
+    const path =
+      (window.location.pathname || "/")
+        .replace(/\/+$/, "") || "/";
 
-        const path =
-            (window.location.pathname || "/")
-                .replace(/\/+$/, "") || "/";
+    return "doc-authoring:" + path;
+  }
 
-        return "doc-authoring:" + path;
+  function getStorageKeys(docKey) {
+    return {
+      original: docKey + ":original",
+      review: docKey + ":review",
+      published: docKey + ":published",
+      publishedContent: docKey + ":publishedContent",
+      history: docKey + ":history"
+    };
+  }
 
+  function createAuditEntry(action, details) {
+    return {
+      action: action,
+      details: details,
+      timestamp: new Date().toLocaleString()
+    };
+  }
+
+  function getHistory(historyKey) {
+    try {
+      return JSON.parse(
+        localStorage.getItem(historyKey) || "[]"
+      );
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveHistory(historyKey, entry) {
+    const history = getHistory(historyKey);
+
+    history.unshift(entry);
+
+    localStorage.setItem(
+      historyKey,
+      JSON.stringify(history)
+    );
+  }
+
+  function ensureStylesheet(href) {
+    if (
+      document.querySelector(
+        'link[data-doc-authoring="quill-css"]'
+      )
+    ) {
+      return;
     }
 
-    /* ======================================================
-       STORAGE KEYS
-    ====================================================== */
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    link.setAttribute("data-doc-authoring", "quill-css");
+    document.head.appendChild(link);
+  }
 
-    function getStorageKeys(docKey) {
+  function ensureScript(src) {
+    return new Promise(function (resolve, reject) {
+      if (window.Quill) {
+        resolve();
+        return;
+      }
 
-        return {
+      const existing = document.querySelector(
+        'script[data-doc-authoring="quill-js"]'
+      );
 
-            original: docKey + ":original",
+      if (existing) {
+        existing.addEventListener("load", resolve);
+        existing.addEventListener("error", reject);
+        return;
+      }
 
-            published: docKey + ":published",
+      const script = document.createElement("script");
+      script.src = src;
+      script.defer = true;
+      script.setAttribute("data-doc-authoring", "quill-js");
+      script.addEventListener("load", resolve);
+      script.addEventListener("error", reject);
+      document.head.appendChild(script);
+    });
+  }
 
-            publishedContent: docKey + ":publishedContent",
+  function loadQuillAssets() {
+    ensureStylesheet(QUILL_CSS_URL);
+    return ensureScript(QUILL_JS_URL);
+  }
 
-            reviewStatus: docKey + ":reviewStatus",
+  function getContentRoot() {
+    return (
+      document.querySelector(".md-content__inner") ||
+      document.querySelector(".md-content") ||
+      document.querySelector("article")
+    );
+  }
 
-            history: docKey + ":history"
+  function createReviewWorkspace(contentRoot) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "review-workspace";
 
-        };
+    wrapper.innerHTML = `
+      <div class="review-panel">
+        <h2>Human Editorial Review</h2>
 
+        <p>
+          Review the AI draft before approving it.
+        </p>
+
+        <div class="review-editor-host">
+          <div id="review-editor-toolbar">
+            <span class="ql-formats">
+              <select class="ql-header">
+                <option selected></option>
+                <option value="1"></option>
+                <option value="2"></option>
+                <option value="3"></option>
+              </select>
+              <select class="ql-font">
+                <option value="sans-serif" selected>Sans</option>
+                <option value="serif">Serif</option>
+                <option value="monospace">Mono</option>
+              </select>
+              <select class="ql-size">
+                <option value="12px">12</option>
+                <option value="14px">14</option>
+                <option value="16px" selected>16</option>
+                <option value="18px">18</option>
+                <option value="24px">24</option>
+              </select>
+            </span>
+
+            <span class="ql-formats">
+              <button class="ql-bold"></button>
+              <button class="ql-italic"></button>
+              <button class="ql-underline"></button>
+              <button class="ql-strike"></button>
+            </span>
+
+            <span class="ql-formats">
+              <select class="ql-color"></select>
+              <select class="ql-background"></select>
+            </span>
+
+            <span class="ql-formats">
+              <button class="ql-list" value="ordered"></button>
+              <button class="ql-list" value="bullet"></button>
+              <button class="ql-blockquote"></button>
+              <button class="ql-code-block"></button>
+            </span>
+
+            <span class="ql-formats">
+              <button class="ql-link"></button>
+              <button class="ql-image"></button>
+              <select class="ql-align"></select>
+            </span>
+
+            <span class="ql-formats">
+              <button class="ql-undo" type="button" title="Undo">
+                Undo
+              </button>
+              <button class="ql-redo" type="button" title="Redo">
+                Redo
+              </button>
+              <button class="ql-clean"></button>
+            </span>
+          </div>
+
+          <div id="review-quill-editor"></div>
+        </div>
+
+        <div class="review-actions">
+          <button id="review-save">Save Review</button>
+          <button id="review-publish">Approve & Publish</button>
+        </div>
+
+        <h3>Edit Trail</h3>
+        <ul id="review-history"></ul>
+      </div>
+    `;
+
+    contentRoot.insertAdjacentElement(
+      "afterend",
+      wrapper
+    );
+
+    return {
+      wrapper: wrapper,
+      historyList: wrapper.querySelector("#review-history"),
+      saveButton: wrapper.querySelector("#review-save"),
+      publishButton: wrapper.querySelector("#review-publish"),
+      toolbar: wrapper.querySelector("#review-editor-toolbar"),
+      editor: wrapper.querySelector("#review-quill-editor")
+    };
+  }
+
+  function createBanner(contentRoot) {
+    const banner = document.createElement("div");
+
+    banner.className = "review-banner";
+
+    banner.innerHTML = `
+      <strong>AI Draft Mode</strong><br>
+      This page is editable. Review AI-generated documentation before publishing.
+    `;
+
+    contentRoot.parentNode.insertBefore(
+      banner,
+      contentRoot
+    );
+  }
+
+  function renderHistory(historyKey, historyList) {
+    const history = getHistory(historyKey);
+    historyList.innerHTML = "";
+
+    if (history.length === 0) {
+      const li = document.createElement("li");
+      li.textContent = "No review activity yet.";
+      historyList.appendChild(li);
+      return;
     }
 
-    /* ======================================================
-       HISTORY
-    ====================================================== */
+    history.forEach(function (item) {
+      const li = document.createElement("li");
+      li.textContent =
+        item.timestamp +
+        " - " +
+        item.action +
+        " - " +
+        item.details;
 
-    function getHistory(historyKey) {
+      historyList.appendChild(li);
+    });
+  }
 
-        try {
+  function configureQuillFormats() {
+    const FontStyle = window.Quill.import("attributors/style/font");
+    FontStyle.whitelist = [
+      "sans-serif",
+      "serif",
+      "monospace"
+    ];
 
-            return JSON.parse(
-                localStorage.getItem(historyKey) || "[]"
-            );
+    const SizeStyle = window.Quill.import("attributors/style/size");
+    SizeStyle.whitelist = [
+      "12px",
+      "14px",
+      "16px",
+      "18px",
+      "24px"
+    ];
 
-        } catch (e) {
+    window.Quill.register(FontStyle, true);
+    window.Quill.register(SizeStyle, true);
+  }
 
-            return [];
+  function createImageUploadHandler(quill) {
+    return function () {
+      const input = document.createElement("input");
+      input.setAttribute("type", "file");
+      input.setAttribute("accept", "image/*");
+      input.click();
 
+      input.addEventListener("change", function () {
+        const file = input.files && input.files[0];
+        if (!file) {
+          return;
         }
 
-    }
+        const reader = new FileReader();
 
-    function saveHistory(historyKey, action, details) {
+        reader.addEventListener("load", function (evt) {
+          const range = quill.getSelection(true);
+          const index = range ? range.index : quill.getLength();
 
-        const history =
-            getHistory(historyKey);
+          quill.insertEmbed(
+            index,
+            "image",
+            evt.target.result,
+            "user"
+          );
 
-        history.unshift({
-
-            action,
-
-            details,
-
-            timestamp:
-                new Date().toLocaleString()
-
+          quill.setSelection(index + 1, 0, "silent");
         });
 
-        /* Keep latest 100 records */
+        reader.readAsDataURL(file);
+      });
+    };
+  }
 
-        if (history.length > 10) {
+  function createQuillEditor(ui, initialHtml) {
+    configureQuillFormats();
 
-            history.length = 10;
-
+    const quill = new window.Quill(ui.editor, {
+      theme: "snow",
+      modules: {
+        toolbar: {
+          container: ui.toolbar,
+          handlers: {
+            image: null,
+            undo: function () {
+              this.quill.history.undo();
+            },
+            redo: function () {
+              this.quill.history.redo();
+            }
+          }
+        },
+        history: {
+          delay: 500,
+          maxStack: 200,
+          userOnly: true
         }
+      },
+      formats: [
+        "header",
+        "font",
+        "size",
+        "bold",
+        "italic",
+        "underline",
+        "strike",
+        "color",
+        "background",
+        "list",
+        "blockquote",
+        "code-block",
+        "link",
+        "image",
+        "align"
+      ]
+    });
 
-        localStorage.setItem(
+    quill.getModule("toolbar").addHandler(
+      "image",
+      createImageUploadHandler(quill)
+    );
 
-            historyKey,
+    quill.clipboard.dangerouslyPasteHTML(initialHtml);
+    return quill;
+  }
 
-            JSON.stringify(history)
+  function init() {
+    const params = new URLSearchParams(
+      window.location.search
+    );
 
+    const mode = params.get("mode");
+    const docKey = getDocKey();
+    const keys = getStorageKeys(docKey);
+    const contentRoot = getContentRoot();
+
+    if (!contentRoot) {
+      return;
+    }
+
+    const publishedContent = localStorage.getItem(
+      keys.publishedContent
+    );
+
+    if (
+      publishedContent &&
+      mode !== "draft" &&
+      mode !== "review"
+    ) {
+      contentRoot.innerHTML = publishedContent;
+      return;
+    }
+
+    if (
+      mode !== "draft" &&
+      mode !== "review"
+    ) {
+      return;
+    }
+
+    if (!localStorage.getItem(keys.original)) {
+      localStorage.setItem(
+        keys.original,
+        contentRoot.innerHTML
+      );
+    }
+
+    const historyKey = keys.history;
+    const title =
+      document.querySelector("h1")
+        ? document.querySelector("h1").innerText.trim()
+        : "Documentation";
+
+    saveHistory(
+      historyKey,
+      createAuditEntry("draft-opened", title)
+    );
+
+    createBanner(contentRoot);
+
+    const initialHtml = contentRoot.innerHTML;
+    contentRoot.classList.add("review-editable-page");
+    contentRoot.setAttribute("hidden", "hidden");
+
+    const ui = createReviewWorkspace(contentRoot);
+    renderHistory(historyKey, ui.historyList);
+
+    loadQuillAssets()
+      .then(function () {
+        const quill = createQuillEditor(
+          ui,
+          initialHtml
         );
-
-    }
-
-    /* ======================================================
-       EDIT MODE
-    ====================================================== */
-
-    function enableEditing(contentRoot) {
-
-        contentRoot.contentEditable = true;
-
-        contentRoot.spellcheck = true;
-
-        contentRoot.classList.add(
-            "review-editable-page"
-        );
-
-        contentRoot
-            .querySelectorAll("img")
-            .forEach(function (img) {
-
-                img.draggable = false;
-
-            });
-
-    }
-
-    /* ======================================================
-       DOM HELPERS
-    ====================================================== */
-
-    function createElement(tag, className) {
-
-        const el =
-            document.createElement(tag);
-
-        if (className) {
-
-            el.className = className;
-
-        }
-
-        return el;
-
-    }
-
-    function getContentRoot() {
-
-        return (
-
-            document.querySelector(".md-content__inner") ||
-
-            document.querySelector(".md-content") ||
-
-            document.querySelector("article")
-
-        );
-
-    }
-        /* ======================================================
-       REVIEW WORKSPACE
-    ====================================================== */
-
-    function createReviewWorkspace(contentRoot, historyKey) {
-
-        const wrapper = createElement(
-            "div",
-            "review-workspace"
-        );
-
-        wrapper.innerHTML = `
-
-            <div class="review-status-grid">
-
-                <div class="review-status-card">
-                    <strong>Status</strong>
-                    <span id="review-status"
-                          class="review-status-value">
-                        Draft
-                    </span>
-                </div>
-
-                <div class="review-status-card">
-                    <strong>Reviewer</strong>
-                    <span class="review-status-value">
-                        Human
-                    </span>
-                </div>
-
-                <div class="review-status-card">
-                    <strong>Source</strong>
-                    <span class="review-status-value">
-                        AI Draft
-                    </span>
-                </div>
-
-                <div class="review-status-card">
-                    <strong>History</strong>
-                    <span id="history-count"
-                          class="review-status-value">
-                        0
-                    </span>
-                </div>
-
-            </div>
-
-            <div class="review-panel">
-
-                <h2>Human Editorial Review</h2>
-
-                <p>
-                    Review the AI-generated documentation,
-                    make any required edits,
-                    then approve and publish.
-                </p>
-
-                <div class="review-toolbar">
-
-                    <button
-                        id="review-save"
-                        data-action="save">
-
-                        💾 Save Review
-
-                    </button>
-
-                    <button
-                        id="review-publish"
-                        data-action="publish">
-
-                        🚀 Approve & Publish
-
-                    </button>
-
-                </div>
-
-                <h3>📝 Edit Trail</h3>
-
-                <ul id="review-history"></ul>
-
-            </div>
-
-        `;
-
-        contentRoot.insertAdjacentElement(
-            "afterend",
-            wrapper
-        );
-
-        return {
-
-            wrapper,
-
-            historyList:
-                wrapper.querySelector(
-                    "#review-history"
-                ),
-
-            historyCount:
-                wrapper.querySelector(
-                    "#history-count"
-                ),
-
-            status:
-                wrapper.querySelector(
-                    "#review-status"
-                ),
-
-            saveButton:
-                wrapper.querySelector(
-                    "#review-save"
-                ),
-
-            publishButton:
-                wrapper.querySelector(
-                    "#review-publish"
-                )
-
-        };
-
-    }
-
-    /* ======================================================
-       HISTORY RENDER
-    ====================================================== */
-
-    function renderHistory(historyKey, ui) {
-
-        const history =
-            getHistory(historyKey);
-
-        ui.historyList.innerHTML = "";
-
-        ui.historyCount.textContent =
-    Math.min(history.length,10);
-
-        if (!history.length) {
-
-            const li =
-                document.createElement("li");
-
-            li.textContent =
-                "No review activity yet.";
-
-            ui.historyList.appendChild(li);
-
-            return;
-
-        }
-
-        history.forEach(function (item) {
-
-            const li =
-                document.createElement("li");
-
-            li.innerHTML = `
-              <div class="history-item">
-              <div class="history-action">${item.action}</div>
-              <div class="history-details">${item.details}</div>
-              <div class="history-time">${item.timestamp}</div>
-            </div>
-          `;
-
-            ui.historyList.appendChild(li);
-
-        });
-
-    }
-        /* ======================================================
-       SAVE / PUBLISH ACTIONS
-    ====================================================== */
-
-    function attachReviewActions(ui, contentRoot, keys) {
 
         let editTimer = null;
 
-        /* ---------- Track edits ---------- */
+        quill.on("text-change", function (delta, oldDelta, source) {
+          if (source !== "user") {
+            return;
+          }
 
-        contentRoot.addEventListener("input", function () {
+          clearTimeout(editTimer);
+          editTimer = setTimeout(function () {
+            saveHistory(
+              historyKey,
+              createAuditEntry(
+                "content-edited",
+                "Human edited documentation"
+              )
+            );
 
-            clearTimeout(editTimer);
-
-            editTimer = setTimeout(function () {
-
-               const history = getHistory(keys.history);
-
-const last = history[0];
-
-if (
-    !last ||
-    last.action !== "Content Edited"
-) {
-
-     saveHistory(
-        keys.history,
-        "Content Edited",
-        "Documentation updated by reviewer."
-    );
-
-      renderHistory(
-        keys.history,
-        ui
-    );
-}
-
-            }, 800);
-
+            renderHistory(historyKey, ui.historyList);
+          }, 700);
         });
 
-        /* ---------- Save Review ---------- */
+        ui.saveButton.addEventListener("click", function () {
+          const currentHtml = quill.root.innerHTML;
 
-        ui.saveButton.addEventListener(
-            "click",
-            function () {
+          localStorage.setItem(keys.review, "completed");
+          localStorage.setItem(
+            keys.publishedContent,
+            currentHtml
+          );
 
-                localStorage.setItem(
-                    keys.reviewStatus,
-                    "Review Saved"
-                );
-
-                saveHistory(
-                    keys.history,
-                    "Review Saved",
-                    "Human review completed."
-                );
-
-                ui.status.textContent =
-                    "Review Saved";
-
-                renderHistory(
-                    keys.history,
-                    ui
-                );
-
-                alert(
-                    "✅ Review saved successfully."
-                );
-
-            }
-        );
-
-        /* ---------- Publish ---------- */
-
-        ui.publishButton.addEventListener(
-            "click",
-            function () {
-
-                localStorage.setItem(
-                    keys.published,
-                    "true"
-                );
-
-                localStorage.setItem(
-                    keys.publishedContent,
-                    contentRoot.innerHTML
-                );
-
-                localStorage.setItem(
-                    keys.reviewStatus,
-                    "Published"
-                );
-
-                saveHistory(
-                    keys.history,
-                    "Published",
-                    "Documentation approved and published."
-                );
-
-                ui.status.textContent =
-                    "Published";
-
-                renderHistory(
-                    keys.history,
-                    ui
-                );
-
-                alert(
-                    "🎉 Documentation published successfully."
-                );
-
-            }
-        );
-
-    }
-        /* ======================================================
-       INITIALIZATION
-    ====================================================== */
-
-    function init() {
-
-        const params = new URLSearchParams(
-            window.location.search
-        );
-
-        const mode = params.get("mode");
-
-        const docKey = getDocKey();
-
-        const keys = getStorageKeys(docKey);
-
-        const contentRoot = getContentRoot();
-
-        if (!contentRoot) {
-            return;
-        }
-
-        /* ---------- Show published version ---------- */
-
-        const publishedContent =
-            localStorage.getItem(
-                keys.publishedContent
-            );
-
-        if (
-            publishedContent &&
-            mode !== "draft" &&
-            mode !== "review"
-        ) {
-
-            contentRoot.innerHTML =
-                publishedContent;
-
-            return;
-
-        }
-
-        /* ---------- Normal page ---------- */
-
-        if (
-            mode !== "draft" &&
-            mode !== "review"
-        ) {
-
-            return;
-
-        }
-
-        /* ---------- Enable Editing ---------- */
-
-        enableEditing(contentRoot);
-
-        if (
-            !localStorage.getItem(
-                keys.original
+          saveHistory(
+            historyKey,
+            createAuditEntry(
+              "review-saved",
+              "Human review completed"
             )
-        ) {
+          );
 
-            localStorage.setItem(
-                keys.original,
-                contentRoot.innerHTML
-            );
+          renderHistory(historyKey, ui.historyList);
+          alert("Review saved successfully.");
+        });
 
-        }
+        ui.publishButton.addEventListener("click", function () {
+          const currentHtml = quill.root.innerHTML;
 
-        /* ---------- AI Banner ---------- */
+          localStorage.setItem(keys.published, "true");
+          localStorage.setItem(
+            keys.publishedContent,
+            currentHtml
+          );
 
-        const banner =
-            createElement(
-                "div",
-                "review-banner"
-            );
+          saveHistory(
+            historyKey,
+            createAuditEntry(
+              "published",
+              "Documentation approved"
+            )
+          );
 
-        banner.innerHTML = `
-            <strong>🤖 AI Draft Mode</strong><br>
-            Review, edit and approve the AI-generated documentation before publishing.
-        `;
-
-        contentRoot.parentNode.insertBefore(
-            banner,
-            contentRoot
+          renderHistory(historyKey, ui.historyList);
+          alert("Documentation published successfully.");
+        });
+      })
+      .catch(function () {
+        contentRoot.removeAttribute("hidden");
+        ui.wrapper.remove();
+        alert(
+          "Unable to load Quill editor. Please check network access and reload the page."
         );
+      });
+  }
 
-        /* ---------- Create Workspace ---------- */
-
-        const ui =
-            createReviewWorkspace(
-                contentRoot,
-                keys.history
-            );
-
-        /* ---------- Load Existing Status ---------- */
-
-        const status =
-            localStorage.getItem(
-                keys.reviewStatus
-            );
-
-        if (status) {
-
-            ui.status.textContent =
-                status;
-
-        }
-
-        /* ---------- First History ---------- */
-
-        if (
-            getHistory(keys.history).length === 0
-        ) {
-
-            saveHistory(
-                keys.history,
-                "Draft Opened",
-                document.title
-            );
-
-        }
-
-        renderHistory(
-            keys.history,
-            ui
-        );
-
-        attachReviewActions(
-            ui,
-            contentRoot,
-            keys
-        );
-
-    }
-
-    window.addEventListener(
-        "load",
-        init
-    );
-
+  window.addEventListener("load", init);
 })();

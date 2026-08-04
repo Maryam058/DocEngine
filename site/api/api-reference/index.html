@@ -13,10 +13,10 @@
       
       
       
-        <link rel="prev" href="../../UserGuide/quickstart/">
+        <link rel="prev" href="../../UserGuide/Covid-CCM/">
       
       
-        <link rel="next" href="../../release-notes/v1.0.0/">
+        <link rel="next" href="../../release-notes/latest-release-notes/">
       
       
         
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#api-reference" class="md-skip">
+        <a href="#patient-management-api-reference" class="md-skip">
           Skip to content
         </a>
       
@@ -200,7 +200,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../UserGuide/Register%20a%20patient/" class="md-tabs__link">
+        <a href="../../UserGuide/quickstart/" class="md-tabs__link">
           
   
   
@@ -246,7 +246,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../release-notes/v1.0.0/" class="md-tabs__link">
+        <a href="../../release-notes/latest-release-notes/" class="md-tabs__link">
           
   
   
@@ -375,6 +375,8 @@
       
         
       
+        
+      
     
     
     
@@ -421,6 +423,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../UserGuide/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -513,14 +543,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../UserGuide/quickstart/" class="md-nav__link">
+      <a href="../../UserGuide/Covid-CCM/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Quick Start
+    Covid CCM
   
 
     
@@ -669,90 +699,66 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#introduction" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Introduction
+        Overview
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Introduction">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#base-url" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Base URL
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#authentication" class="md-nav__link">
+  <a href="#get-all-patients" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Authentication
+        Get All Patients
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Authentication">
+    <nav class="md-nav" aria-label="Get All Patients">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#authentication-guidelines" class="md-nav__link">
+  <a href="#endpoint" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Authentication Guidelines
+        Endpoint
       
     </span>
   </a>
   
 </li>
         
-      </ul>
-    </nav>
+          <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Description
+      
+    </span>
+  </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#endpoints" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Endpoints
+        Parameters
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Endpoints">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
-  <a href="#get-documents" class="md-nav__link">
+  <a href="#response" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GET /documents
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="GET /documents">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#query-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Query Parameters
+        Response
       
     </span>
   </a>
@@ -771,10 +777,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response" class="md-nav__link">
+  <a href="#notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example Response
+        Notes
       
     </span>
   </a>
@@ -783,183 +789,6 @@
         
       </ul>
     </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#post-documents" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        POST /documents
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="POST /documents">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#request-body" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Request Body
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example Request
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example Response
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#get-documentsdocumentid" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        GET /documents/{documentId}
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="GET /documents/{documentId}">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#path-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Path Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example Request
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example Response
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#status-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status Codes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#error-messages" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error Messages
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Error Messages">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#common-error-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common Error Codes
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rate-limits" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rate Limits
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#best-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Best Practices
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#editorial-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Editorial Notes
-      
-    </span>
-  </a>
   
 </li>
       
@@ -987,8 +816,6 @@
   
     
     
-      
-        
       
         
       
@@ -1046,42 +873,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../release-notes/v1.0.0/" class="md-nav__link">
+      <a href="../../release-notes/latest-release-notes/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Version 1.0.0
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../release-notes/v1.0.1/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Version 1.0.1
+    Latest Release Notes
   
 
     
@@ -1183,90 +982,66 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#introduction" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Introduction
+        Overview
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Introduction">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#base-url" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Base URL
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#authentication" class="md-nav__link">
+  <a href="#get-all-patients" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Authentication
+        Get All Patients
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Authentication">
+    <nav class="md-nav" aria-label="Get All Patients">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#authentication-guidelines" class="md-nav__link">
+  <a href="#endpoint" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Authentication Guidelines
+        Endpoint
       
     </span>
   </a>
   
 </li>
         
-      </ul>
-    </nav>
+          <li class="md-nav__item">
+  <a href="#description" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Description
+      
+    </span>
+  </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#endpoints" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Endpoints
+        Parameters
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Endpoints">
-      <ul class="md-nav__list">
+</li>
         
           <li class="md-nav__item">
-  <a href="#get-documents" class="md-nav__link">
+  <a href="#response" class="md-nav__link">
     <span class="md-ellipsis">
       
-        GET /documents
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="GET /documents">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#query-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Query Parameters
+        Response
       
     </span>
   </a>
@@ -1285,10 +1060,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-response" class="md-nav__link">
+  <a href="#notes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example Response
+        Notes
       
     </span>
   </a>
@@ -1297,183 +1072,6 @@
         
       </ul>
     </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#post-documents" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        POST /documents
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="POST /documents">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#request-body" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Request Body
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example Request
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example Response
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#get-documentsdocumentid" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        GET /documents/{documentId}
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="GET /documents/{documentId}">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#path-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Path Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-request_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example Request
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#example-response_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Example Response
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#status-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Status Codes
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#error-messages" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Error Messages
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Error Messages">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#common-error-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common Error Codes
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rate-limits" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rate Limits
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#best-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Best Practices
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#editorial-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Editorial Notes
-      
-    </span>
-  </a>
   
 </li>
       
@@ -1494,255 +1092,40 @@
 
 
 
-<h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
-<h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
-<p>The DocEngine API provides a RESTful interface for creating, retrieving, updating, and managing documentation resources. All requests are sent over HTTPS and return JSON responses for successful operations.</p>
-<h3 id="base-url">Base URL<a class="headerlink" href="#base-url" title="Permanent link">&para;</a></h3>
-<pre><code class="language-text">https://api.docengine.example.com/v1
-</code></pre>
-<h2 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h2>
-<p>All requests must include a valid API key in the <code>Authorization</code> header.</p>
-<pre><code class="language-http">Authorization: Bearer &lt;your-api-key&gt;
-</code></pre>
-<h3 id="authentication-guidelines">Authentication Guidelines<a class="headerlink" href="#authentication-guidelines" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Send the API key with every request.</li>
-<li>Use a valid, active key for all environments.</li>
-<li>Store keys securely in a secrets manager or environment variable.</li>
-<li>Never commit API keys to source control or expose them in client-side code.</li>
-</ul>
-<h2 id="endpoints">Endpoints<a class="headerlink" href="#endpoints" title="Permanent link">&para;</a></h2>
-<h3 id="get-documents">GET /documents<a class="headerlink" href="#get-documents" title="Permanent link">&para;</a></h3>
-<p>Retrieve a paginated list of documentation resources.</p>
-<h4 id="query-parameters">Query Parameters<a class="headerlink" href="#query-parameters" title="Permanent link">&para;</a></h4>
+<h1 id="patient-management-api-reference">Patient Management API Reference<a class="headerlink" href="#patient-management-api-reference" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>This API provides access to patient records in the Patient Management System.</p>
+<p><strong>OpenAPI Version:</strong> 3.0.0</p>
+<p><strong>API Version:</strong> 1.0.0</p>
+<hr />
+<h2 id="get-all-patients">Get All Patients<a class="headerlink" href="#get-all-patients" title="Permanent link">&para;</a></h2>
+<h3 id="endpoint">Endpoint<a class="headerlink" href="#endpoint" title="Permanent link">&para;</a></h3>
+<p><code>GET /patients</code></p>
+<h3 id="description">Description<a class="headerlink" href="#description" title="Permanent link">&para;</a></h3>
+<p>Retrieves a list of all registered patients.</p>
+<h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h3>
+<p>No parameters are defined in the current OpenAPI specification.</p>
+<h3 id="response">Response<a class="headerlink" href="#response" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Required</th>
+<th>Code</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>page</code></td>
-<td>integer</td>
-<td>No</td>
-<td>The page number to return. Default is <code>1</code>.</td>
-</tr>
-<tr>
-<td><code>limit</code></td>
-<td>integer</td>
-<td>No</td>
-<td>The number of results to return per page. Default is <code>20</code>.</td>
-</tr>
-<tr>
-<td><code>filter</code></td>
-<td>string</td>
-<td>No</td>
-<td>Optional filter for document type or status.</td>
+<td>200</td>
+<td>Request completed successfully.</td>
 </tr>
 </tbody>
 </table>
-<h4 id="example-request">Example Request<a class="headerlink" href="#example-request" title="Permanent link">&para;</a></h4>
-<pre><code class="language-http">GET /v1/documents?page=1&amp;limit=10 HTTP/1.1
-Host: api.docengine.example.com
-Authorization: Bearer &lt;your-api-key&gt;
-Accept: application/json
+<h3 id="example-request">Example Request<a class="headerlink" href="#example-request" title="Permanent link">&para;</a></h3>
+<pre><code class="language-http">GET /patients HTTP/1.1
+Host: api.example.com
 </code></pre>
-<h4 id="example-response">Example Response<a class="headerlink" href="#example-response" title="Permanent link">&para;</a></h4>
-<pre><code class="language-json">{
-  &quot;data&quot;: [
-    {
-      &quot;id&quot;: &quot;doc_123&quot;,
-      &quot;title&quot;: &quot;Getting Started&quot;,
-      &quot;status&quot;: &quot;published&quot;,
-      &quot;updated_at&quot;: &quot;2026-07-28T10:00:00Z&quot;
-    }
-  ],
-  &quot;page&quot;: 1,
-  &quot;limit&quot;: 10,
-  &quot;total&quot;: 1
-}
-</code></pre>
-<h3 id="post-documents">POST /documents<a class="headerlink" href="#post-documents" title="Permanent link">&para;</a></h3>
-<p>Create a new documentation resource.</p>
-<h4 id="request-body">Request Body<a class="headerlink" href="#request-body" title="Permanent link">&para;</a></h4>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>title</code></td>
-<td>string</td>
-<td>Yes</td>
-<td>The document title.</td>
-</tr>
-<tr>
-<td><code>content</code></td>
-<td>string</td>
-<td>Yes</td>
-<td>The Markdown content for the document.</td>
-</tr>
-<tr>
-<td><code>category</code></td>
-<td>string</td>
-<td>No</td>
-<td>Optional content category.</td>
-</tr>
-</tbody>
-</table>
-<h4 id="example-request_1">Example Request<a class="headerlink" href="#example-request_1" title="Permanent link">&para;</a></h4>
-<pre><code class="language-http">POST /v1/documents HTTP/1.1
-Host: api.docengine.example.com
-Authorization: Bearer &lt;your-api-key&gt;
-Content-Type: application/json
-Accept: application/json
-
-{
-  &quot;title&quot;: &quot;Release Notes&quot;,
-  &quot;content&quot;: &quot;# Release Notes\n\nUpdated onboarding guide.&quot;,
-  &quot;category&quot;: &quot;product&quot;
-}
-</code></pre>
-<h4 id="example-response_1">Example Response<a class="headerlink" href="#example-response_1" title="Permanent link">&para;</a></h4>
-<pre><code class="language-json">{
-  &quot;id&quot;: &quot;doc_456&quot;,
-  &quot;title&quot;: &quot;Release Notes&quot;,
-  &quot;status&quot;: &quot;draft&quot;,
-  &quot;created_at&quot;: &quot;2026-07-28T10:05:00Z&quot;
-}
-</code></pre>
-<h3 id="get-documentsdocumentid">GET /documents/{documentId}<a class="headerlink" href="#get-documentsdocumentid" title="Permanent link">&para;</a></h3>
-<p>Retrieve a single document by its identifier.</p>
-<h4 id="path-parameters">Path Parameters<a class="headerlink" href="#path-parameters" title="Permanent link">&para;</a></h4>
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-<th>Required</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>documentId</code></td>
-<td>string</td>
-<td>Yes</td>
-<td>The unique identifier of the document.</td>
-</tr>
-</tbody>
-</table>
-<h4 id="example-request_2">Example Request<a class="headerlink" href="#example-request_2" title="Permanent link">&para;</a></h4>
-<pre><code class="language-http">GET /v1/documents/doc_123 HTTP/1.1
-Host: api.docengine.example.com
-Authorization: Bearer &lt;your-api-key&gt;
-Accept: application/json
-</code></pre>
-<h4 id="example-response_2">Example Response<a class="headerlink" href="#example-response_2" title="Permanent link">&para;</a></h4>
-<pre><code class="language-json">{
-  &quot;id&quot;: &quot;doc_123&quot;,
-  &quot;title&quot;: &quot;Getting Started&quot;,
-  &quot;content&quot;: &quot;# Getting Started\n\nWelcome to DocEngine.&quot;,
-  &quot;status&quot;: &quot;published&quot;
-}
-</code></pre>
-<h2 id="status-codes">Status Codes<a class="headerlink" href="#status-codes" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Status Code</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>200 OK</code></td>
-<td>The request succeeded.</td>
-</tr>
-<tr>
-<td><code>201 Created</code></td>
-<td>The resource was created successfully.</td>
-</tr>
-<tr>
-<td><code>400 Bad Request</code></td>
-<td>The request payload or parameters are invalid.</td>
-</tr>
-<tr>
-<td><code>401 Unauthorized</code></td>
-<td>Authentication failed or the API key is missing.</td>
-</tr>
-<tr>
-<td><code>403 Forbidden</code></td>
-<td>The authenticated client does not have permission to access the resource.</td>
-</tr>
-<tr>
-<td><code>404 Not Found</code></td>
-<td>The requested resource does not exist.</td>
-</tr>
-<tr>
-<td><code>429 Too Many Requests</code></td>
-<td>The rate limit has been exceeded.</td>
-</tr>
-<tr>
-<td><code>500 Internal Server Error</code></td>
-<td>An unexpected server error occurred.</td>
-</tr>
-</tbody>
-</table>
-<h2 id="error-messages">Error Messages<a class="headerlink" href="#error-messages" title="Permanent link">&para;</a></h2>
-<p>The API returns errors as JSON objects with an error code and a human-readable message.</p>
-<pre><code class="language-json">{
-  &quot;error&quot;: {
-    &quot;code&quot;: &quot;invalid_request&quot;,
-    &quot;message&quot;: &quot;The request payload is invalid.&quot;
-  }
-}
-</code></pre>
-<h3 id="common-error-codes">Common Error Codes<a class="headerlink" href="#common-error-codes" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>invalid_request</code>: The request body or parameters are malformed.</li>
-<li><code>unauthorized</code>: The API key is missing or invalid.
-Write User Guide 1 (Installation).
-Write User Guide 2 (Usage).
-Add screenshot placeholders and annotation notes.- <code>forbidden</code>: The client does not have access to the requested resource.</li>
-<li><code>not_found</code>: The requested resource could not be found.</li>
-<li><code>rate_limited</code>: Too many requests were sent in a short period.</li>
-</ul>
-<h2 id="rate-limits">Rate Limits<a class="headerlink" href="#rate-limits" title="Permanent link">&para;</a></h2>
-<p>The API enforces rate limits to protect system stability and prevent abuse.</p>
-<ul>
-<li>Default limit: 100 requests per minute per API key</li>
-<li>Limits reset every minute</li>
-<li>Exceeding the limit returns <code>429 Too Many Requests</code></li>
-</ul>
-<h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Use HTTPS for all requests.</li>
-<li>Store API keys in environment variables or a secrets manager.</li>
-<li>Retry transient failures with exponential backoff.</li>
-<li>Validate request payloads before sending them.</li>
-<li>Use pagination for large result sets.</li>
-<li>Review response metadata carefully before processing results.</li>
-</ul>
-<h2 id="editorial-notes">Editorial Notes<a class="headerlink" href="#editorial-notes" title="Permanent link">&para;</a></h2>
-<p>This revision improves the page in the following ways:</p>
-<ul>
-<li>Clarified the purpose of the API and the scope of the documentation.</li>
-<li>Standardized terminology, section headings, and parameter labels for consistency.</li>
-<li>Improved grammar, sentence structure, and tone for a more professional developer audience.</li>
-<li>Reworked examples so they are easier to read, copy, and apply.</li>
-<li>Strengthened formatting through consistent tables, headings, and code block usage.</li>
-<li>Added clearer guidance for authentication, errors, and rate limiting to improve developer usability.</li>
-</ul>
+<h3 id="notes">Notes<a class="headerlink" href="#notes" title="Permanent link">&para;</a></h3>
+<p>This documentation has been reviewed and refined for clarity after being generated from the OpenAPI specification.</p>
 
 
 

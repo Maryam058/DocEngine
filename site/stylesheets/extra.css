@@ -4,7 +4,6 @@
     max-width:100% !important;
     margin:0 !important;
 }
-}
 
 .homepage .md-content{
     margin:0 !important;
@@ -23,7 +22,7 @@
 .homepage .hero {
     position: relative;
     
-    width:100vw;
+    width:90vw;
     margin-left:calc(50% - 50vw);
     margin-right:calc(50% - 50vw);
 
@@ -247,4 +246,86 @@
 
 .md-main__inner.md-grid {
     max-width: 100% !important;
+}
+/* ======================================================
+   AI Draft / Human Review Editor
+   ====================================================== */
+
+.review-editable-page {
+    border: 2px dashed #1976d2;
+    border-radius: 8px;
+    padding: 20px;
+    background: #fcfdff;
+    min-height: 400px;
+    outline: none;
+}
+
+.review-editable-page:focus {
+    border-color: #0d47a1;
+    box-shadow: 0 0 0 4px rgba(25,118,210,.15);
+}
+
+.review-editable-page h1,
+.review-editable-page h2,
+.review-editable-page h3,
+.review-editable-page h4,
+.review-editable-page h5,
+.review-editable-page h6 {
+    cursor: text;
+}
+
+.review-editable-page p,
+.review-editable-page li,
+.review-editable-page td,
+.review-editable-page th,
+.review-editable-page blockquote {
+    cursor: text;
+}
+
+.review-editable-page img {
+    max-width: 100%;
+    border: 2px solid transparent;
+    transition: .2s;
+}
+
+.review-editable-page img:hover {
+    border-color: #1976d2;
+}
+
+.review-banner {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    background: #e3f2fd;
+    border: 1px solid #1976d2;
+}
+
+
+.review-workspace {
+    margin-top: 30px;
+}
+
+
+.review-panel {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+}
+
+.review-actions{
+
+margin:20px 0;
+
+}
+
+.review-actions button{
+
+padding:10px 18px;
+
+margin-right:10px;
+
+cursor:pointer;
+
 }

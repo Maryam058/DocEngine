@@ -14,6 +14,7 @@ nav:
       - Register a Patient: UserGuide/Register a patient.md
       - Book an Appointment: UserGuide/book-appointment.md
       - Manage Appointments: UserGuide/manage-appointments.md
+      - Covid CCM: UserGuide/Covid-CCM.md
 
   - API Reference:
       - OpenAPI: api/api-reference.md

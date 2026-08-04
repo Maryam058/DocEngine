@@ -521,3 +521,90 @@ Update it after every prompt with:
 - Enabled ongoing prompt logging for this session and recorded the session history to date.
 
 ---
+
+## Prompt #8
+
+**Date:**
+2026-08-03
+
+**Time:**
+12:38
+
+**Task Summary:**
+Convert all UserGuide PDFs to Markdown using MarkItDown and report warnings.
+
+**Full Prompt:**
+```text
+Convert all PDFs in the `docs/UserGuide` folder to Markdown using Microsoft MarkItDown, preserve headings, tables, and lists where possible, save each `.md` file alongside its corresponding PDF, and report any conversion warnings without stopping the process."
+```
+
+**Files Created**
+- docs/UserGuide/Covid-CCM.md
+
+**Files Modified**
+- None
+
+**Actions Performed**
+- Configured the Python environment.
+- Located PDFs in docs/UserGuide.
+- Converted Covid-CCM.pdf to Markdown with MarkItDown.
+- Captured conversion warnings while continuing execution.
+
+**Result**
+- Created Markdown output next to the PDF and captured repeated font-bounding-box warnings from the converter.
+
+---
+
+## Prompt #9
+
+**Date:**
+2026-08-03
+
+**Time:**
+17:40
+
+**Task Summary:**
+Execute the full conversion/build workflow, align navigation, run MkDocs build, and summarize all changes.
+
+**Full Prompt:**
+```text
+Execute the plan now.
+
+1. Find all PDF files in docs/UserGuide.
+2. Convert each PDF to Markdown using Microsoft MarkItDown.
+3. Save each .md file in the same folder.
+4. Update mkdocs.yml so the navigation matches the generated Markdown filenames.
+5. Run `python -m mkdocs build`.
+6. Fix any build errors automatically.
+7. Show me a summary of all changes before committing.
+```
+
+**Files Created**
+- None
+
+**Files Modified**
+- mkdocs.yml
+- site/404.html
+- site/UserGuide/Register a patient/index.html
+- site/UserGuide/book-appointment/index.html
+- site/UserGuide/manage-appointments/index.html
+- site/UserGuide/quickstart/index.html
+- site/glossary/index.html
+- site/index.html
+- site/javascripts/doc-authoring.js
+- site/search/search_index.json
+- site/sitemap.xml.gz
+- site/style-guide/index.html
+- site/stylesheets/extra.css
+
+**Actions Performed**
+- Verified MarkItDown CLI usage.
+- Ran batch PDF-to-Markdown conversion in docs/UserGuide.
+- Confirmed navigation includes the generated User Guide page.
+- Built the site with MkDocs.
+- Collected build warnings and git change summary.
+
+**Result**
+- Conversion and build completed successfully with no blocking build errors; warnings and all changed files were prepared for review before commit.
+
+---

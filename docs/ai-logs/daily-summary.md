@@ -32,3 +32,14 @@
 - Release notes updated: 0
 - User guides updated: 1
 - Other work completed: Converted UserGuide PDFs to Markdown with MarkItDown, captured conversion warnings, validated navigation, ran MkDocs build, and prepared a pre-commit change summary.
+
+## 2026-08-04
+
+- Total prompts today: 1
+- Files created: 0
+- Files modified: 3
+- Documentation pages updated: 1
+- API docs updated: 0
+- Release notes updated: 1
+- User guides updated: 0
+- Other work completed: Compared PDF layout with generated release-note Markdown, moved all extracted images inline with meaningful alt text, removed the image appendix, validated documentation links, and completed a clean MkDocs build.

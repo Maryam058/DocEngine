@@ -169,7 +169,7 @@
           <button id="review-publish">
             Approve & Publish
           </button>
-
+          
         </div>
 
         <h3>Edit Trail</h3>

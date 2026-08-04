@@ -20,7 +20,11 @@ The Long-Term Medication section in the Consult top bar has been updated to impr
 - Medication dates are hidden by default to keep the view clean.
 - A new toggle icon allows users to show or hide dates as needed.
 
+![Long-Term Medications panel showing Quantity and Duration values with hidden date view](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-01.png)
+
 These changes improve clarity when reviewing long-term medications, particularly where prescriptions may cover longer intended treatment periods.
+
+![Long-Term Medications panel with the date visibility toggle highlighted](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-02.png)
 
 ## Print Prescription Enhancement
 
@@ -36,6 +40,8 @@ Prescription printing in indici has been updated to use a new standard format, c
 
 - To meet current Health NZ compliance standards used by pharmacies.
 - To ensure consistent and reliable prescription printing across all practices.
+
+![Prescription print preview in the updated standardised format](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-03.png)
 
 ## Confidential Medication Setting
 
@@ -53,6 +59,8 @@ Medication information is completely hidden and cannot be accessed or viewed in 
 
 When the Confidential checkbox is selected, the confidentiality level can be chosen from a dropdown (default: Restricted).
 
+![Medication form with Confidential enabled and confidentiality level set to Restricted](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-04.png)
+
 ## Medication Grid - Quick Edit Enhancement
 
 The Medication Grid (Today's Medication Activity list) has been enhanced to support quicker updates to active medications.
@@ -65,6 +73,8 @@ The Medication Grid (Today's Medication Activity list) has been enhanced to supp
 
 Quantity and Duration updates remain subject to existing prescribing rules, medicine eligibility, and prescriber clinical judgement.
 
+![Today's Medication Activity quick edit dialog for updating Duration and Quantity](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-05.png)
+
 ## Displaying Prescribed and Dispensed Medicine Names
 
 The ePS Medication History view has been enhanced with a new toggle to improve visibility of dispensing information.
@@ -74,6 +84,8 @@ The ePS Medication History view has been enhanced with a new toggle to improve v
 - Prescribed medicine names are shown by default.
 - A new toggle icon allows users to view dispensed medicine names.
 - Users can switch between prescribed and dispensed medicine details on demand.
+
+![ePS Medication History showing prescribed and dispensed medicine name toggle controls](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-06.png)
 
 ## Medication Management - Delete and Stop Functionality
 
@@ -91,6 +103,10 @@ When deleted or stopped, the medication is marked as cancelled.
 
 This is particularly important for prescriptions with extended repeat periods, ensuring discontinued medicines cannot be dispensed unintentionally.
 
+![Medication activity list with Stop action highlighted for long-term medication management](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-07.png)
+
+![Medication activity list with Delete action highlighted for active medications](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-08.png)
+
 ## AI Credit Usage Report Enhancements
 
 The AI Credit Usage Report has been enhanced to provide greater visibility and improved filtering capabilities.
@@ -102,6 +118,8 @@ A Type search filter has been added, allowing users to filter the AI Usage Repor
 By default, the Type filter is set to All, displaying both SOAP Notes and Letters & Documents AI usage records.
 
 Additionally, a Type column has been added to the report grid, clearly indicating whether each AI usage record is associated with SOAP Notes or Letters & Documents.
+
+![AI Credit Usage Report with Type filter and Type column highlighted](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-09.png)
 
 ### AI Query Builder
 
@@ -116,24 +134,5 @@ This report includes the following information:
 - AI usage cost
 
 This enhancement improves transparency and helps administrators better track AI usage and associated costs.
-## Extracted Images
 
-![Extracted image from page 1, image 1](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-01.png)
-
-![Extracted image from page 2, image 2](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-02.png)
-
-![Extracted image from page 3, image 3](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-03.png)
-
-![Extracted image from page 4, image 4](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-04.png)
-
-![Extracted image from page 4, image 5](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-05.png)
-
-![Extracted image from page 5, image 6](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-06.png)
-
-![Extracted image from page 6, image 7](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-07.png)
-
-![Extracted image from page 6, image 8](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-08.png)
-
-![Extracted image from page 7, image 9](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-09.png)
-
-![Extracted image from page 7, image 10](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-10.png)
+![AI Query Builder tab showing query metadata columns and usage cost](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-10.png)

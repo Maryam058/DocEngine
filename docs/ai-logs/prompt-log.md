@@ -608,3 +608,53 @@ Execute the plan now.
 - Conversion and build completed successfully with no blocking build errors; warnings and all changed files were prepared for review before commit.
 
 ---
+
+## Prompt #10
+
+**Date:**
+2026-08-04
+
+**Time:**
+09:00
+
+**Task Summary:**
+Reposition extracted release-note images inline in the generated Markdown to match the original PDF layout.
+
+**Full Prompt:**
+```text
+The PDF has already been converted to Markdown using MarkItDown, and all images have been extracted.
+
+Now improve the generated Markdown.
+
+## Tasks
+
+1. Compare the original PDF with the generated Markdown.
+2. Determine where each image appears in the original PDF.
+3. Move every extracted image from the end of the Markdown to its correct position in the document.
+4. Insert each image immediately after the paragraph, heading, table, or step it belongs to.
+5. Add a meaningful alt text for every image based on the surrounding content.
+6. Remove duplicate or unused image references.
+7. Ensure all image paths remain correct.
+8. Do not modify the document content except where necessary to correctly position images.
+9. Preserve the original document structure and formatting.
+10. Validate that all image links work and the Markdown renders correctly in MkDocs.
+The final Markdown should closely match the layout of the original PDF, with images appearing alongside the relevant content instead of being grouped at the end.
+```
+
+**Files Created**
+- None
+
+**Files Modified**
+- docs/release-notes/Release Notes_Sprint v2.3.4.7-feb26.md
+
+**Actions Performed**
+- Mapped image extraction order to PDF page positions using PyMuPDF text/image anchors.
+- Inserted all ten images inline at their relevant sections.
+- Replaced generic appendix-style captions with meaningful alt text.
+- Removed the trailing "Extracted Images" section.
+- Ran docs validation and a clean MkDocs build.
+
+**Result**
+- Release notes now render with images in context, all image links resolve, and MkDocs build succeeds.
+
+---

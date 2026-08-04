@@ -27,6 +27,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Convert a PDF to Markdown and extract images.",
     )
     import_pdf_parser.add_argument("pdf_file", type=Path, help="Path to the PDF file")
+    import_pdf_parser.add_argument(
+        "--section",
+        choices=["user-guide", "api", "release-notes"],
+        help="Target docs section (auto-detected when omitted)",
+    )
 
     release_notes_parser = subparsers.add_parser(
         "release-notes",
@@ -60,12 +65,12 @@ def _print_error(message: str) -> None:
     print(f"Error: {message}", file=sys.stderr)
 
 
-def _run_import_pdf(pdf_file: Path) -> int:
+def _run_import_pdf(pdf_file: Path, section: str | None = None) -> int:
     """Run the PDF import pipeline step."""
 
-    summary = convert_pdf(pdf_file)
+    summary = convert_pdf(pdf_file, section=section)
     _print_success(
-        f"Imported {summary.pdf_path.name} to {summary.markdown_path} and extracted {summary.image_count} image(s)."
+        f"Imported {summary.pdf_path.name} to {summary.markdown_path} ({summary.section}) and extracted {summary.image_count} image(s)."
     )
     return 0
 
@@ -115,7 +120,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         if args.command == "import-pdf":
-            return _run_import_pdf(args.pdf_file)
+            return _run_import_pdf(args.pdf_file, args.section)
         if args.command == "release-notes":
             return _run_release_notes(args.jira_csv)
         if args.command == "api-docs":

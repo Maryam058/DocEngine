@@ -1,0 +1,139 @@
+# Release Notes: February 2026 Sprint v2.3.4.7
+
+## Introduction
+
+This release introduces a series of enhancements focused on improving medication visibility, prescribing accuracy, and workflow efficiency across indici.
+
+Several of these improvements support clearer management of long-term medications and repeat prescriptions, helping practices prepare for upcoming prescription duration changes.
+
+Updates include improved long-term medication display, streamlined medication editing, updated prescription printing aligned with current NZePS standards, strengthened confidentiality controls, and clearer handling of stopped or cancelled medications.
+
+Enhancements have also been made to AI usage reporting to improve transparency and cost tracking.
+
+## Long-Term Medication Display Update
+
+The Long-Term Medication section in the Consult top bar has been updated to improve readability and reduce visual clutter.
+
+### What's Changed
+
+- Quantity and Duration (Q/D) are now displayed for long-term medications.
+- Medication dates are hidden by default to keep the view clean.
+- A new toggle icon allows users to show or hide dates as needed.
+
+These changes improve clarity when reviewing long-term medications, particularly where prescriptions may cover longer intended treatment periods.
+
+## Print Prescription Enhancement
+
+Prescription printing in indici has been updated to use a new standard format, changing from the previous PDF layout to an XHTML format, in line with Health NZ (HNZ) compliance requirements.
+
+### What This Means for Your Practice
+
+- Printed prescriptions may look slightly different.
+- The prescribing process and information remain the same.
+- This is a national standard format and cannot be customised or made practice-specific.
+
+### Why This Change Was Made
+
+- To meet current Health NZ compliance standards used by pharmacies.
+- To ensure consistent and reliable prescription printing across all practices.
+
+## Confidential Medication Setting
+
+New options have been added to allow medications to be marked as confidential, providing greater control over how sensitive medication information is shared and accessed.
+
+### Confidentiality Levels
+
+#### Restricted
+
+Medication information is shared with the Medicine Data Repository (MDR) but is not generally visible. Access is limited to authorised users and approved MDR protocols.
+
+#### Very Restricted
+
+Medication information is completely hidden and cannot be accessed or viewed in the MDR under any circumstances.
+
+When the Confidential checkbox is selected, the confidentiality level can be chosen from a dropdown (default: Restricted).
+
+## Medication Grid - Quick Edit Enhancement
+
+The Medication Grid (Today's Medication Activity list) has been enhanced to support quicker updates to active medications.
+
+### What's New
+
+- A new Quick Edit icon is available for current medications.
+- Users can update Quantity and Duration directly from the Today's list.
+- Changes are saved immediately after selecting Update.
+
+Quantity and Duration updates remain subject to existing prescribing rules, medicine eligibility, and prescriber clinical judgement.
+
+## Displaying Prescribed and Dispensed Medicine Names
+
+The ePS Medication History view has been enhanced with a new toggle to improve visibility of dispensing information.
+
+### What's Changed
+
+- Prescribed medicine names are shown by default.
+- A new toggle icon allows users to view dispensed medicine names.
+- Users can switch between prescribed and dispensed medicine details on demand.
+
+## Medication Management - Delete and Stop Functionality
+
+The behaviour of the Delete and Stop actions has been clarified to ensure safer medication management.
+
+### Updated Behaviour
+
+#### Medications with Remaining Repeats
+
+When stopped or deleted, the medication becomes inactive and cannot be dispensed in the future.
+
+#### Currently Active Medications
+
+When deleted or stopped, the medication is marked as cancelled.
+
+This is particularly important for prescriptions with extended repeat periods, ensuring discontinued medicines cannot be dispensed unintentionally.
+
+## AI Credit Usage Report Enhancements
+
+The AI Credit Usage Report has been enhanced to provide greater visibility and improved filtering capabilities.
+
+### AI Usage
+
+A Type search filter has been added, allowing users to filter the AI Usage Report by AI Consultation - SOAP Notes or Letters & Documents.
+
+By default, the Type filter is set to All, displaying both SOAP Notes and Letters & Documents AI usage records.
+
+Additionally, a Type column has been added to the report grid, clearly indicating whether each AI usage record is associated with SOAP Notes or Letters & Documents.
+
+### AI Query Builder
+
+A new AI Query Builder tab has been introduced to provide detailed insights into AI query activity.
+
+This report includes the following information:
+
+- Date and time of the query
+- Query title
+- Query description
+- User name
+- AI usage cost
+
+This enhancement improves transparency and helps administrators better track AI usage and associated costs.
+## Extracted Images
+
+![Extracted image from page 1, image 1](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-01.png)
+
+![Extracted image from page 2, image 2](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-02.png)
+
+![Extracted image from page 3, image 3](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-03.png)
+
+![Extracted image from page 4, image 4](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-04.png)
+
+![Extracted image from page 4, image 5](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-05.png)
+
+![Extracted image from page 5, image 6](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-06.png)
+
+![Extracted image from page 6, image 7](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-07.png)
+
+![Extracted image from page 6, image 8](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-08.png)
+
+![Extracted image from page 7, image 9](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-09.png)
+
+![Extracted image from page 7, image 10](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-10.png)

@@ -8,7 +8,7 @@ os.makedirs(output_folder, exist_ok=True)
 
 doc = fitz.open(pdf_path)
 
-count = 0
+count = 1
 
 for page_num in range(len(doc)):
     page = doc.load_page(page_num)
@@ -19,17 +19,14 @@ for page_num in range(len(doc)):
         xref = img[0]
         pix = fitz.Pixmap(doc, xref)
 
-        if pix.alpha:
-            pix = fitz.Pixmap(fitz.csRGB, pix)
+        if pix.n < 5:
+            pix.save(f"{output_folder}/page_{page_num+1}_img_{count}.png")
+        else:
+            rgb = fitz.Pixmap(fitz.csRGB, pix)
+            rgb.save(f"{output_folder}/page_{page_num+1}_img_{count}.png")
+            rgb = None
 
-        filename = os.path.join(
-            output_folder,
-            f"page_{page_num+1}_image_{img_index+1}.png"
-        )
-
-        pix.save(filename)
         pix = None
-
         count += 1
 
-print(f"{count} images extracted.")
+print(f"Done! {count-1} images extracted.")

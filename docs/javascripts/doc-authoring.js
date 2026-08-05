@@ -95,7 +95,8 @@
       publishedContent: docKey + ":publishedContent",
       history: docKey + ":history",
       autosave: docKey + ":autosave",
-      versions: docKey + ":versions"
+      versions: docKey + ":versions",
+      dismissedSuggestions: docKey + ":dismissedSuggestions"
     };
   }
 
@@ -126,6 +127,50 @@
       historyKey,
       JSON.stringify(history)
     );
+  }
+
+  function getDismissedSuggestions(dismissedSuggestionsKey) {
+    const dismissed = safeParseJSON(
+      localStorage.getItem(dismissedSuggestionsKey),
+      []
+    );
+
+    return Array.isArray(dismissed) ? dismissed : [];
+  }
+
+  function saveDismissedSuggestions(dismissedSuggestionsKey, dismissedIds) {
+    localStorage.setItem(
+      dismissedSuggestionsKey,
+      JSON.stringify(dismissedIds)
+    );
+  }
+
+  function dismissSuggestion(dismissedSuggestionsKey, suggestionId) {
+    if (!suggestionId) {
+      return;
+    }
+
+    const dismissed = getDismissedSuggestions(dismissedSuggestionsKey);
+
+    if (dismissed.indexOf(suggestionId) > -1) {
+      return;
+    }
+
+    dismissed.push(suggestionId);
+    saveDismissedSuggestions(dismissedSuggestionsKey, dismissed);
+  }
+
+  function clearDismissedSuggestion(dismissedSuggestionsKey, suggestionId) {
+    const dismissed = getDismissedSuggestions(dismissedSuggestionsKey);
+    const next = dismissed.filter(function (id) {
+      return id !== suggestionId;
+    });
+
+    if (next.length === dismissed.length) {
+      return;
+    }
+
+    saveDismissedSuggestions(dismissedSuggestionsKey, next);
   }
 
   function ensureStylesheet(href) {
@@ -356,6 +401,60 @@
     previewNode.textContent = markdown || "No content yet.";
   }
 
+  function renderRenderedPreview(renderedNode, html) {
+    if (!renderedNode) {
+      return;
+    }
+
+    if (!getPlainText(html)) {
+      renderedNode.innerHTML = '<p class="review-rendered-preview-empty">No content yet.</p>';
+      return;
+    }
+
+    renderedNode.innerHTML = html || "";
+  }
+
+  function setPreviewMode(ui, mode) {
+    const isRendered = mode === "rendered";
+
+    ui.previewMode = isRendered ? "rendered" : "markdown";
+    ui.markdownPreview.hidden = isRendered;
+    ui.renderedPreview.hidden = !isRendered;
+    ui.previewMarkdownButton.classList.toggle("is-active", !isRendered);
+    ui.previewRenderedButton.classList.toggle("is-active", isRendered);
+  }
+
+  function copyTextToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+
+    return new Promise(function (resolve, reject) {
+      const tempInput = document.createElement("textarea");
+      tempInput.value = text;
+      tempInput.setAttribute("readonly", "readonly");
+      tempInput.style.position = "absolute";
+      tempInput.style.left = "-9999px";
+      document.body.appendChild(tempInput);
+      tempInput.select();
+
+      try {
+        const success = document.execCommand("copy");
+        document.body.removeChild(tempInput);
+
+        if (success) {
+          resolve();
+          return;
+        }
+
+        reject(new Error("Copy command failed."));
+      } catch (error) {
+        document.body.removeChild(tempInput);
+        reject(error);
+      }
+    });
+  }
+
   function renderStats(statsNodes, html) {
     const wordCount = countWords(getPlainText(html));
 
@@ -439,6 +538,17 @@
           id: "heading-skip-" + index,
           type: "heading",
           title: "Fix heading hierarchy",
+          issue:
+            "Heading level skips from H" +
+            lastHeadingLevel +
+            " to H" +
+            level +
+            ".",
+          reason: "Skipped heading levels reduce document scanability and structural clarity.",
+          recommendation:
+            "Change this heading to H" +
+            (lastHeadingLevel + 1) +
+            " or add an intermediate heading.",
           summary:
             "Heading order skips from H" +
             lastHeadingLevel +
@@ -446,9 +556,11 @@
             level +
             ".",
           action: "Change this heading to H" + (lastHeadingLevel + 1) + " or add an intermediate heading.",
+          safeFix: "adjust-heading-level",
           target: {
             group: "heading",
-            index: index
+            index: index,
+            recommendedLevel: lastHeadingLevel + 1
           }
         });
       }
@@ -465,8 +577,12 @@
           id: "long-paragraph-" + index,
           type: "readability",
           title: "Split long paragraph",
+          issue: "Paragraph " + (index + 1) + " is long and harder to scan.",
+          reason: "Very long paragraphs increase reading effort and reduce comprehension.",
+          recommendation: "Break this paragraph into shorter chunks (2-4 sentences).",
           summary: "Paragraph " + (index + 1) + " is long and harder to scan.",
           action: "Break this paragraph into shorter chunks (2-4 sentences).",
+          safeFix: "highlight-only",
           target: {
             group: "paragraph",
             index: index
@@ -479,6 +595,14 @@
           id: "weak-wording-" + index + "-" + weakMatch[0].toLowerCase(),
           type: "clarity",
           title: "Strengthen wording",
+          issue:
+            'Paragraph ' +
+            (index + 1) +
+            ' uses "' +
+            weakMatch[0] +
+            '".',
+          reason: "Weak qualifiers can reduce precision and confidence in technical content.",
+          recommendation: "Replace it with specific, direct wording.",
           summary:
             'Paragraph ' +
             (index + 1) +
@@ -486,6 +610,7 @@
             weakMatch[0] +
             '", which can weaken clarity.',
           action: "Replace it with specific, direct wording.",
+          safeFix: "highlight-only",
           target: {
             group: "paragraph",
             index: index
@@ -500,8 +625,12 @@
           id: "missing-alt-" + index,
           type: "accessibility",
           title: "Add image alt text",
+          issue: "Image " + (index + 1) + " is missing alt text.",
+          reason: "Screen readers need alt text to describe non-text content.",
+          recommendation: "Add concise alt text that describes the image purpose.",
           summary: "Image " + (index + 1) + " is missing alt text.",
           action: "Add concise alt text that describes the image purpose.",
+          safeFix: "prompt-alt-text",
           target: {
             group: "image",
             index: index
@@ -563,6 +692,183 @@
     }, 1600);
   }
 
+  function applyHeadingLevelFix(quill, suggestion) {
+    if (!suggestion || !suggestion.target || !suggestion.target.recommendedLevel) {
+      return false;
+    }
+
+    const headingNodes = quill.root.querySelectorAll("h1, h2, h3, h4, h5, h6");
+    const targetHeading = headingNodes[suggestion.target.index];
+
+    if (!targetHeading) {
+      return false;
+    }
+
+    const level = Math.max(1, Math.min(6, Number(suggestion.target.recommendedLevel)));
+    const replacement = document.createElement("h" + level);
+
+    Array.prototype.slice.call(targetHeading.attributes).forEach(function (attribute) {
+      replacement.setAttribute(attribute.name, attribute.value);
+    });
+
+    replacement.innerHTML = targetHeading.innerHTML;
+    targetHeading.parentNode.replaceChild(replacement, targetHeading);
+    quill.update("user");
+    return true;
+  }
+
+  function collectHeadingNavigatorData(quillRoot) {
+    const headings = [];
+    const issues = [];
+    const headingNodes = Array.prototype.slice.call(
+      quillRoot.querySelectorAll("h1, h2, h3")
+    );
+    let lastLevel = 0;
+    let h1Count = 0;
+
+    headingNodes.forEach(function (headingNode, index) {
+      const level = Number(headingNode.tagName.slice(1));
+      const text = (headingNode.textContent || "").trim() || "Untitled heading";
+
+      headings.push({
+        index: index,
+        level: level,
+        text: text
+      });
+
+      if (level === 1) {
+        h1Count += 1;
+      }
+
+      if (lastLevel && level > lastLevel + 1) {
+        issues.push("Heading order skips from H" + lastLevel + " to H" + level + ".");
+      }
+
+      lastLevel = level;
+    });
+
+    if (h1Count === 0) {
+      issues.push("Add a document H1 heading.");
+    }
+
+    if (h1Count > 1) {
+      issues.push("Use a single H1 heading.");
+    }
+
+    return {
+      headings: headings,
+      issues: issues
+    };
+  }
+
+  function renderHeadingNavigator(listNode, issuesNode, navigatorData, onJump) {
+    listNode.innerHTML = "";
+    issuesNode.innerHTML = "";
+
+    if (!navigatorData.headings.length) {
+      const emptyItem = document.createElement("li");
+      emptyItem.className = "review-heading-empty";
+      emptyItem.textContent = "No H1-H3 headings found in the editor content.";
+      listNode.appendChild(emptyItem);
+    } else {
+      navigatorData.headings.forEach(function (heading) {
+        const item = document.createElement("li");
+        const jumpButton = document.createElement("button");
+
+        item.className = "review-heading-item review-heading-level-" + heading.level;
+
+        jumpButton.type = "button";
+        jumpButton.className = "review-heading-jump";
+        jumpButton.textContent = "H" + heading.level + " - " + heading.text;
+        jumpButton.addEventListener("click", function () {
+          onJump(heading);
+        });
+
+        item.appendChild(jumpButton);
+        listNode.appendChild(item);
+      });
+    }
+
+    if (!navigatorData.issues.length) {
+      const good = document.createElement("li");
+      good.className = "review-heading-issue review-heading-issue--ok";
+      good.textContent = "No heading hierarchy issues detected.";
+      issuesNode.appendChild(good);
+      return;
+    }
+
+    navigatorData.issues.forEach(function (issue) {
+      const issueItem = document.createElement("li");
+      issueItem.className = "review-heading-issue";
+      issueItem.textContent = issue;
+      issuesNode.appendChild(issueItem);
+    });
+  }
+
+  function collectImageAltData(quillRoot) {
+    return Array.prototype.slice.call(quillRoot.querySelectorAll("img")).map(function (imageNode, index) {
+      const alt = (imageNode.getAttribute("alt") || "").trim();
+
+      return {
+        index: index,
+        alt: alt,
+        missing: !alt,
+        source: imageNode.getAttribute("src") || ""
+      };
+    });
+  }
+
+  function renderImageAltManager(listNode, imageItems, handlers) {
+    listNode.innerHTML = "";
+
+    if (!imageItems.length) {
+      const empty = document.createElement("li");
+      empty.className = "review-image-alt-empty";
+      empty.textContent = "No images found in the current editor content.";
+      listNode.appendChild(empty);
+      return;
+    }
+
+    imageItems.forEach(function (item) {
+      const row = document.createElement("li");
+      const meta = document.createElement("div");
+      const title = document.createElement("strong");
+      const status = document.createElement("span");
+      const editRow = document.createElement("div");
+      const input = document.createElement("input");
+      const button = document.createElement("button");
+
+      row.className = "review-image-alt-item" + (item.missing ? " is-missing" : "");
+      meta.className = "review-image-alt-meta";
+      editRow.className = "review-image-alt-edit";
+
+      title.textContent = "Image " + (item.index + 1);
+      status.className = "review-image-alt-status" + (item.missing ? " is-missing" : "");
+      status.textContent = item.missing ? "Missing alt text" : "Alt text set";
+
+      input.type = "text";
+      input.className = "review-image-alt-input";
+      input.value = item.alt;
+      input.placeholder = "Describe this image for screen readers";
+      input.setAttribute("aria-label", "Alt text for image " + (item.index + 1));
+
+      button.type = "button";
+      button.className = "review-image-alt-save";
+      button.textContent = "Update Alt";
+      button.addEventListener("click", function () {
+        handlers.onUpdate(item, input.value || "");
+      });
+
+      meta.appendChild(title);
+      meta.appendChild(status);
+      editRow.appendChild(input);
+      editRow.appendChild(button);
+      row.appendChild(meta);
+      row.appendChild(editRow);
+      listNode.appendChild(row);
+    });
+  }
+
   function renderAiSuggestions(listNode, suggestions, handlers) {
     listNode.innerHTML = "";
 
@@ -577,36 +883,50 @@
     suggestions.forEach(function (suggestion) {
       const item = document.createElement("li");
       const head = document.createElement("div");
-      const body = document.createElement("p");
-      const action = document.createElement("p");
+      const issue = document.createElement("p");
+      const reason = document.createElement("p");
+      const recommendation = document.createElement("p");
       const controls = document.createElement("div");
       const acceptButton = document.createElement("button");
       const rejectButton = document.createElement("button");
       const title = document.createElement("strong");
       const tag = document.createElement("span");
 
+      function fillSuggestionLine(node, label, value) {
+        const heading = document.createElement("strong");
+        heading.textContent = label + ": ";
+        node.appendChild(heading);
+        node.appendChild(document.createTextNode(value));
+      }
+
       item.className = "review-suggestion-card";
       head.className = "review-suggestion-head";
-      body.className = "review-suggestion-summary";
-      action.className = "review-suggestion-action";
+      issue.className = "review-suggestion-summary";
+      reason.className = "review-suggestion-reason";
+      recommendation.className = "review-suggestion-action";
       controls.className = "review-suggestion-controls";
       tag.className = getSuggestionBadgeClass(suggestion.type);
 
       tag.textContent = suggestion.type;
       title.textContent = suggestion.title;
-      body.textContent = suggestion.summary;
-      action.textContent = "Action: " + suggestion.action;
+      fillSuggestionLine(issue, "Issue", suggestion.issue || suggestion.summary || "");
+      fillSuggestionLine(reason, "Reason", suggestion.reason || "Review to improve editorial quality.");
+      fillSuggestionLine(
+        recommendation,
+        "Recommended action",
+        suggestion.recommendation || suggestion.action || ""
+      );
 
       acceptButton.type = "button";
       acceptButton.className = "review-suggestion-accept";
-      acceptButton.textContent = "Accept";
+      acceptButton.textContent = "Apply Suggestion";
       acceptButton.addEventListener("click", function () {
         handlers.onAccept(suggestion);
       });
 
       rejectButton.type = "button";
       rejectButton.className = "review-suggestion-reject";
-      rejectButton.textContent = "Reject";
+      rejectButton.textContent = "Dismiss";
       rejectButton.addEventListener("click", function () {
         handlers.onReject(suggestion);
       });
@@ -616,8 +936,9 @@
       controls.appendChild(acceptButton);
       controls.appendChild(rejectButton);
       item.appendChild(head);
-      item.appendChild(body);
-      item.appendChild(action);
+      item.appendChild(issue);
+      item.appendChild(reason);
+      item.appendChild(recommendation);
       item.appendChild(controls);
       listNode.appendChild(item);
     });
@@ -788,7 +1109,13 @@
               <h3>Markdown Preview</h3>
               <p>Live Markdown generated from the current editor content.</p>
             </div>
+            <div class="review-preview-controls" role="group" aria-label="Preview mode">
+              <button id="review-preview-markdown" class="review-preview-toggle is-active" type="button">Markdown View</button>
+              <button id="review-preview-rendered" class="review-preview-toggle" type="button">Rendered Preview</button>
+              <button id="review-copy-markdown" class="review-preview-copy" type="button">Copy Markdown</button>
+            </div>
             <pre id="review-markdown-preview" class="review-markdown-preview"></pre>
+            <div id="review-rendered-preview" class="review-rendered-preview" hidden></div>
           </section>
 
           <section class="review-panel review-panel--stacked">
@@ -809,6 +1136,23 @@
               <p>Automatic checks for editorial consistency and accessibility.</p>
             </div>
             <ul id="review-style-checks" class="review-checklist"></ul>
+          </section>
+
+          <section class="review-panel review-panel--stacked">
+            <div class="review-panel-heading">
+              <h3>Heading Navigator</h3>
+              <p>Jump to H1-H3 sections and review hierarchy quality.</p>
+            </div>
+            <ul id="review-heading-navigator" class="review-heading-navigator"></ul>
+            <ul id="review-heading-issues" class="review-heading-issues"></ul>
+          </section>
+
+          <section class="review-panel review-panel--stacked">
+            <div class="review-panel-heading">
+              <h3>Image Alt Text Manager</h3>
+              <p>Review missing alt text and update descriptions inline.</p>
+            </div>
+            <ul id="review-image-alt-manager" class="review-image-alt-manager"></ul>
           </section>
 
           <section class="review-panel review-panel--stacked">
@@ -859,10 +1203,17 @@
       autosaveStatus: wrapper.querySelector("#review-autosave-status"),
       wordCount: wrapper.querySelector("#review-word-count"),
       readingTime: wrapper.querySelector("#review-reading-time"),
+      previewMarkdownButton: wrapper.querySelector("#review-preview-markdown"),
+      previewRenderedButton: wrapper.querySelector("#review-preview-rendered"),
+      copyMarkdownButton: wrapper.querySelector("#review-copy-markdown"),
       markdownPreview: wrapper.querySelector("#review-markdown-preview"),
+      renderedPreview: wrapper.querySelector("#review-rendered-preview"),
       comparisonSummary: wrapper.querySelector("#review-comparison-summary"),
       comparisonDetails: wrapper.querySelector("#review-comparison-details"),
       styleChecks: wrapper.querySelector("#review-style-checks"),
+      headingNavigator: wrapper.querySelector("#review-heading-navigator"),
+      headingIssues: wrapper.querySelector("#review-heading-issues"),
+      imageAltManager: wrapper.querySelector("#review-image-alt-manager"),
       aiSuggestions: wrapper.querySelector("#review-ai-suggestions"),
       versionsList: wrapper.querySelector("#review-versions")
     };
@@ -1499,13 +1850,101 @@
     const currentHtml = quill.root.innerHTML;
     const previewMarkdown = getPreviewMarkdown(currentHtml);
     const versions = getVersionHistory(keys.versions);
-    const suggestions = collectAiSuggestions(quill.root);
+    const allSuggestions = collectAiSuggestions(quill.root);
+    const dismissedIds = getDismissedSuggestions(keys.dismissedSuggestions);
+    const suggestions = allSuggestions.filter(function (suggestion) {
+      return dismissedIds.indexOf(suggestion.id) === -1;
+    });
+    const headingNavigatorData = collectHeadingNavigatorData(quill.root);
+    const imageAltData = collectImageAltData(quill.root);
 
     renderStats(ui, currentHtml);
     renderPreview(ui.markdownPreview, previewMarkdown);
+    renderRenderedPreview(ui.renderedPreview, currentHtml);
     renderIssues(ui.styleChecks, collectStyleGuideIssues(quill.root));
+    renderHeadingNavigator(
+      ui.headingNavigator,
+      ui.headingIssues,
+      headingNavigatorData,
+      function (heading) {
+        const headingNodes = quill.root.querySelectorAll("h1, h2, h3");
+        const targetHeading = headingNodes[heading.index];
+
+        if (!targetHeading) {
+          return;
+        }
+
+        targetHeading.classList.add("review-suggestion-target");
+        targetHeading.scrollIntoView({ behavior: "smooth", block: "center" });
+
+        window.setTimeout(function () {
+          targetHeading.classList.remove("review-suggestion-target");
+        }, 1200);
+
+        saveHistory(
+          historyKey,
+          createAuditEntry(
+            "heading-navigated",
+            "Jumped to H" + heading.level + ": " + heading.text
+          )
+        );
+        renderHistory(historyKey, ui.historyList);
+      }
+    );
+    renderImageAltManager(ui.imageAltManager, imageAltData, {
+      onUpdate: function (imageItem, altText) {
+        const imageNodes = quill.root.querySelectorAll("img");
+        const targetImage = imageNodes[imageItem.index];
+
+        if (!targetImage) {
+          showWarning("Could not find that image in the editor.");
+          return;
+        }
+
+        const trimmedAlt = (altText || "").trim();
+
+        targetImage.setAttribute("alt", trimmedAlt);
+        targetImage.setAttribute("title", trimmedAlt);
+        quill.update("user");
+
+        clearDismissedSuggestion(
+          keys.dismissedSuggestions,
+          "missing-alt-" + imageItem.index
+        );
+
+        saveHistory(
+          historyKey,
+          createAuditEntry(
+            "alt-text-updated",
+            "Image " + (imageItem.index + 1) + " alt text updated"
+          )
+        );
+        renderHistory(historyKey, ui.historyList);
+        syncEditorState(ui, quill, keys, originalHtml, historyKey);
+        showSuccess("Image alt text updated.");
+      }
+    });
     renderAiSuggestions(ui.aiSuggestions, suggestions, {
       onAccept: function (suggestion) {
+        if (suggestion.safeFix === "adjust-heading-level") {
+          const appliedHeadingFix = applyHeadingLevelFix(quill, suggestion);
+
+          if (appliedHeadingFix) {
+            clearDismissedSuggestion(keys.dismissedSuggestions, suggestion.id);
+            saveHistory(
+              historyKey,
+              createAuditEntry(
+                "suggestion-applied",
+                suggestion.title + " applied safely"
+              )
+            );
+            renderHistory(historyKey, ui.historyList);
+            syncEditorState(ui, quill, keys, originalHtml, historyKey);
+            showSuccess("Suggestion applied safely.");
+            return;
+          }
+        }
+
         if (suggestion.type === "accessibility") {
           const imageNodes = quill.root.querySelectorAll("img");
           const targetImage = imageNodes[suggestion.target.index];
@@ -1530,12 +1969,13 @@
               targetImage.setAttribute("alt", (result.value || "").trim());
               targetImage.setAttribute("title", (result.value || "").trim());
               quill.update("user");
+              clearDismissedSuggestion(keys.dismissedSuggestions, suggestion.id);
 
               saveHistory(
                 historyKey,
                 createAuditEntry(
-                  "suggestion-accepted",
-                  suggestion.title + " applied"
+                  "suggestion-applied",
+                  suggestion.title + " applied safely"
                 )
               );
               renderHistory(historyKey, ui.historyList);
@@ -1549,23 +1989,25 @@
         saveHistory(
           historyKey,
           createAuditEntry(
-            "suggestion-accepted",
-            suggestion.title
+            "suggestion-highlighted",
+            suggestion.title + " requires manual editing"
           )
         );
         renderHistory(historyKey, ui.historyList);
-        showSuccess("Suggestion accepted. Update highlighted content.");
+        showSuccess("Suggestion highlighted for manual editor decision.");
       },
       onReject: function (suggestion) {
+        dismissSuggestion(keys.dismissedSuggestions, suggestion.id);
         saveHistory(
           historyKey,
           createAuditEntry(
-            "suggestion-rejected",
+            "suggestion-dismissed",
             suggestion.title
           )
         );
         renderHistory(historyKey, ui.historyList);
-        showWarning("Suggestion rejected.");
+        syncEditorState(ui, quill, keys, originalHtml, historyKey);
+        showWarning("Suggestion dismissed.");
       }
     });
     ui.comparisonViewLog = ui.comparisonViewLog || {};
@@ -1752,6 +2194,57 @@
         });
 
         syncEditorState(ui, quill, keys, initialHtml, historyKey);
+        setPreviewMode(ui, "markdown");
+
+        ui.previewMarkdownButton.addEventListener("click", function () {
+          setPreviewMode(ui, "markdown");
+        });
+
+        ui.previewRenderedButton.addEventListener("click", function () {
+          const previousMode = ui.previewMode;
+
+          setPreviewMode(ui, "rendered");
+
+          if (previousMode !== "rendered") {
+            saveHistory(
+              historyKey,
+              createAuditEntry(
+                "preview-opened",
+                "Rendered preview opened"
+              )
+            );
+            renderHistory(historyKey, ui.historyList);
+          }
+        });
+
+        ui.copyMarkdownButton.addEventListener("click", function () {
+          const markdown = getPreviewMarkdown(quill.root.innerHTML) || "";
+
+          copyTextToClipboard(markdown)
+            .then(function () {
+              const originalText = ui.copyMarkdownButton.textContent;
+
+              ui.copyMarkdownButton.textContent = "Copied";
+              ui.copyMarkdownButton.classList.add("is-success");
+              window.setTimeout(function () {
+                ui.copyMarkdownButton.textContent = originalText;
+                ui.copyMarkdownButton.classList.remove("is-success");
+              }, 1400);
+
+              saveHistory(
+                historyKey,
+                createAuditEntry(
+                  "markdown-copied",
+                  "Markdown copied from preview"
+                )
+              );
+              renderHistory(historyKey, ui.historyList);
+              showSuccess("Markdown copied.");
+            })
+            .catch(function () {
+              showError("Unable to copy Markdown. Please copy manually.");
+            });
+        });
 
         ui.restoreOriginalButton.addEventListener("click", function () {
           applySnapshot(quill, {

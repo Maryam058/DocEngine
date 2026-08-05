@@ -863,6 +863,65 @@ button[data-action="publish"]:hover{
     color: #fff;
 }
 
+#review-approve {
+    background: linear-gradient(135deg, #0f62d6, #4f8ef7);
+    color: #fff;
+}
+
+#review-reject {
+    background: linear-gradient(135deg, #b42318, #dc2626);
+    color: #fff;
+}
+
+#review-commit {
+    background: linear-gradient(135deg, #374151, #111827);
+    color: #fff;
+}
+
+.review-workflow-meta {
+    margin-top: 0.65rem;
+}
+
+.review-workflow-text {
+    margin: 0;
+    color: var(--md-default-fg-color--light, #64748b);
+    font-size: 0.86rem;
+}
+
+.review-ci-progress {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.review-ci-step {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.28rem 0.62rem;
+    background: #eef2f7;
+    color: #334155;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.review-ci-step.is-active {
+    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    color: #fff;
+}
+
+.review-ci-step.is-done {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.review-ci-separator {
+    color: #94a3b8;
+    font-weight: 700;
+}
+
 #review-restore-original,
 #review-restore-autosave,
 .review-versions button {

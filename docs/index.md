@@ -34,7 +34,7 @@ Find everything you need to create, maintain and publish professional documentat
             Step-by-step documentation for end users.
         </p>
 
-        <a href="UserGuide/Register%20a%20patient/" class="card-button">
+        <a href="UserGuide/quickstart/" class="card-button">
             View Guide
         </a>
 
@@ -48,7 +48,7 @@ Find everything you need to create, maintain and publish professional documentat
             Complete API documentation with endpoints, requests and response examples.
         </p>
 
-        <a href="api/openapi/" class="card-button">
+        <a href="api/api-reference/" class="card-button">
             View API
         </a>
 
@@ -62,7 +62,7 @@ Find everything you need to create, maintain and publish professional documentat
             Track product improvements, fixes and the latest software releases.
         </p>
 
-        <a href="release-notes/v1.0.0/" class="card-button">
+        <a href="release-notes/latest-release-notes/" class="card-button">
             View Notes
         </a>
 

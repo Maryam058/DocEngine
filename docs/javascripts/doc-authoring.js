@@ -706,6 +706,7 @@
               <p>Compare the AI draft against the human-edited version.</p>
             </div>
             <div id="review-comparison-summary" class="review-comparison-summary"></div>
+            <div id="review-comparison-details" class="review-comparison-details"></div>
             <div class="review-actions review-actions--compact">
               <button id="review-restore-original" type="button">Restore Original Draft</button>
             </div>
@@ -769,6 +770,7 @@
       readingTime: wrapper.querySelector("#review-reading-time"),
       markdownPreview: wrapper.querySelector("#review-markdown-preview"),
       comparisonSummary: wrapper.querySelector("#review-comparison-summary"),
+      comparisonDetails: wrapper.querySelector("#review-comparison-details"),
       styleChecks: wrapper.querySelector("#review-style-checks"),
       aiSuggestions: wrapper.querySelector("#review-ai-suggestions"),
       versionsList: wrapper.querySelector("#review-versions")
@@ -978,9 +980,386 @@
     return quill;
   }
 
-  function updateComparisonSummary(summaryNode, originalHtml, currentHtml) {
+  function escapeHtml(value) {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function normalizeComparisonText(value) {
+    return (value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function getComparisonSections(html) {
+    const container = document.createElement("div");
+    container.innerHTML = html || "";
+
+    const nodes = container.querySelectorAll(
+      "h1, h2, h3, h4, h5, h6, p, li, blockquote, pre, td, th"
+    );
+    const sections = [];
+
+    nodes.forEach(function (node, index) {
+      const text = (node.textContent || "").replace(/\s+/g, " ").trim();
+
+      if (!text) {
+        return;
+      }
+
+      sections.push({
+        id: index,
+        text: text,
+        normalized: normalizeComparisonText(text)
+      });
+    });
+
+    if (sections.length === 0) {
+      const fallback = (container.textContent || container.innerText || "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      if (fallback) {
+        sections.push({
+          id: 0,
+          text: fallback,
+          normalized: normalizeComparisonText(fallback)
+        });
+      }
+    }
+
+    return sections;
+  }
+
+  function getLcsPairs(originalSections, currentSections) {
+    const originalCount = originalSections.length;
+    const currentCount = currentSections.length;
+    const matrix = [];
+    let i = 0;
+
+    for (i = 0; i <= originalCount; i += 1) {
+      matrix.push(new Array(currentCount + 1).fill(0));
+    }
+
+    for (i = originalCount - 1; i >= 0; i -= 1) {
+      for (let j = currentCount - 1; j >= 0; j -= 1) {
+        if (
+          originalSections[i].normalized &&
+          originalSections[i].normalized === currentSections[j].normalized
+        ) {
+          matrix[i][j] = matrix[i + 1][j + 1] + 1;
+        } else {
+          matrix[i][j] = Math.max(matrix[i + 1][j], matrix[i][j + 1]);
+        }
+      }
+    }
+
+    const pairs = [];
+    i = 0;
+    let j = 0;
+
+    while (i < originalCount && j < currentCount) {
+      if (
+        originalSections[i].normalized &&
+        originalSections[i].normalized === currentSections[j].normalized
+      ) {
+        pairs.push({
+          originalIndex: i,
+          currentIndex: j
+        });
+        i += 1;
+        j += 1;
+      } else if (matrix[i + 1][j] >= matrix[i][j + 1]) {
+        i += 1;
+      } else {
+        j += 1;
+      }
+    }
+
+    return pairs;
+  }
+
+  function toComparisonTokens(text) {
+    const trimmed = (text || "").trim();
+    return trimmed ? trimmed.split(/\s+/) : [];
+  }
+
+  function getWordSimilarity(beforeText, afterText) {
+    const beforeTokens = toComparisonTokens(normalizeComparisonText(beforeText));
+    const afterTokens = toComparisonTokens(normalizeComparisonText(afterText));
+    const beforeSet = new Set(beforeTokens);
+    const afterSet = new Set(afterTokens);
+    const union = new Set(beforeTokens.concat(afterTokens));
+    let intersection = 0;
+
+    beforeSet.forEach(function (token) {
+      if (afterSet.has(token)) {
+        intersection += 1;
+      }
+    });
+
+    if (union.size === 0) {
+      return 0;
+    }
+
+    return intersection / union.size;
+  }
+
+  function getTokenDiff(beforeText, afterText) {
+    const beforeTokens = toComparisonTokens(beforeText);
+    const afterTokens = toComparisonTokens(afterText);
+    const beforeCount = beforeTokens.length;
+    const afterCount = afterTokens.length;
+    const matrix = [];
+    let i = 0;
+
+    for (i = 0; i <= beforeCount; i += 1) {
+      matrix.push(new Array(afterCount + 1).fill(0));
+    }
+
+    for (i = beforeCount - 1; i >= 0; i -= 1) {
+      for (let j = afterCount - 1; j >= 0; j -= 1) {
+        if (
+          normalizeComparisonText(beforeTokens[i]) &&
+          normalizeComparisonText(beforeTokens[i]) === normalizeComparisonText(afterTokens[j])
+        ) {
+          matrix[i][j] = matrix[i + 1][j + 1] + 1;
+        } else {
+          matrix[i][j] = Math.max(matrix[i + 1][j], matrix[i][j + 1]);
+        }
+      }
+    }
+
+    const beforeMatched = new Set();
+    const afterMatched = new Set();
+    i = 0;
+    let j = 0;
+
+    while (i < beforeCount && j < afterCount) {
+      if (
+        normalizeComparisonText(beforeTokens[i]) &&
+        normalizeComparisonText(beforeTokens[i]) === normalizeComparisonText(afterTokens[j])
+      ) {
+        beforeMatched.add(i);
+        afterMatched.add(j);
+        i += 1;
+        j += 1;
+      } else if (matrix[i + 1][j] >= matrix[i][j + 1]) {
+        i += 1;
+      } else {
+        j += 1;
+      }
+    }
+
+    return {
+      beforeHtml: beforeTokens
+        .map(function (token, index) {
+          if (beforeMatched.has(index)) {
+            return escapeHtml(token);
+          }
+          return '<span class="review-diff-token review-diff-token--removed">' + escapeHtml(token) + "</span>";
+        })
+        .join(" "),
+      afterHtml: afterTokens
+        .map(function (token, index) {
+          if (afterMatched.has(index)) {
+            return escapeHtml(token);
+          }
+          return '<span class="review-diff-token review-diff-token--added">' + escapeHtml(token) + "</span>";
+        })
+        .join(" ")
+    };
+  }
+
+  function buildComparison(originalHtml, currentHtml) {
+    const originalSections = getComparisonSections(originalHtml);
+    const currentSections = getComparisonSections(currentHtml);
+    const lcsPairs = getLcsPairs(originalSections, currentSections);
+    const matchedOriginal = new Set();
+    const matchedCurrent = new Set();
+    const removed = [];
+    const added = [];
+    const modified = [];
+
+    lcsPairs.forEach(function (pair) {
+      matchedOriginal.add(pair.originalIndex);
+      matchedCurrent.add(pair.currentIndex);
+    });
+
+    originalSections.forEach(function (section, index) {
+      if (!matchedOriginal.has(index)) {
+        removed.push(section);
+      }
+    });
+
+    currentSections.forEach(function (section, index) {
+      if (!matchedCurrent.has(index)) {
+        added.push(section);
+      }
+    });
+
+    const usedAddedIndexes = new Set();
+    const retainedRemoved = [];
+
+    removed.forEach(function (removedSection) {
+      let bestIndex = -1;
+      let bestScore = 0;
+
+      added.forEach(function (addedSection, addedIndex) {
+        if (usedAddedIndexes.has(addedIndex)) {
+          return;
+        }
+
+        const similarity = getWordSimilarity(
+          removedSection.text,
+          addedSection.text
+        );
+
+        if (similarity > bestScore) {
+          bestScore = similarity;
+          bestIndex = addedIndex;
+        }
+      });
+
+      if (bestIndex !== -1 && bestScore >= 0.4) {
+        usedAddedIndexes.add(bestIndex);
+        modified.push({
+          before: removedSection.text,
+          after: added[bestIndex].text,
+          diff: getTokenDiff(removedSection.text, added[bestIndex].text)
+        });
+      } else {
+        retainedRemoved.push(removedSection);
+      }
+    });
+
+    const retainedAdded = added.filter(function (section, index) {
+      return !usedAddedIndexes.has(index);
+    });
+
+    return {
+      added: retainedAdded,
+      removed: retainedRemoved,
+      modified: modified
+    };
+  }
+
+  function createComparisonSection(title, variant, items, renderItem, onView) {
+    const details = document.createElement("details");
+    const summary = document.createElement("summary");
+    const body = document.createElement("div");
+    const list = document.createElement("ul");
+
+    details.className = "review-comparison-section review-comparison-section--" + variant;
+    summary.textContent = title + " (" + items.length + ")";
+    body.className = "review-comparison-body";
+    list.className = "review-diff-list";
+
+    if (items.length === 0) {
+      const emptyItem = document.createElement("li");
+      emptyItem.className = "review-diff-empty";
+      emptyItem.textContent = "No " + title.toLowerCase() + " changes.";
+      list.appendChild(emptyItem);
+    } else {
+      items.forEach(function (item) {
+        list.appendChild(renderItem(item));
+      });
+    }
+
+    details.addEventListener("toggle", function () {
+      if (details.open && onView) {
+        onView(title, items.length);
+      }
+    });
+
+    body.appendChild(list);
+    details.appendChild(summary);
+    details.appendChild(body);
+
+    return details;
+  }
+
+  function renderComparisonDetails(detailsNode, comparison, onView) {
+    detailsNode.innerHTML = "";
+
+    detailsNode.appendChild(
+      createComparisonSection(
+        "Added",
+        "added",
+        comparison.added,
+        function (item) {
+          const row = document.createElement("li");
+          const text = document.createElement("p");
+          row.className = "review-diff-item";
+          text.className = "review-diff-content review-diff-content--added";
+          text.innerHTML = '<span class="review-diff-token review-diff-token--added">' + escapeHtml(item.text) + "</span>";
+          row.appendChild(text);
+          return row;
+        },
+        onView
+      )
+    );
+
+    detailsNode.appendChild(
+      createComparisonSection(
+        "Removed",
+        "removed",
+        comparison.removed,
+        function (item) {
+          const row = document.createElement("li");
+          const text = document.createElement("p");
+          row.className = "review-diff-item";
+          text.className = "review-diff-content review-diff-content--removed";
+          text.innerHTML = '<span class="review-diff-token review-diff-token--removed">' + escapeHtml(item.text) + "</span>";
+          row.appendChild(text);
+          return row;
+        },
+        onView
+      )
+    );
+
+    detailsNode.appendChild(
+      createComparisonSection(
+        "Modified",
+        "modified",
+        comparison.modified,
+        function (item) {
+          const row = document.createElement("li");
+          const before = document.createElement("p");
+          const after = document.createElement("p");
+
+          row.className = "review-diff-item review-diff-item--modified";
+
+          before.className = "review-diff-line review-diff-line--before";
+          before.innerHTML = "<strong>Before:</strong> " + item.diff.beforeHtml;
+
+          after.className = "review-diff-line review-diff-line--after";
+          after.innerHTML = "<strong>After:</strong> " + item.diff.afterHtml;
+
+          row.appendChild(before);
+          row.appendChild(after);
+
+          return row;
+        },
+        onView
+      )
+    );
+  }
+
+  function updateComparisonSummary(summaryNode, detailsNode, originalHtml, currentHtml, onComparisonView) {
     const originalWords = countWords(getPlainText(originalHtml));
     const currentWords = countWords(getPlainText(currentHtml));
+    const comparison = buildComparison(originalHtml, currentHtml);
+    const sectionDelta =
+      comparison.added.length +
+      comparison.removed.length +
+      comparison.modified.length;
     const delta = currentWords - originalWords;
     const deltaLabel = delta === 0 ? "no word change" : (delta > 0 ? "+" : "") + delta + " words";
 
@@ -993,7 +1372,14 @@
       ' words</span></div>' +
       '<div class="review-metric"><strong>Delta</strong><span>' +
       deltaLabel +
+      '</span></div>' +
+      '<div class="review-metric"><strong>Changed Sections</strong><span>' +
+      sectionDelta +
       '</span></div>';
+
+    if (detailsNode) {
+      renderComparisonDetails(detailsNode, comparison, onComparisonView);
+    }
   }
 
   function saveAutosave(keys, quill) {
@@ -1091,7 +1477,30 @@
         showWarning("Suggestion rejected.");
       }
     });
-    updateComparisonSummary(ui.comparisonSummary, originalHtml, currentHtml);
+    ui.comparisonViewLog = ui.comparisonViewLog || {};
+    updateComparisonSummary(
+      ui.comparisonSummary,
+      ui.comparisonDetails,
+      originalHtml,
+      currentHtml,
+      function (sectionName, changeCount) {
+        const sectionKey = sectionName.toLowerCase();
+
+        if (ui.comparisonViewLog[sectionKey]) {
+          return;
+        }
+
+        ui.comparisonViewLog[sectionKey] = true;
+        saveHistory(
+          historyKey,
+          createAuditEntry(
+            "comparison-viewed",
+            sectionName + " section opened (" + changeCount + " changes)"
+          )
+        );
+        renderHistory(historyKey, ui.historyList);
+      }
+    );
     renderVersionHistory(ui.versionsList, versions, function (version) {
       applySnapshot(quill, version);
       saveHistory(

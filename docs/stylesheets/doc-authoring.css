@@ -870,7 +870,7 @@ button[data-action="publish"]:hover{
 
 .review-comparison-summary {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
     gap: 0.75rem;
 }
 
@@ -890,6 +890,113 @@ button[data-action="publish"]:hover{
 .review-metric span {
     color: #334155;
     font-size: 0.92rem;
+}
+
+.review-comparison-details {
+    margin-top: 0.9rem;
+    display: grid;
+    gap: 0.65rem;
+}
+
+.review-comparison-section {
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    border-radius: 12px;
+    background: #fcfdff;
+}
+
+.review-comparison-section summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 0.72rem 0.82rem;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.review-comparison-section summary::-webkit-details-marker {
+    display: none;
+}
+
+.review-comparison-body {
+    padding: 0 0.82rem 0.82rem;
+}
+
+.review-diff-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.review-diff-item {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    background: #f8fbff;
+    border-radius: 10px;
+    padding: 0.62rem;
+}
+
+.review-diff-content,
+.review-diff-line {
+    margin: 0;
+    color: #334155;
+    font-size: 0.84rem;
+    line-height: 1.52;
+}
+
+.review-diff-line + .review-diff-line {
+    margin-top: 0.45rem;
+}
+
+.review-diff-line strong {
+    color: #0f172a;
+}
+
+.review-diff-token {
+    border-radius: 6px;
+    padding: 0.08rem 0.2rem;
+}
+
+.review-diff-token--added {
+    background: rgba(16, 185, 129, 0.18);
+    color: #065f46;
+}
+
+.review-diff-token--removed {
+    background: rgba(248, 113, 113, 0.2);
+    color: #991b1b;
+    text-decoration: line-through;
+}
+
+.review-diff-content--added {
+    border-left: 3px solid #10b981;
+    padding-left: 0.5rem;
+}
+
+.review-diff-content--removed {
+    border-left: 3px solid #ef4444;
+    padding-left: 0.5rem;
+}
+
+.review-diff-empty {
+    border: 1px dashed rgba(15, 23, 42, 0.12);
+    border-radius: 10px;
+    padding: 0.6rem;
+    color: #64748b;
+    font-size: 0.82rem;
+    background: #fff;
+}
+
+.review-comparison-section--added summary {
+    color: #166534;
+}
+
+.review-comparison-section--removed summary {
+    color: #991b1b;
+}
+
+.review-comparison-section--modified summary {
+    color: #1d4ed8;
 }
 
 .review-checklist,

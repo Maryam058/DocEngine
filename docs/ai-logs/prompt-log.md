@@ -1185,3 +1185,51 @@ Master Prompt – DocEngine Editorial Workflow: unify ingestion for PDF, AI mark
 - DocEngine now has a single reusable editorial workflow path for multiple source types with mandatory draft and human approval gates, auditable transitions, validation/build/deploy publish stages, and no duplicate subsystem introduced.
 
 ---
+
+## Prompt #20
+
+**Date:**
+2026-08-05
+
+**Time:**
+21:45
+
+**Task Summary:**
+Complete the missing frontend integration for Human Review by adding MkDocs navigation access and wiring draft selection to the existing review editor workspace.
+
+**Full Prompt:**
+```text
+The backend editorial workflow has been implemented successfully.
+
+Drafts are correctly created in docs/drafts.
+
+However, the Human Review Workspace is not accessible from the MkDocs website.
+
+Complete only the missing frontend integration.
+```
+
+**Files Created**
+- docs/human-review.md
+
+**Files Modified**
+- mkdocs.yml
+- docs/javascripts/doc-authoring.js
+- docs/ai-logs/prompt-log.md
+- docs/ai-logs/daily-summary.md
+
+**Actions Performed**
+- Added a new top-level MkDocs navigation entry for Human Review pointing to `docs/human-review.md`.
+- Implemented a Human Review listing page that reuses the existing frontend workflow by discovering `docs/drafts` pages from `search/search_index.json` and rendering action links.
+- Wired each listed draft to open in the existing review editor using `?mode=review` so no second editor is introduced.
+- Filtered search-index anchor entries to ensure one clean card per draft document.
+- Added a draft-route guard in `docs/javascripts/doc-authoring.js` so draft URLs show content only in draft/review modes, preserving published-only public documentation behavior.
+
+**Verification**
+- `python -m mkdocs build --clean` (successful)
+- Opened `/human-review/` and confirmed draft list displays `Medical Warnings` from `docs/drafts/medical-warnings.md`.
+- Clicked `Open In Review Editor` for Medical Warnings and verified the existing editor loaded with: Save Review, Submit for Review, Approve, Reject, Markdown Preview, and image replacement controls.
+
+**Result**
+- Human Review is now accessible from MkDocs navigation, lists all draft pages under `docs/drafts`, and opens each draft in the existing review editor flow without backend changes or duplicate UI.
+
+---

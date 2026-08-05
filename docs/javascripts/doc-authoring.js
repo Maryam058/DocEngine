@@ -94,6 +94,12 @@
     return "doc-authoring:" + path;
   }
 
+  function isDraftRoute() {
+    const path = (window.location.pathname || "/").toLowerCase();
+
+    return path.indexOf("/drafts/") > -1;
+  }
+
   function getStorageKeys(docKey) {
     return {
       original: docKey + ":original",
@@ -2360,6 +2366,10 @@
       mode !== "draft" &&
       mode !== "review"
     ) {
+      if (isDraftRoute()) {
+        contentRoot.innerHTML =
+          "<p>This draft is only available in the Human Review workspace.</p>";
+      }
       return;
     }
 

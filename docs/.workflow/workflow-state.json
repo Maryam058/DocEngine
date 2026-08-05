@@ -1,4 +1,28 @@
 {
-  "documents": {},
-  "audit": []
+  "documents": {
+    "medical-warnings": {
+      "source_type": "pdf",
+      "source_path": "C:\\Users\\maryam.rehman\\DocEngine\\docs\\UserGuide\\Medical_Warnings.pdf",
+      "draft_path": "C:\\Users\\maryam.rehman\\DocEngine\\docs\\drafts\\medical-warnings.md",
+      "published_path": "C:\\Users\\maryam.rehman\\DocEngine\\docs\\UserGuide\\Medical_Warnings.md",
+      "status": "Draft",
+      "section": "user-guide"
+    }
+  },
+  "audit": [
+    {
+      "timestamp": "2026-08-05T16:31:23Z",
+      "document_id": "medical-warnings",
+      "actor": "AI",
+      "action": "new",
+      "status": "New"
+    },
+    {
+      "timestamp": "2026-08-05T16:31:23Z",
+      "document_id": "medical-warnings",
+      "actor": "AI",
+      "action": "draft-created",
+      "status": "Draft"
+    }
+  ]
 }

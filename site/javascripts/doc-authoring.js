@@ -5,6 +5,13 @@
     "https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css";
   const QUILL_JS_URL =
     "https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js";
+  const TURNDOWN_JS_URL =
+    "https://cdn.jsdelivr.net/npm/turndown@7.2.0/dist/turndown.min.js";
+  const TURNDOWN_GFM_JS_URL =
+    "https://cdn.jsdelivr.net/npm/turndown-plugin-gfm@1.0.2/dist/turndown-plugin-gfm.min.js";
+  const AUTOSAVE_DELAY = 1200;
+  const VERSION_LIMIT = 20;
+  const WORDS_PER_MINUTE = 200;
 
   function showAlert(options) {
     return window.Swal.fire(options);
@@ -80,7 +87,9 @@
       review: docKey + ":review",
       published: docKey + ":published",
       publishedContent: docKey + ":publishedContent",
-      history: docKey + ":history"
+      history: docKey + ":history",
+      autosave: docKey + ":autosave",
+      versions: docKey + ":versions"
     };
   }
 
@@ -161,6 +170,223 @@
     return ensureScript(QUILL_JS_URL);
   }
 
+  function loadMarkdownAssets() {
+    return ensureScript(TURNDOWN_JS_URL).then(function () {
+      return ensureScript(TURNDOWN_GFM_JS_URL);
+    });
+  }
+
+  function safeParseJSON(value, fallback) {
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function getPlainText(html) {
+    const container = document.createElement("div");
+    container.innerHTML = html || "";
+    return (container.textContent || container.innerText || "").replace(/\s+/g, " ").trim();
+  }
+
+  function countWords(text) {
+    const trimmed = (text || "").trim();
+
+    if (!trimmed) {
+      return 0;
+    }
+
+    return trimmed.split(/\s+/).filter(Boolean).length;
+  }
+
+  function formatReadingTime(wordCount) {
+    const minutes = Math.max(1, Math.ceil(wordCount / WORDS_PER_MINUTE));
+    return minutes + (minutes === 1 ? " min read" : " mins read");
+  }
+
+  function formatTimestamp(timestamp) {
+    return new Date(timestamp).toLocaleString();
+  }
+
+  function getPreviewMarkdown(html) {
+    if (!window.TurndownService) {
+      return getPlainText(html);
+    }
+
+    const service = new window.TurndownService({
+      headingStyle: "atx",
+      codeBlockStyle: "fenced",
+      bulletListMarker: "-"
+    });
+
+    if (window.turndownPluginGfm && window.turndownPluginGfm.gfm) {
+      service.use(window.turndownPluginGfm.gfm);
+    }
+
+    return service.turndown(html || "");
+  }
+
+  function getVersionHistory(versionKey) {
+    const versions = safeParseJSON(localStorage.getItem(versionKey), []);
+    return Array.isArray(versions) ? versions : [];
+  }
+
+  function saveVersionHistory(versionKey, version) {
+    const versions = getVersionHistory(versionKey);
+
+    if (versions.length > 0 && versions[0].html === version.html) {
+      return;
+    }
+
+    versions.unshift(version);
+
+    if (versions.length > VERSION_LIMIT) {
+      versions.length = VERSION_LIMIT;
+    }
+
+    localStorage.setItem(versionKey, JSON.stringify(versions));
+  }
+
+  function snapshotEditor(quill, label, kind) {
+    const html = quill.root.innerHTML;
+    return {
+      id: Date.now() + Math.random().toString(16).slice(2),
+      label: label,
+      kind: kind,
+      html: html,
+      wordCount: countWords(getPlainText(html)),
+      timestamp: Date.now()
+    };
+  }
+
+  function renderPreview(previewNode, markdown) {
+    previewNode.textContent = markdown || "No content yet.";
+  }
+
+  function renderStats(statsNodes, html, statusLabel) {
+    const wordCount = countWords(getPlainText(html));
+
+    statsNodes.wordCount.textContent = wordCount + (wordCount === 1 ? " word" : " words");
+    statsNodes.readingTime.textContent = formatReadingTime(wordCount);
+    statsNodes.draftStatus.textContent = statusLabel || "Draft";
+  }
+
+  function collectStyleGuideIssues(quillRoot) {
+    const issues = [];
+    const headings = Array.prototype.slice.call(
+      quillRoot.querySelectorAll("h1, h2, h3, h4, h5, h6")
+    );
+    const images = Array.prototype.slice.call(quillRoot.querySelectorAll("img"));
+    let lastHeadingLevel = 0;
+    let h1Count = 0;
+
+    headings.forEach(function (heading) {
+      const level = Number(heading.tagName.slice(1));
+
+      if (level === 1) {
+        h1Count += 1;
+      }
+
+      if (lastHeadingLevel && level > lastHeadingLevel + 1) {
+        issues.push(
+          "Heading order skips from H" + lastHeadingLevel + " to H" + level + "."
+        );
+      }
+
+      lastHeadingLevel = level;
+    });
+
+    if (h1Count > 1) {
+      issues.push("Use a single H1 title at the top of the document.");
+    }
+
+    images.forEach(function (image, index) {
+      if (!(image.getAttribute("alt") || "").trim()) {
+        issues.push("Image " + (index + 1) + " is missing alt text.");
+      }
+    });
+
+    Array.prototype.slice.call(quillRoot.querySelectorAll("p")).forEach(function (paragraph) {
+      if ((paragraph.textContent || "").trim().length > 240) {
+        issues.push("Break up long paragraphs for easier scanning.");
+      }
+    });
+
+    if (issues.length === 0) {
+      issues.push("No style guide issues detected.");
+    }
+
+    return issues;
+  }
+
+  function renderIssues(issueListNode, issues) {
+    issueListNode.innerHTML = "";
+
+    issues.forEach(function (issue) {
+      const item = document.createElement("li");
+      item.textContent = issue;
+      issueListNode.appendChild(item);
+    });
+  }
+
+  function renderVersionHistory(versionsNode, versions, onRestore) {
+    versionsNode.innerHTML = "";
+
+    if (versions.length === 0) {
+      const item = document.createElement("li");
+      item.textContent = "No saved versions yet.";
+      versionsNode.appendChild(item);
+      return;
+    }
+
+    versions.forEach(function (version, index) {
+      const item = document.createElement("li");
+      const meta = document.createElement("div");
+      const label = document.createElement("strong");
+      const details = document.createElement("span");
+      const button = document.createElement("button");
+
+      label.textContent = version.label;
+      details.textContent =
+        formatTimestamp(version.timestamp) +
+        " • " +
+        version.wordCount +
+        " words";
+
+      button.type = "button";
+      button.textContent = "Restore";
+      button.addEventListener("click", function () {
+        onRestore(version, index);
+      });
+
+      meta.appendChild(label);
+      meta.appendChild(document.createElement("br"));
+      meta.appendChild(details);
+      item.appendChild(meta);
+      item.appendChild(button);
+      versionsNode.appendChild(item);
+    });
+  }
+
+  function createMarkdownSerializer() {
+    if (!window.TurndownService) {
+      return null;
+    }
+
+    const service = new window.TurndownService({
+      headingStyle: "atx",
+      codeBlockStyle: "fenced",
+      bulletListMarker: "-"
+    });
+
+    if (window.turndownPluginGfm && window.turndownPluginGfm.gfm) {
+      service.use(window.turndownPluginGfm.gfm);
+    }
+
+    return service;
+  }
+
   function getContentRoot() {
     return (
       document.querySelector(".md-content__inner") ||
@@ -174,82 +400,142 @@
     wrapper.className = "review-workspace";
 
     wrapper.innerHTML = `
-      <div class="review-panel">
-        <h2>Human Editorial Review</h2>
+      <header class="review-header">
+        <div class="review-heading-block">
+          <p class="review-kicker">Human + AI workflow</p>
+          <h2>Human Editorial Review</h2>
+          <p class="review-lead">
+            Refine the AI draft in a focused editor, preview the Markdown output, and approve the final documentation with a clear version trail.
+          </p>
+        </div>
 
-        <p>
-          Review the AI draft before approving it.
-        </p>
+        <div class="review-status-strip" aria-label="Document status summary">
+          <span id="review-draft-status" class="review-chip review-chip--primary">Draft</span>
+          <span id="review-autosave-status" class="review-chip review-chip--muted">Autosave idle</span>
+          <span id="review-word-count" class="review-chip">0 words</span>
+          <span id="review-reading-time" class="review-chip">0 min read</span>
+        </div>
+      </header>
 
-        <div class="review-editor-host">
-          <div id="review-editor-toolbar">
-            <span class="ql-formats">
-              <select class="ql-header">
-                <option selected></option>
-                <option value="1"></option>
-                <option value="2"></option>
-                <option value="3"></option>
-              </select>
-              <select class="ql-font">
-                <option value="sans-serif" selected>Sans</option>
-                <option value="serif">Serif</option>
-                <option value="monospace">Mono</option>
-              </select>
-              <select class="ql-size">
-                <option value="12px">12</option>
-                <option value="14px">14</option>
-                <option value="16px" selected>16</option>
-                <option value="18px">18</option>
-                <option value="24px">24</option>
-              </select>
-            </span>
+      <div class="review-layout">
+        <section class="review-main-column">
+          <div class="review-panel review-panel--hero">
+            <div class="review-editor-host">
+              <div id="review-editor-toolbar">
+                <span class="ql-formats">
+                  <select class="ql-header">
+                    <option selected></option>
+                    <option value="1"></option>
+                    <option value="2"></option>
+                    <option value="3"></option>
+                  </select>
+                  <select class="ql-font">
+                    <option value="sans-serif" selected>Sans</option>
+                    <option value="serif">Serif</option>
+                    <option value="monospace">Mono</option>
+                  </select>
+                  <select class="ql-size">
+                    <option value="12px">12</option>
+                    <option value="14px">14</option>
+                    <option value="16px" selected>16</option>
+                    <option value="18px">18</option>
+                    <option value="24px">24</option>
+                  </select>
+                </span>
 
-            <span class="ql-formats">
-              <button class="ql-bold"></button>
-              <button class="ql-italic"></button>
-              <button class="ql-underline"></button>
-              <button class="ql-strike"></button>
-            </span>
+                <span class="ql-formats">
+                  <button class="ql-bold"></button>
+                  <button class="ql-italic"></button>
+                  <button class="ql-underline"></button>
+                  <button class="ql-strike"></button>
+                </span>
 
-            <span class="ql-formats">
-              <select class="ql-color"></select>
-              <select class="ql-background"></select>
-            </span>
+                <span class="ql-formats">
+                  <select class="ql-color"></select>
+                  <select class="ql-background"></select>
+                </span>
 
-            <span class="ql-formats">
-              <button class="ql-list" value="ordered"></button>
-              <button class="ql-list" value="bullet"></button>
-              <button class="ql-blockquote"></button>
-              <button class="ql-code-block"></button>
-            </span>
+                <span class="ql-formats">
+                  <button class="ql-list" value="ordered"></button>
+                  <button class="ql-list" value="bullet"></button>
+                  <button class="ql-blockquote"></button>
+                  <button class="ql-code-block"></button>
+                </span>
 
-            <span class="ql-formats">
-              <button class="ql-link"></button>
-              <button class="ql-image"></button>
-              <select class="ql-align"></select>
-            </span>
+                <span class="ql-formats">
+                  <button class="ql-link"></button>
+                  <button class="ql-image"></button>
+                  <select class="ql-align"></select>
+                </span>
 
-            <span class="ql-formats">
-              <button class="ql-undo" type="button" title="Undo">
-                Undo
-              </button>
-              <button class="ql-redo" type="button" title="Redo">
-                Redo
-              </button>
-              <button class="ql-clean"></button>
-            </span>
+                <span class="ql-formats">
+                  <button class="ql-undo" type="button" title="Undo">
+                    Undo
+                  </button>
+                  <button class="ql-redo" type="button" title="Redo">
+                    Redo
+                  </button>
+                  <button class="ql-clean"></button>
+                </span>
+              </div>
+
+              <div id="review-quill-editor"></div>
+            </div>
+
+            <div class="review-actions">
+              <button id="review-save">Save Review</button>
+              <button id="review-publish">Approve & Publish</button>
+            </div>
           </div>
+        </section>
 
-          <div id="review-quill-editor"></div>
-        </div>
+        <aside class="review-side-column">
+          <section class="review-panel review-panel--stacked">
+            <div class="review-panel-heading">
+              <h3>Markdown Preview</h3>
+              <p>Live Markdown generated from the current editor content.</p>
+            </div>
+            <pre id="review-markdown-preview" class="review-markdown-preview"></pre>
+          </section>
 
-        <div class="review-actions">
-          <button id="review-save">Save Review</button>
-          <button id="review-publish">Approve & Publish</button>
-        </div>
+          <section class="review-panel review-panel--stacked">
+            <div class="review-panel-heading">
+              <h3>Original vs Edited</h3>
+              <p>Compare the AI draft against the human-edited version.</p>
+            </div>
+            <div id="review-comparison-summary" class="review-comparison-summary"></div>
+            <div class="review-actions review-actions--compact">
+              <button id="review-restore-original" type="button">Restore Original Draft</button>
+            </div>
+          </section>
 
-        <h3>Edit Trail</h3>
-        <ul id="review-history"></ul>
+          <section class="review-panel review-panel--stacked">
+            <div class="review-panel-heading">
+              <h3>Style Guide Checks</h3>
+              <p>Automatic checks for editorial consistency and accessibility.</p>
+            </div>
+            <ul id="review-style-checks" class="review-checklist"></ul>
+          </section>
+
+          <section class="review-panel review-panel--stacked">
+            <div class="review-panel-heading">
+              <h3>Version History</h3>
+              <p>Restore a saved snapshot or the latest autosave.</p>
+            </div>
+            <div class="review-actions review-actions--compact">
+              <button id="review-restore-autosave" type="button">Restore Autosave</button>
+            </div>
+            <ul id="review-versions" class="review-versions"></ul>
+          </section>
+
+          <section class="review-panel review-panel--stacked">
+            <div class="review-panel-heading">
+              <h3>Edit Trail</h3>
+              <p>Audit history preserved from the existing review workflow.</p>
+            </div>
+            <ul id="review-history" class="review-history"></ul>
+          </section>
+        </aside>
       </div>
     `;
 
@@ -263,8 +549,18 @@
       historyList: wrapper.querySelector("#review-history"),
       saveButton: wrapper.querySelector("#review-save"),
       publishButton: wrapper.querySelector("#review-publish"),
+      restoreOriginalButton: wrapper.querySelector("#review-restore-original"),
+      restoreAutosaveButton: wrapper.querySelector("#review-restore-autosave"),
       toolbar: wrapper.querySelector("#review-editor-toolbar"),
-      editor: wrapper.querySelector("#review-quill-editor")
+      editor: wrapper.querySelector("#review-quill-editor"),
+      draftStatus: wrapper.querySelector("#review-draft-status"),
+      autosaveStatus: wrapper.querySelector("#review-autosave-status"),
+      wordCount: wrapper.querySelector("#review-word-count"),
+      readingTime: wrapper.querySelector("#review-reading-time"),
+      markdownPreview: wrapper.querySelector("#review-markdown-preview"),
+      comparisonSummary: wrapper.querySelector("#review-comparison-summary"),
+      styleChecks: wrapper.querySelector("#review-style-checks"),
+      versionsList: wrapper.querySelector("#review-versions")
     };
   }
 
@@ -327,6 +623,41 @@
 
     window.Quill.register(FontStyle, true);
     window.Quill.register(SizeStyle, true);
+
+    const BaseImage = window.Quill.import("formats/image");
+
+    class ImageWithAlt extends BaseImage {
+      static create(value) {
+        const payload =
+          typeof value === "object" && value !== null
+            ? value
+            : { src: value };
+
+        const node = super.create(payload.src || "");
+        node.setAttribute("alt", payload.alt || "");
+
+        if (payload.title) {
+          node.setAttribute("title", payload.title);
+        } else if (payload.alt) {
+          node.setAttribute("title", payload.alt);
+        }
+
+        return node;
+      }
+
+      static value(node) {
+        return {
+          src: node.getAttribute("src"),
+          alt: node.getAttribute("alt") || "",
+          title: node.getAttribute("title") || ""
+        };
+      }
+    }
+
+    ImageWithAlt.blotName = "image";
+    ImageWithAlt.tagName = "IMG";
+
+    window.Quill.register(ImageWithAlt, true);
   }
 
   function createImageUploadHandler(quill) {
@@ -348,14 +679,35 @@
           const range = quill.getSelection(true);
           const index = range ? range.index : quill.getLength();
 
-          quill.insertEmbed(
-            index,
-            "image",
-            evt.target.result,
-            "user"
-          );
+          showAlert({
+            title: "Image alt text",
+            input: "text",
+            inputLabel: "Describe the image for screen readers",
+            inputValue: file.name.replace(/\.[^.]+$/, ""),
+            inputPlaceholder: "Add a concise alt description",
+            showCancelButton: true,
+            confirmButtonText: "Insert image",
+            cancelButtonText: "Cancel",
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#6c757d"
+          }).then(function (result) {
+            if (!result.isConfirmed) {
+              return;
+            }
 
-          quill.setSelection(index + 1, 0, "silent");
+            quill.insertEmbed(
+              index,
+              "image",
+              {
+                src: evt.target.result,
+                alt: (result.value || "").trim(),
+                title: (result.value || "").trim()
+              },
+              "user"
+            );
+
+            quill.setSelection(index + 1, 0, "silent");
+          });
         });
 
         reader.readAsDataURL(file);
@@ -413,6 +765,90 @@
 
     quill.clipboard.dangerouslyPasteHTML(initialHtml);
     return quill;
+  }
+
+  function updateComparisonSummary(summaryNode, originalHtml, currentHtml) {
+    const originalWords = countWords(getPlainText(originalHtml));
+    const currentWords = countWords(getPlainText(currentHtml));
+    const delta = currentWords - originalWords;
+    const deltaLabel = delta === 0 ? "no word change" : (delta > 0 ? "+" : "") + delta + " words";
+
+    summaryNode.innerHTML =
+      '<div class="review-metric"><strong>Original</strong><span>' +
+      originalWords +
+      ' words</span></div>' +
+      '<div class="review-metric"><strong>Edited</strong><span>' +
+      currentWords +
+      ' words</span></div>' +
+      '<div class="review-metric"><strong>Delta</strong><span>' +
+      deltaLabel +
+      '</span></div>';
+  }
+
+  function saveAutosave(keys, quill) {
+    const snapshot = snapshotEditor(quill, "Autosaved draft", "autosave");
+    localStorage.setItem(
+      keys.autosave,
+      JSON.stringify(snapshot)
+    );
+    return snapshot;
+  }
+
+  function loadAutosave(keys) {
+    return safeParseJSON(localStorage.getItem(keys.autosave), null);
+  }
+
+  function applySnapshot(quill, snapshot) {
+    if (!snapshot || !snapshot.html) {
+      return;
+    }
+
+    quill.setContents(quill.clipboard.convert(snapshot.html || ""));
+    quill.history.clear();
+  }
+
+  function syncEditorState(ui, quill, keys, originalHtml, pendingAutosaveLabel, statusLabel) {
+    const currentHtml = quill.root.innerHTML;
+    const previewMarkdown = getPreviewMarkdown(currentHtml);
+    const versions = getVersionHistory(keys.versions);
+
+    renderStats(ui, currentHtml, statusLabel);
+    renderPreview(ui.markdownPreview, previewMarkdown);
+    renderIssues(ui.styleChecks, collectStyleGuideIssues(quill.root));
+    updateComparisonSummary(ui.comparisonSummary, originalHtml, currentHtml);
+    renderVersionHistory(ui.versionsList, versions, function (version) {
+      applySnapshot(quill, version);
+      saveHistory(
+        keys.history,
+        createAuditEntry("version-restored", version.label)
+      );
+      renderHistory(keys.history, ui.historyList);
+      syncEditorState(
+        ui,
+        quill,
+        keys,
+        originalHtml,
+        "Version restored",
+        statusLabel || "Draft"
+      );
+      ui.autosaveStatus.textContent = version.label + " restored";
+    });
+
+    if (pendingAutosaveLabel) {
+      ui.autosaveStatus.textContent = pendingAutosaveLabel;
+    }
+  }
+
+  function storeVersionSnapshot(keys, quill, label, kind) {
+    const snapshot = snapshotEditor(quill, label, kind);
+
+    saveVersionHistory(keys.versions, snapshot);
+    localStorage.setItem(
+      keys.autosave,
+      JSON.stringify(snapshot)
+    );
+
+    return snapshot;
   }
 
   function init() {
@@ -476,14 +912,73 @@
     const ui = createReviewWorkspace(contentRoot);
     renderHistory(historyKey, ui.historyList);
 
-    loadQuillAssets()
+    Promise.all([
+      loadQuillAssets(),
+      loadMarkdownAssets()
+    ])
       .then(function () {
         const quill = createQuillEditor(
           ui,
           initialHtml
         );
-
+        const autosave = loadAutosave(keys);
         let editTimer = null;
+        let autosaveTimer = null;
+
+        if (autosave && autosave.html) {
+          applySnapshot(quill, autosave);
+          ui.autosaveStatus.textContent =
+            "Recovered autosave from " + formatTimestamp(autosave.timestamp);
+        }
+
+        syncEditorState(ui, quill, keys, initialHtml);
+
+        ui.restoreOriginalButton.addEventListener("click", function () {
+          applySnapshot(quill, {
+            html: initialHtml
+          });
+          saveHistory(
+            historyKey,
+            createAuditEntry(
+              "original-restored",
+              "Original draft restored"
+            )
+          );
+          renderHistory(historyKey, ui.historyList);
+          storeVersionSnapshot(
+            keys,
+            quill,
+            "Original draft restored",
+            "restore"
+          );
+          syncEditorState(ui, quill, keys, initialHtml, "Original draft restored", "Draft");
+        });
+
+        ui.restoreAutosaveButton.addEventListener("click", function () {
+          const latestAutosave = loadAutosave(keys);
+
+          if (!latestAutosave || !latestAutosave.html) {
+            showWarning("No autosave is available yet.");
+            return;
+          }
+
+          applySnapshot(quill, latestAutosave);
+          saveHistory(
+            historyKey,
+            createAuditEntry(
+              "autosave-restored",
+              "Latest autosave restored"
+            )
+          );
+          renderHistory(historyKey, ui.historyList);
+          storeVersionSnapshot(
+            keys,
+            quill,
+            "Restored autosave",
+            "restore"
+          );
+          syncEditorState(ui, quill, keys, initialHtml, "Latest autosave restored", "Draft");
+        });
 
         quill.on("text-change", function (delta, oldDelta, source) {
           if (source !== "user") {
@@ -491,6 +986,8 @@
           }
 
           clearTimeout(editTimer);
+          clearTimeout(autosaveTimer);
+
           editTimer = setTimeout(function () {
             saveHistory(
               historyKey,
@@ -501,7 +998,22 @@
             );
 
             renderHistory(historyKey, ui.historyList);
+
+            syncEditorState(ui, quill, keys, initialHtml, "Draft updated", "Draft");
           }, 700);
+
+          autosaveTimer = setTimeout(function () {
+            const snapshot = saveAutosave(keys, quill);
+            storeVersionSnapshot(
+              keys,
+              quill,
+              "Autosaved " + formatTimestamp(snapshot.timestamp),
+              "autosave"
+            );
+            ui.autosaveStatus.textContent =
+              "Autosaved at " + formatTimestamp(snapshot.timestamp);
+            syncEditorState(ui, quill, keys, initialHtml, "Autosaved at " + formatTimestamp(snapshot.timestamp), "Draft");
+          }, AUTOSAVE_DELAY);
         });
 
         ui.saveButton.addEventListener("click", function () {
@@ -521,7 +1033,15 @@
             )
           );
 
+          storeVersionSnapshot(
+            keys,
+            quill,
+            "Review saved " + formatTimestamp(Date.now()),
+            "save"
+          );
+
           renderHistory(historyKey, ui.historyList);
+          syncEditorState(ui, quill, keys, initialHtml, "Review saved", "Draft");
           showSuccess("Review saved successfully.");
         });
 
@@ -550,7 +1070,15 @@
               )
             );
 
+            storeVersionSnapshot(
+              keys,
+              quill,
+              "Published " + formatTimestamp(Date.now()),
+              "publish"
+            );
+
             renderHistory(historyKey, ui.historyList);
+            syncEditorState(ui, quill, keys, initialHtml, "Published", "Published");
             showSuccess(
               "The documentation has been published successfully."
             );

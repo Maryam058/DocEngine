@@ -16,6 +16,7 @@ nav:
       - Book an Appointment: UserGuide/book-appointment.md
       - Manage Appointments: UserGuide/manage-appointments.md
       - Covid CCM: UserGuide/Covid-CCM.md
+      - Health Kiosk Integration: UserGuide/Health-Kiosk-Integration.md
 
   - API Reference:
       - OpenAPI: api/api-reference.md

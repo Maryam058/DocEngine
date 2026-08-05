@@ -18,6 +18,13 @@
     SAVING: "Saving",
     AUTOSAVED: "Autosaved"
   };
+  const DOCUMENT_STATUS = {
+    DRAFT: "Draft",
+    IN_REVIEW: "In Review",
+    APPROVED: "Approved",
+    PUBLISHED: "Published"
+  };
+  const CI_STAGES = ["Commit", "Build", "Deploy", "Published"];
 
   function showAlert(options) {
     return window.Swal.fire(options);
@@ -66,13 +73,13 @@
     });
   }
 
-  function showConfirm(title, message) {
+  function showConfirm(title, message, confirmButtonText) {
     return showAlert({
       title: title,
       text: message,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Publish",
+      confirmButtonText: confirmButtonText || "Publish",
       cancelButtonText: "Cancel",
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#6c757d"
@@ -96,8 +103,42 @@
       history: docKey + ":history",
       autosave: docKey + ":autosave",
       versions: docKey + ":versions",
-      dismissedSuggestions: docKey + ":dismissedSuggestions"
+      dismissedSuggestions: docKey + ":dismissedSuggestions",
+      workflowStatus: docKey + ":workflowStatus",
+      commitId: docKey + ":commitId",
+      ciStage: docKey + ":ciStage"
     };
+  }
+
+  function getDocumentStatus(keys) {
+    const storedStatus = localStorage.getItem(keys.workflowStatus);
+
+    if (localStorage.getItem(keys.published) === "true") {
+      return DOCUMENT_STATUS.PUBLISHED;
+    }
+
+    if (
+      storedStatus === DOCUMENT_STATUS.DRAFT ||
+      storedStatus === DOCUMENT_STATUS.IN_REVIEW ||
+      storedStatus === DOCUMENT_STATUS.APPROVED ||
+      storedStatus === DOCUMENT_STATUS.PUBLISHED
+    ) {
+      return storedStatus;
+    }
+
+    return DOCUMENT_STATUS.DRAFT;
+  }
+
+  function setDocumentStatus(keys, status) {
+    localStorage.setItem(keys.workflowStatus, status);
+  }
+
+  function generateFakeCommitId() {
+    return (
+      "doc" +
+      Date.now().toString(16) +
+      Math.random().toString(16).slice(2, 8)
+    ).slice(0, 14);
   }
 
   function createAuditEntry(action, details) {
@@ -344,6 +385,149 @@
       );
       renderHistory(config.historyKey, config.historyList);
     }
+  }
+
+  function applyDocumentStatusTone(statusNode, status) {
+    if (!statusNode) {
+      return;
+    }
+
+    statusNode.classList.remove(
+      "review-chip--primary",
+      "review-chip--muted",
+      "review-chip--success",
+      "review-chip--warning"
+    );
+
+    if (status === DOCUMENT_STATUS.PUBLISHED) {
+      statusNode.classList.add("review-chip--success");
+      return;
+    }
+
+    if (status === DOCUMENT_STATUS.APPROVED) {
+      statusNode.classList.add("review-chip--primary");
+      return;
+    }
+
+    if (status === DOCUMENT_STATUS.IN_REVIEW) {
+      statusNode.classList.add("review-chip--warning");
+      return;
+    }
+
+    statusNode.classList.add("review-chip--muted");
+  }
+
+  function renderDocumentWorkflow(ui, status, commitId, ciStage) {
+    const ciStageIndex = CI_STAGES.indexOf(ciStage);
+    const stageMarkup = CI_STAGES.map(function (stage, index) {
+      let cls = "review-ci-step";
+
+      if (ciStageIndex > -1 && index < ciStageIndex) {
+        cls += " is-done";
+      } else if (ciStageIndex === index) {
+        cls += " is-active";
+      }
+
+      return '<span class="' + cls + '">' + stage + "</span>";
+    }).join('<span class="review-ci-separator">→</span>');
+
+    if (ui.documentStatus) {
+      ui.documentStatus.textContent = "Status: " + status;
+      applyDocumentStatusTone(ui.documentStatus, status);
+    }
+
+    if (ui.commitMeta) {
+      ui.commitMeta.textContent = commitId
+        ? "Commit ID: " + commitId
+        : "Commit ID: Not created";
+    }
+
+    if (ui.ciProgress) {
+      ui.ciProgress.innerHTML = stageMarkup;
+      ui.ciProgress.hidden = !ciStage;
+    }
+
+    if (ui.publishButton) {
+      ui.publishButton.disabled =
+        status !== DOCUMENT_STATUS.DRAFT &&
+        status !== DOCUMENT_STATUS.IN_REVIEW;
+      ui.publishButton.textContent =
+        status === DOCUMENT_STATUS.IN_REVIEW
+          ? "Submitted for Review"
+          : "Submit for Review";
+    }
+
+    if (ui.approveButton) {
+      ui.approveButton.disabled = status !== DOCUMENT_STATUS.IN_REVIEW;
+    }
+
+    if (ui.rejectButton) {
+      ui.rejectButton.disabled = status !== DOCUMENT_STATUS.IN_REVIEW;
+    }
+
+    if (ui.commitButton) {
+      ui.commitButton.hidden =
+        status !== DOCUMENT_STATUS.APPROVED &&
+        status !== DOCUMENT_STATUS.PUBLISHED;
+      ui.commitButton.disabled =
+        status !== DOCUMENT_STATUS.APPROVED ||
+        Boolean(ciStage) ||
+        status === DOCUMENT_STATUS.PUBLISHED;
+    }
+  }
+
+  function runCiPipeline(ui, keys, quill, initialHtml, historyKey) {
+    const stages = ["Build", "Deploy", "Published"];
+    const stageAuditAction = {
+      Build: "ci-build",
+      Deploy: "ci-deploy",
+      Published: "published"
+    };
+    const stageAuditMessage = {
+      Build: "CI build completed",
+      Deploy: "CI deploy completed",
+      Published: "Documentation published"
+    };
+
+    function processStage(index) {
+      if (index >= stages.length) {
+        return;
+      }
+
+      const stage = stages[index];
+
+      window.setTimeout(function () {
+        localStorage.setItem(keys.ciStage, stage);
+
+        if (stage === "Published") {
+          const currentHtml = quill.root.innerHTML;
+
+          localStorage.setItem(keys.published, "true");
+          localStorage.setItem(keys.publishedContent, currentHtml);
+          setDocumentStatus(keys, DOCUMENT_STATUS.PUBLISHED);
+        }
+
+        saveHistory(
+          historyKey,
+          createAuditEntry(
+            stageAuditAction[stage],
+            stageAuditMessage[stage]
+          )
+        );
+        renderHistory(historyKey, ui.historyList);
+
+        syncEditorState(ui, quill, keys, initialHtml, historyKey);
+
+        if (stage === "Published") {
+          showSuccess("The documentation has been published successfully.");
+          return;
+        }
+
+        processStage(index + 1);
+      }, 850);
+    }
+
+    processStage(0);
   }
 
   function getPreviewMarkdown(html) {
@@ -1024,6 +1208,7 @@
         </div>
 
         <div class="review-status-strip" aria-label="Document status summary">
+          <span id="review-document-status" class="review-chip review-chip--muted">Status: Draft</span>
           <span id="review-draft-status" class="review-chip review-chip--success">Saved</span>
           <span id="review-autosave-status" class="review-chip review-chip--muted">Last saved: Never | Autosave: Never</span>
           <span id="review-word-count" class="review-chip">0 words</span>
@@ -1098,7 +1283,14 @@
 
             <div class="review-actions">
               <button id="review-save">Save Review</button>
-              <button id="review-publish">Approve & Publish</button>
+              <button id="review-publish">Submit for Review</button>
+              <button id="review-approve" type="button">Approve</button>
+              <button id="review-reject" type="button">Reject</button>
+              <button id="review-commit" type="button" hidden>Commit Documentation</button>
+            </div>
+            <div class="review-workflow-meta" aria-live="polite">
+              <p id="review-commit-id" class="review-workflow-text">Commit ID: Not created</p>
+              <div id="review-ci-progress" class="review-ci-progress" hidden></div>
             </div>
           </div>
         </section>
@@ -1195,10 +1387,14 @@
       historyList: wrapper.querySelector("#review-history"),
       saveButton: wrapper.querySelector("#review-save"),
       publishButton: wrapper.querySelector("#review-publish"),
+      approveButton: wrapper.querySelector("#review-approve"),
+      rejectButton: wrapper.querySelector("#review-reject"),
+      commitButton: wrapper.querySelector("#review-commit"),
       restoreOriginalButton: wrapper.querySelector("#review-restore-original"),
       restoreAutosaveButton: wrapper.querySelector("#review-restore-autosave"),
       toolbar: wrapper.querySelector("#review-editor-toolbar"),
       editor: wrapper.querySelector("#review-quill-editor"),
+      documentStatus: wrapper.querySelector("#review-document-status"),
       draftStatus: wrapper.querySelector("#review-draft-status"),
       autosaveStatus: wrapper.querySelector("#review-autosave-status"),
       wordCount: wrapper.querySelector("#review-word-count"),
@@ -1215,7 +1411,9 @@
       headingIssues: wrapper.querySelector("#review-heading-issues"),
       imageAltManager: wrapper.querySelector("#review-image-alt-manager"),
       aiSuggestions: wrapper.querySelector("#review-ai-suggestions"),
-      versionsList: wrapper.querySelector("#review-versions")
+      versionsList: wrapper.querySelector("#review-versions"),
+      commitMeta: wrapper.querySelector("#review-commit-id"),
+      ciProgress: wrapper.querySelector("#review-ci-progress")
     };
   }
 
@@ -1857,8 +2055,12 @@
     });
     const headingNavigatorData = collectHeadingNavigatorData(quill.root);
     const imageAltData = collectImageAltData(quill.root);
+    const documentStatus = getDocumentStatus(keys);
+    const commitId = localStorage.getItem(keys.commitId) || "";
+    const ciStage = localStorage.getItem(keys.ciStage) || "";
 
     renderStats(ui, currentHtml);
+    renderDocumentWorkflow(ui, documentStatus, commitId, ciStage);
     renderPreview(ui.markdownPreview, previewMarkdown);
     renderRenderedPreview(ui.renderedPreview, currentHtml);
     renderIssues(ui.styleChecks, collectStyleGuideIssues(quill.root));
@@ -2387,54 +2589,132 @@
         });
 
         ui.publishButton.addEventListener("click", function () {
+          const status = getDocumentStatus(keys);
+
+          if (status === DOCUMENT_STATUS.IN_REVIEW) {
+            showWarning("This document is already in review.");
+            return;
+          }
+
           showConfirm(
-            "Approve & Publish",
-            "Are you sure you want to publish this documentation?"
+            "Submit for Review",
+            "Send this documentation for human approval?",
+            "Submit"
           ).then(function (result) {
             if (!result.isConfirmed) {
               return;
             }
 
-            setSaveStatus(ui, SAVE_STATUS.SAVING, {
-              historyKey: historyKey,
-              historyList: ui.historyList
-            });
-
-            const currentHtml = quill.root.innerHTML;
-
-            localStorage.setItem(keys.published, "true");
-            localStorage.setItem(
-              keys.publishedContent,
-              currentHtml
-            );
+            localStorage.setItem(keys.published, "false");
+            localStorage.removeItem(keys.commitId);
+            localStorage.removeItem(keys.ciStage);
+            setDocumentStatus(keys, DOCUMENT_STATUS.IN_REVIEW);
 
             saveHistory(
               historyKey,
               createAuditEntry(
-                "published",
-                "Documentation approved"
+                "review-submitted",
+                "Documentation submitted for review"
               )
             );
 
-            storeVersionSnapshot(
-              keys,
-              quill,
-              "Published " + formatTimestamp(Date.now()),
-              "publish"
+            renderHistory(historyKey, ui.historyList);
+            syncEditorState(ui, quill, keys, initialHtml, historyKey);
+            showSuccess("Submitted for review.");
+          });
+        });
+
+        ui.approveButton.addEventListener("click", function () {
+          if (getDocumentStatus(keys) !== DOCUMENT_STATUS.IN_REVIEW) {
+            showWarning("Submit for review before approval.");
+            return;
+          }
+
+          setDocumentStatus(keys, DOCUMENT_STATUS.APPROVED);
+          saveHistory(
+            historyKey,
+            createAuditEntry(
+              "review-approved",
+              "Documentation approved"
+            )
+          );
+          renderHistory(historyKey, ui.historyList);
+          syncEditorState(ui, quill, keys, initialHtml, historyKey);
+          showSuccess("Documentation approved.");
+        });
+
+        ui.rejectButton.addEventListener("click", function () {
+          if (getDocumentStatus(keys) !== DOCUMENT_STATUS.IN_REVIEW) {
+            showWarning("Only in-review documents can be rejected.");
+            return;
+          }
+
+          showConfirm(
+            "Reject Documentation",
+            "Reject and move this document back to Draft status?",
+            "Reject"
+          ).then(function (result) {
+            if (!result.isConfirmed) {
+              return;
+            }
+
+            localStorage.removeItem(keys.commitId);
+            localStorage.removeItem(keys.ciStage);
+            localStorage.setItem(keys.published, "false");
+            setDocumentStatus(keys, DOCUMENT_STATUS.DRAFT);
+
+            saveHistory(
+              historyKey,
+              createAuditEntry(
+                "review-rejected",
+                "Documentation rejected and returned to draft"
+              )
             );
 
             renderHistory(historyKey, ui.historyList);
-            toggleBeforeUnload(false);
-            setSaveStatus(ui, SAVE_STATUS.SAVED, {
-              historyKey: historyKey,
-              historyList: ui.historyList,
-              lastSavedAt: Date.now()
-            });
             syncEditorState(ui, quill, keys, initialHtml, historyKey);
-            showSuccess(
-              "The documentation has been published successfully."
-            );
+            showWarning("Documentation rejected.");
           });
+        });
+
+        ui.commitButton.addEventListener("click", function () {
+          if (getDocumentStatus(keys) !== DOCUMENT_STATUS.APPROVED) {
+            showWarning("Approve the document before committing.");
+            return;
+          }
+
+          const commitId = generateFakeCommitId();
+          const currentHtml = quill.root.innerHTML;
+
+          localStorage.setItem(keys.commitId, commitId);
+          localStorage.setItem(keys.ciStage, "Commit");
+          localStorage.setItem(keys.review, "completed");
+          localStorage.setItem(keys.publishedContent, currentHtml);
+
+          saveHistory(
+            historyKey,
+            createAuditEntry(
+              "commit-created",
+              "Documentation commit created: " + commitId
+            )
+          );
+          saveHistory(
+            historyKey,
+            createAuditEntry(
+              "ci-commit",
+              "CI commit stage completed"
+            )
+          );
+
+          renderHistory(historyKey, ui.historyList);
+          syncEditorState(ui, quill, keys, initialHtml, historyKey);
+          runCiPipeline(ui, keys, quill, initialHtml, historyKey);
+          storeVersionSnapshot(
+            keys,
+            quill,
+            "Committed " + formatTimestamp(Date.now()),
+            "publish"
+          );
         });
       })
       .catch(function () {

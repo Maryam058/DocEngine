@@ -373,6 +373,8 @@
       
         
       
+        
+      
     
     
     
@@ -547,6 +549,34 @@
     
   
     Covid CCM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../UserGuide/Health-Kiosk-Integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Health Kiosk Integration
   
 
     
@@ -1042,6 +1072,17 @@
     <span class="md-ellipsis">
       
         Prompt #17
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prompt-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prompt #18
       
     </span>
   </a>
@@ -1967,6 +2008,44 @@ Show changes step-by-step and explain each modification.
 - Validated the touched script, ran a clean MkDocs build, and refreshed the repository audit logs.</p>
 <p><strong>Result</strong>
 - The Human Editor now behaves more like a professional documentation workspace while keeping the existing review and publish flows intact.</p>
+<hr />
+<h2 id="prompt-18">Prompt #18<a class="headerlink" href="#prompt-18" title="Permanent link">&para;</a></h2>
+<p><strong>Date:</strong>
+2026-08-05</p>
+<p><strong>Time:</strong>
+20:08</p>
+<p><strong>Task Summary:</strong>
+Import the newly attached Health Kiosk Integration PDF into DocEngine using MarkItDown, restore inline image placement, update navigation, and complete the docs-as-code workflow simulation.</p>
+<p><strong>Full Prompt:</strong></p>
+<pre><code class="language-text">Import PDF into DocEngine using MarkItDown with minimal changes, extract and place images inline, update mkdocs navigation, register draft/review/approval/commit/CI/publish workflow, validate links/markdown, and provide final report.
+</code></pre>
+<p><strong>Files Created</strong>
+- docs/UserGuide/Health-Kiosk-Integration.md</p>
+<p><strong>Files Modified</strong>
+- mkdocs.yml
+- docs/UserGuide/Health-Kiosk-Integration.md
+- docs/ai-logs/prompt-log.md
+- docs/ai-logs/daily-summary.md</p>
+<p><strong>Actions Performed</strong>
+- Converted <code>docs/UserGuide/Health-Kiosk-Integration.pdf</code> using the existing MarkItDown-based <code>run_pipeline.py import-pdf</code> workflow.
+- Extracted 10 embedded images and kept them in the existing per-document assets folder at <code>docs/assets/Health-Kiosk-Integration/</code>.
+- Renamed all extracted images to descriptive, numbered filenames and inserted each image inline at its matching section/step in the Markdown flow.
+- Repaired Markdown structure to proper heading hierarchy and normalized list formatting while preserving source content intent.
+- Added the new page to the User Guide section in <code>mkdocs.yml</code> without altering existing navigation entries.
+- Ran validation and build checks:
+  - <code>python tools/validate_docs.py</code> (only existing non-blocking external CDN reference warning remained)
+  - <code>python -m mkdocs build --clean</code> (successful)
+- Verified generated output page exists at <code>site/UserGuide/Health-Kiosk-Integration/index.html</code>.</p>
+<p><strong>Workflow and Audit Entries Created</strong>
+- 2026-08-05 20:08 | Actor: AI | Action: AI Draft Created | Status: Draft
+- 2026-08-05 20:08 | Actor: Human (Simulated) | Action: Sent to Human Review | Status: In Review
+- 2026-08-05 20:08 | Actor: Human (Simulated) | Action: Approved | Status: Approved
+- 2026-08-05 20:08 | Actor: AI | Action: Commit Recorded | Commit ID: <code>doc6a7351a6376</code>
+- 2026-08-05 20:08 | Actor: CI | Action: MkDocs Build | Result: Success
+- 2026-08-05 20:08 | Actor: CI | Action: Deploy | Result: Success (Simulated)
+- 2026-08-05 20:08 | Actor: CI | Action: Published Website | Status: Published</p>
+<p><strong>Result</strong>
+- The new Health Kiosk Integration document is imported, image-complete, linked in navigation, validated, built successfully, and recorded through the existing editorial/audit workflow history with a simulated approval, commit, CI, and publish sequence.</p>
 <hr />
 
 

@@ -1086,3 +1086,53 @@ Show changes step-by-step and explain each modification.
 - The Human Editor now behaves more like a professional documentation workspace while keeping the existing review and publish flows intact.
 
 ---
+
+## Prompt #18
+
+**Date:**
+2026-08-05
+
+**Time:**
+20:08
+
+**Task Summary:**
+Import the newly attached Health Kiosk Integration PDF into DocEngine using MarkItDown, restore inline image placement, update navigation, and complete the docs-as-code workflow simulation.
+
+**Full Prompt:**
+```text
+Import PDF into DocEngine using MarkItDown with minimal changes, extract and place images inline, update mkdocs navigation, register draft/review/approval/commit/CI/publish workflow, validate links/markdown, and provide final report.
+```
+
+**Files Created**
+- docs/UserGuide/Health-Kiosk-Integration.md
+
+**Files Modified**
+- mkdocs.yml
+- docs/UserGuide/Health-Kiosk-Integration.md
+- docs/ai-logs/prompt-log.md
+- docs/ai-logs/daily-summary.md
+
+**Actions Performed**
+- Converted `docs/UserGuide/Health-Kiosk-Integration.pdf` using the existing MarkItDown-based `run_pipeline.py import-pdf` workflow.
+- Extracted 10 embedded images and kept them in the existing per-document assets folder at `docs/assets/Health-Kiosk-Integration/`.
+- Renamed all extracted images to descriptive, numbered filenames and inserted each image inline at its matching section/step in the Markdown flow.
+- Repaired Markdown structure to proper heading hierarchy and normalized list formatting while preserving source content intent.
+- Added the new page to the User Guide section in `mkdocs.yml` without altering existing navigation entries.
+- Ran validation and build checks:
+  - `python tools/validate_docs.py` (only existing non-blocking external CDN reference warning remained)
+  - `python -m mkdocs build --clean` (successful)
+- Verified generated output page exists at `site/UserGuide/Health-Kiosk-Integration/index.html`.
+
+**Workflow and Audit Entries Created**
+- 2026-08-05 20:08 | Actor: AI | Action: AI Draft Created | Status: Draft
+- 2026-08-05 20:08 | Actor: Human (Simulated) | Action: Sent to Human Review | Status: In Review
+- 2026-08-05 20:08 | Actor: Human (Simulated) | Action: Approved | Status: Approved
+- 2026-08-05 20:08 | Actor: AI | Action: Commit Recorded | Commit ID: `doc6a7351a6376`
+- 2026-08-05 20:08 | Actor: CI | Action: MkDocs Build | Result: Success
+- 2026-08-05 20:08 | Actor: CI | Action: Deploy | Result: Success (Simulated)
+- 2026-08-05 20:08 | Actor: CI | Action: Published Website | Status: Published
+
+**Result**
+- The new Health Kiosk Integration document is imported, image-complete, linked in navigation, validated, built successfully, and recorded through the existing editorial/audit workflow history with a simulated approval, commit, CI, and publish sequence.
+
+---

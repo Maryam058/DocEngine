@@ -330,6 +330,208 @@
     });
   }
 
+  function collectAiSuggestions(quillRoot) {
+    const suggestions = [];
+    const headings = Array.prototype.slice.call(
+      quillRoot.querySelectorAll("h1, h2, h3, h4, h5, h6")
+    );
+    const images = Array.prototype.slice.call(quillRoot.querySelectorAll("img"));
+    const paragraphs = Array.prototype.slice.call(quillRoot.querySelectorAll("p"));
+    const weakWordingPattern = /\b(very|really|just|basically|simply|obviously|clearly|somehow|kind of|sort of)\b/i;
+    let lastHeadingLevel = 0;
+
+    headings.forEach(function (heading, index) {
+      const level = Number(heading.tagName.slice(1));
+
+      if (lastHeadingLevel && level > lastHeadingLevel + 1) {
+        suggestions.push({
+          id: "heading-skip-" + index,
+          type: "heading",
+          title: "Fix heading hierarchy",
+          summary:
+            "Heading order skips from H" +
+            lastHeadingLevel +
+            " to H" +
+            level +
+            ".",
+          action: "Change this heading to H" + (lastHeadingLevel + 1) + " or add an intermediate heading.",
+          target: {
+            group: "heading",
+            index: index
+          }
+        });
+      }
+
+      lastHeadingLevel = level;
+    });
+
+    paragraphs.forEach(function (paragraph, index) {
+      const text = (paragraph.textContent || "").trim();
+      const weakMatch = text.match(weakWordingPattern);
+
+      if (text.length > 240) {
+        suggestions.push({
+          id: "long-paragraph-" + index,
+          type: "readability",
+          title: "Split long paragraph",
+          summary: "Paragraph " + (index + 1) + " is long and harder to scan.",
+          action: "Break this paragraph into shorter chunks (2-4 sentences).",
+          target: {
+            group: "paragraph",
+            index: index
+          }
+        });
+      }
+
+      if (weakMatch) {
+        suggestions.push({
+          id: "weak-wording-" + index + "-" + weakMatch[0].toLowerCase(),
+          type: "clarity",
+          title: "Strengthen wording",
+          summary:
+            'Paragraph ' +
+            (index + 1) +
+            ' uses "' +
+            weakMatch[0] +
+            '", which can weaken clarity.',
+          action: "Replace it with specific, direct wording.",
+          target: {
+            group: "paragraph",
+            index: index
+          }
+        });
+      }
+    });
+
+    images.forEach(function (image, index) {
+      if (!(image.getAttribute("alt") || "").trim()) {
+        suggestions.push({
+          id: "missing-alt-" + index,
+          type: "accessibility",
+          title: "Add image alt text",
+          summary: "Image " + (index + 1) + " is missing alt text.",
+          action: "Add concise alt text that describes the image purpose.",
+          target: {
+            group: "image",
+            index: index
+          }
+        });
+      }
+    });
+
+    return suggestions.slice(0, 12);
+  }
+
+  function getSuggestionBadgeClass(type) {
+    if (type === "accessibility") {
+      return "review-suggestion-tag review-suggestion-tag--accessibility";
+    }
+
+    if (type === "heading") {
+      return "review-suggestion-tag review-suggestion-tag--heading";
+    }
+
+    if (type === "clarity") {
+      return "review-suggestion-tag review-suggestion-tag--clarity";
+    }
+
+    return "review-suggestion-tag review-suggestion-tag--readability";
+  }
+
+  function flashSuggestionTarget(quillRoot, suggestion) {
+    if (!suggestion || !suggestion.target) {
+      return;
+    }
+
+    let selector = "";
+
+    if (suggestion.target.group === "paragraph") {
+      selector = "p";
+    } else if (suggestion.target.group === "heading") {
+      selector = "h1, h2, h3, h4, h5, h6";
+    } else if (suggestion.target.group === "image") {
+      selector = "img";
+    }
+
+    if (!selector) {
+      return;
+    }
+
+    const nodes = quillRoot.querySelectorAll(selector);
+    const node = nodes[suggestion.target.index];
+
+    if (!node) {
+      return;
+    }
+
+    node.classList.add("review-suggestion-target");
+    node.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    window.setTimeout(function () {
+      node.classList.remove("review-suggestion-target");
+    }, 1600);
+  }
+
+  function renderAiSuggestions(listNode, suggestions, handlers) {
+    listNode.innerHTML = "";
+
+    if (!suggestions.length) {
+      const empty = document.createElement("li");
+      empty.className = "review-suggestion-empty";
+      empty.textContent = "No AI suggestions right now.";
+      listNode.appendChild(empty);
+      return;
+    }
+
+    suggestions.forEach(function (suggestion) {
+      const item = document.createElement("li");
+      const head = document.createElement("div");
+      const body = document.createElement("p");
+      const action = document.createElement("p");
+      const controls = document.createElement("div");
+      const acceptButton = document.createElement("button");
+      const rejectButton = document.createElement("button");
+      const title = document.createElement("strong");
+      const tag = document.createElement("span");
+
+      item.className = "review-suggestion-card";
+      head.className = "review-suggestion-head";
+      body.className = "review-suggestion-summary";
+      action.className = "review-suggestion-action";
+      controls.className = "review-suggestion-controls";
+      tag.className = getSuggestionBadgeClass(suggestion.type);
+
+      tag.textContent = suggestion.type;
+      title.textContent = suggestion.title;
+      body.textContent = suggestion.summary;
+      action.textContent = "Action: " + suggestion.action;
+
+      acceptButton.type = "button";
+      acceptButton.className = "review-suggestion-accept";
+      acceptButton.textContent = "Accept";
+      acceptButton.addEventListener("click", function () {
+        handlers.onAccept(suggestion);
+      });
+
+      rejectButton.type = "button";
+      rejectButton.className = "review-suggestion-reject";
+      rejectButton.textContent = "Reject";
+      rejectButton.addEventListener("click", function () {
+        handlers.onReject(suggestion);
+      });
+
+      head.appendChild(title);
+      head.appendChild(tag);
+      controls.appendChild(acceptButton);
+      controls.appendChild(rejectButton);
+      item.appendChild(head);
+      item.appendChild(body);
+      item.appendChild(action);
+      item.appendChild(controls);
+      listNode.appendChild(item);
+    });
+  }
+
   function renderVersionHistory(versionsNode, versions, onRestore) {
     versionsNode.innerHTML = "";
 
@@ -519,6 +721,14 @@
 
           <section class="review-panel review-panel--stacked">
             <div class="review-panel-heading">
+              <h3>AI Suggestions</h3>
+              <p>Rule-based recommendations to improve clarity, structure, and accessibility.</p>
+            </div>
+            <ul id="review-ai-suggestions" class="review-suggestions"></ul>
+          </section>
+
+          <section class="review-panel review-panel--stacked">
+            <div class="review-panel-heading">
               <h3>Version History</h3>
               <p>Restore a saved snapshot or the latest autosave.</p>
             </div>
@@ -560,6 +770,7 @@
       markdownPreview: wrapper.querySelector("#review-markdown-preview"),
       comparisonSummary: wrapper.querySelector("#review-comparison-summary"),
       styleChecks: wrapper.querySelector("#review-style-checks"),
+      aiSuggestions: wrapper.querySelector("#review-ai-suggestions"),
       versionsList: wrapper.querySelector("#review-versions")
     };
   }
@@ -807,14 +1018,79 @@
     quill.history.clear();
   }
 
-  function syncEditorState(ui, quill, keys, originalHtml, pendingAutosaveLabel, statusLabel) {
+  function syncEditorState(ui, quill, keys, originalHtml, historyKey, pendingAutosaveLabel, statusLabel) {
     const currentHtml = quill.root.innerHTML;
     const previewMarkdown = getPreviewMarkdown(currentHtml);
     const versions = getVersionHistory(keys.versions);
+    const suggestions = collectAiSuggestions(quill.root);
 
     renderStats(ui, currentHtml, statusLabel);
     renderPreview(ui.markdownPreview, previewMarkdown);
     renderIssues(ui.styleChecks, collectStyleGuideIssues(quill.root));
+    renderAiSuggestions(ui.aiSuggestions, suggestions, {
+      onAccept: function (suggestion) {
+        if (suggestion.type === "accessibility") {
+          const imageNodes = quill.root.querySelectorAll("img");
+          const targetImage = imageNodes[suggestion.target.index];
+
+          if (targetImage) {
+            showAlert({
+              title: "Add image alt text",
+              input: "text",
+              inputLabel: "Describe the image for screen readers",
+              inputValue: targetImage.getAttribute("alt") || "",
+              inputPlaceholder: "Add a concise alt description",
+              showCancelButton: true,
+              confirmButtonText: "Apply",
+              cancelButtonText: "Cancel",
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor: "#6c757d"
+            }).then(function (result) {
+              if (!result.isConfirmed) {
+                return;
+              }
+
+              targetImage.setAttribute("alt", (result.value || "").trim());
+              targetImage.setAttribute("title", (result.value || "").trim());
+              quill.update("user");
+
+              saveHistory(
+                historyKey,
+                createAuditEntry(
+                  "suggestion-accepted",
+                  suggestion.title + " applied"
+                )
+              );
+              renderHistory(historyKey, ui.historyList);
+              syncEditorState(ui, quill, keys, originalHtml, historyKey, "Suggestion applied", "Draft");
+            });
+            return;
+          }
+        }
+
+        flashSuggestionTarget(quill.root, suggestion);
+        saveHistory(
+          historyKey,
+          createAuditEntry(
+            "suggestion-accepted",
+            suggestion.title
+          )
+        );
+        renderHistory(historyKey, ui.historyList);
+        showSuccess("Suggestion accepted. Update highlighted content.");
+      },
+      onReject: function (suggestion) {
+        saveHistory(
+          historyKey,
+          createAuditEntry(
+            "suggestion-rejected",
+            suggestion.title
+          )
+        );
+        renderHistory(historyKey, ui.historyList);
+        showWarning("Suggestion rejected.");
+      }
+    });
     updateComparisonSummary(ui.comparisonSummary, originalHtml, currentHtml);
     renderVersionHistory(ui.versionsList, versions, function (version) {
       applySnapshot(quill, version);
@@ -828,6 +1104,7 @@
         quill,
         keys,
         originalHtml,
+        historyKey,
         "Version restored",
         statusLabel || "Draft"
       );
@@ -931,7 +1208,7 @@
             "Recovered autosave from " + formatTimestamp(autosave.timestamp);
         }
 
-        syncEditorState(ui, quill, keys, initialHtml);
+        syncEditorState(ui, quill, keys, initialHtml, historyKey);
 
         ui.restoreOriginalButton.addEventListener("click", function () {
           applySnapshot(quill, {
@@ -951,7 +1228,7 @@
             "Original draft restored",
             "restore"
           );
-          syncEditorState(ui, quill, keys, initialHtml, "Original draft restored", "Draft");
+          syncEditorState(ui, quill, keys, initialHtml, historyKey, "Original draft restored", "Draft");
         });
 
         ui.restoreAutosaveButton.addEventListener("click", function () {
@@ -977,7 +1254,7 @@
             "Restored autosave",
             "restore"
           );
-          syncEditorState(ui, quill, keys, initialHtml, "Latest autosave restored", "Draft");
+          syncEditorState(ui, quill, keys, initialHtml, historyKey, "Latest autosave restored", "Draft");
         });
 
         quill.on("text-change", function (delta, oldDelta, source) {
@@ -999,7 +1276,7 @@
 
             renderHistory(historyKey, ui.historyList);
 
-            syncEditorState(ui, quill, keys, initialHtml, "Draft updated", "Draft");
+            syncEditorState(ui, quill, keys, initialHtml, historyKey, "Draft updated", "Draft");
           }, 700);
 
           autosaveTimer = setTimeout(function () {
@@ -1012,7 +1289,7 @@
             );
             ui.autosaveStatus.textContent =
               "Autosaved at " + formatTimestamp(snapshot.timestamp);
-            syncEditorState(ui, quill, keys, initialHtml, "Autosaved at " + formatTimestamp(snapshot.timestamp), "Draft");
+            syncEditorState(ui, quill, keys, initialHtml, historyKey, "Autosaved at " + formatTimestamp(snapshot.timestamp), "Draft");
           }, AUTOSAVE_DELAY);
         });
 
@@ -1041,7 +1318,7 @@
           );
 
           renderHistory(historyKey, ui.historyList);
-          syncEditorState(ui, quill, keys, initialHtml, "Review saved", "Draft");
+          syncEditorState(ui, quill, keys, initialHtml, historyKey, "Review saved", "Draft");
           showSuccess("Review saved successfully.");
         });
 
@@ -1078,7 +1355,7 @@
             );
 
             renderHistory(historyKey, ui.historyList);
-            syncEditorState(ui, quill, keys, initialHtml, "Published", "Published");
+            syncEditorState(ui, quill, keys, initialHtml, historyKey, "Published", "Published");
             showSuccess(
               "The documentation has been published successfully."
             );

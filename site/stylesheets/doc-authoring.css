@@ -944,6 +944,115 @@ button[data-action="publish"]:hover{
     border-bottom: 0;
 }
 
+.review-suggestions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.review-suggestion-card {
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    background: #f9fbff;
+    border-radius: 12px;
+    padding: 0.8rem;
+}
+
+.review-suggestion-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.review-suggestion-head strong {
+    color: #0f172a;
+}
+
+.review-suggestion-tag {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-radius: 999px;
+    padding: 0.22rem 0.55rem;
+    font-weight: 700;
+}
+
+.review-suggestion-tag--readability {
+    background: #eef2ff;
+    color: #3730a3;
+}
+
+.review-suggestion-tag--accessibility {
+    background: #ecfdf5;
+    color: #166534;
+}
+
+.review-suggestion-tag--heading {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.review-suggestion-tag--clarity {
+    background: #fff7ed;
+    color: #9a3412;
+}
+
+.review-suggestion-summary,
+.review-suggestion-action {
+    margin: 0;
+    color: #334155;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.review-suggestion-action {
+    margin-top: 0.35rem;
+}
+
+.review-suggestion-controls {
+    display: flex;
+    gap: 0.45rem;
+    margin-top: 0.6rem;
+}
+
+.review-suggestion-controls button {
+    border: none;
+    border-radius: 0.65rem;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.review-suggestion-accept {
+    background: #0f62d6;
+    color: #fff;
+}
+
+.review-suggestion-reject {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.review-suggestion-empty {
+    list-style: none;
+    margin: 0;
+    border: 1px dashed rgba(15, 23, 42, 0.15);
+    border-radius: 12px;
+    padding: 0.8rem;
+    color: #64748b;
+    background: #fff;
+}
+
+.review-suggestion-target {
+    outline: 2px solid rgba(15, 98, 214, 0.45);
+    outline-offset: 4px;
+    border-radius: 8px;
+}
+
 @media (max-width: 1120px) {
     .review-layout {
         grid-template-columns: 1fr;
@@ -968,6 +1077,19 @@ button[data-action="publish"]:hover{
 
     .review-versions li {
         flex-direction: column;
+    }
+
+    .review-suggestion-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .review-suggestion-controls {
+        width: 100%;
+    }
+
+    .review-suggestion-controls button {
+        flex: 1;
     }
 
     #review-editor-toolbar.ql-toolbar.ql-snow {

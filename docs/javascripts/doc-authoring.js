@@ -12,6 +12,12 @@
   const AUTOSAVE_DELAY = 1200;
   const VERSION_LIMIT = 20;
   const WORDS_PER_MINUTE = 200;
+  const SAVE_STATUS = {
+    SAVED: "Saved",
+    UNSAVED: "Unsaved changes",
+    SAVING: "Saving",
+    AUTOSAVED: "Autosaved"
+  };
 
   function showAlert(options) {
     return window.Swal.fire(options);
@@ -209,6 +215,92 @@
     return new Date(timestamp).toLocaleString();
   }
 
+  function formatStatusTimestamp(timestamp) {
+    return timestamp ? formatTimestamp(timestamp) : "Never";
+  }
+
+  function updateSaveStatusMeta(ui) {
+    if (!ui || !ui.autosaveStatus || !ui.saveState) {
+      return;
+    }
+
+    ui.autosaveStatus.textContent =
+      "Last saved: " +
+      formatStatusTimestamp(ui.saveState.lastSavedAt) +
+      " | Autosave: " +
+      formatStatusTimestamp(ui.saveState.lastAutosaveAt);
+  }
+
+  function applySaveStatusTone(statusNode, state) {
+    if (!statusNode) {
+      return;
+    }
+
+    statusNode.classList.remove(
+      "review-chip--primary",
+      "review-chip--muted",
+      "review-chip--success",
+      "review-chip--warning"
+    );
+
+    if (state === SAVE_STATUS.SAVED) {
+      statusNode.classList.add("review-chip--success");
+      return;
+    }
+
+    if (state === SAVE_STATUS.UNSAVED) {
+      statusNode.classList.add("review-chip--warning");
+      return;
+    }
+
+    if (state === SAVE_STATUS.AUTOSAVED) {
+      statusNode.classList.add("review-chip--muted");
+      return;
+    }
+
+    statusNode.classList.add("review-chip--primary");
+  }
+
+  function setSaveStatus(ui, state, options) {
+    const config = options || {};
+    const previousState = ui.saveState ? ui.saveState.state : "";
+
+    ui.saveState = ui.saveState || {
+      state: SAVE_STATUS.SAVED,
+      lastSavedAt: null,
+      lastAutosaveAt: null
+    };
+
+    if (config.lastSavedAt) {
+      ui.saveState.lastSavedAt = config.lastSavedAt;
+    }
+
+    if (config.lastAutosaveAt) {
+      ui.saveState.lastAutosaveAt = config.lastAutosaveAt;
+    }
+
+    ui.saveState.state = state;
+    ui.draftStatus.textContent = state;
+    applySaveStatusTone(ui.draftStatus, state);
+    updateSaveStatusMeta(ui);
+
+    if (
+      config.historyKey &&
+      config.historyList &&
+      config.log !== false &&
+      previousState !== state
+    ) {
+      saveHistory(
+        config.historyKey,
+        createAuditEntry(
+          "status-changed",
+          "Save status changed to " + state
+        )
+      );
+      renderHistory(config.historyKey, config.historyList);
+    }
+  }
+
   function getPreviewMarkdown(html) {
     if (!window.TurndownService) {
       return getPlainText(html);
@@ -264,12 +356,11 @@
     previewNode.textContent = markdown || "No content yet.";
   }
 
-  function renderStats(statsNodes, html, statusLabel) {
+  function renderStats(statsNodes, html) {
     const wordCount = countWords(getPlainText(html));
 
     statsNodes.wordCount.textContent = wordCount + (wordCount === 1 ? " word" : " words");
     statsNodes.readingTime.textContent = formatReadingTime(wordCount);
-    statsNodes.draftStatus.textContent = statusLabel || "Draft";
   }
 
   function collectStyleGuideIssues(quillRoot) {
@@ -612,8 +703,8 @@
         </div>
 
         <div class="review-status-strip" aria-label="Document status summary">
-          <span id="review-draft-status" class="review-chip review-chip--primary">Draft</span>
-          <span id="review-autosave-status" class="review-chip review-chip--muted">Autosave idle</span>
+          <span id="review-draft-status" class="review-chip review-chip--success">Saved</span>
+          <span id="review-autosave-status" class="review-chip review-chip--muted">Last saved: Never | Autosave: Never</span>
           <span id="review-word-count" class="review-chip">0 words</span>
           <span id="review-reading-time" class="review-chip">0 min read</span>
         </div>
@@ -1404,13 +1495,13 @@
     quill.history.clear();
   }
 
-  function syncEditorState(ui, quill, keys, originalHtml, historyKey, pendingAutosaveLabel, statusLabel) {
+  function syncEditorState(ui, quill, keys, originalHtml, historyKey) {
     const currentHtml = quill.root.innerHTML;
     const previewMarkdown = getPreviewMarkdown(currentHtml);
     const versions = getVersionHistory(keys.versions);
     const suggestions = collectAiSuggestions(quill.root);
 
-    renderStats(ui, currentHtml, statusLabel);
+    renderStats(ui, currentHtml);
     renderPreview(ui.markdownPreview, previewMarkdown);
     renderIssues(ui.styleChecks, collectStyleGuideIssues(quill.root));
     renderAiSuggestions(ui.aiSuggestions, suggestions, {
@@ -1448,7 +1539,7 @@
                 )
               );
               renderHistory(historyKey, ui.historyList);
-              syncEditorState(ui, quill, keys, originalHtml, historyKey, "Suggestion applied", "Draft");
+              syncEditorState(ui, quill, keys, originalHtml, historyKey);
             });
             return;
           }
@@ -1513,16 +1604,16 @@
         quill,
         keys,
         originalHtml,
-        historyKey,
-        "Version restored",
-        statusLabel || "Draft"
+        historyKey
       );
-      ui.autosaveStatus.textContent = version.label + " restored";
+      if (ui.beforeUnloadToggle) {
+        ui.beforeUnloadToggle(false);
+      }
+      setSaveStatus(ui, SAVE_STATUS.SAVED, {
+        historyKey: historyKey,
+        historyList: ui.historyList
+      });
     });
-
-    if (pendingAutosaveLabel) {
-      ui.autosaveStatus.textContent = pendingAutosaveLabel;
-    }
   }
 
   function storeVersionSnapshot(keys, quill, label, kind) {
@@ -1610,12 +1701,55 @@
         const autosave = loadAutosave(keys);
         let editTimer = null;
         let autosaveTimer = null;
+        let hasUnsavedChanges = false;
+
+        function handleBeforeUnload(event) {
+          if (!hasUnsavedChanges) {
+            return;
+          }
+
+          event.preventDefault();
+          event.returnValue = "You have unsaved changes.";
+          return event.returnValue;
+        }
+
+        function toggleBeforeUnload(enable) {
+          if (enable === hasUnsavedChanges) {
+            return;
+          }
+
+          hasUnsavedChanges = enable;
+
+          if (enable) {
+            window.addEventListener("beforeunload", handleBeforeUnload);
+            return;
+          }
+
+          window.removeEventListener("beforeunload", handleBeforeUnload);
+        }
+
+        ui.beforeUnloadToggle = toggleBeforeUnload;
+        ui.saveState = {
+          state: SAVE_STATUS.SAVED,
+          lastSavedAt: null,
+          lastAutosaveAt: autosave && autosave.timestamp ? autosave.timestamp : null
+        };
 
         if (autosave && autosave.html) {
           applySnapshot(quill, autosave);
-          ui.autosaveStatus.textContent =
-            "Recovered autosave from " + formatTimestamp(autosave.timestamp);
+          setSaveStatus(ui, SAVE_STATUS.AUTOSAVED, {
+            historyKey: historyKey,
+            historyList: ui.historyList,
+            lastAutosaveAt: autosave.timestamp,
+            log: false
+          });
         }
+
+        setSaveStatus(ui, SAVE_STATUS.SAVED, {
+          historyKey: historyKey,
+          historyList: ui.historyList,
+          log: false
+        });
 
         syncEditorState(ui, quill, keys, initialHtml, historyKey);
 
@@ -1637,7 +1771,12 @@
             "Original draft restored",
             "restore"
           );
-          syncEditorState(ui, quill, keys, initialHtml, historyKey, "Original draft restored", "Draft");
+          toggleBeforeUnload(false);
+          setSaveStatus(ui, SAVE_STATUS.SAVED, {
+            historyKey: historyKey,
+            historyList: ui.historyList
+          });
+          syncEditorState(ui, quill, keys, initialHtml, historyKey);
         });
 
         ui.restoreAutosaveButton.addEventListener("click", function () {
@@ -1663,7 +1802,12 @@
             "Restored autosave",
             "restore"
           );
-          syncEditorState(ui, quill, keys, initialHtml, historyKey, "Latest autosave restored", "Draft");
+          toggleBeforeUnload(false);
+          setSaveStatus(ui, SAVE_STATUS.SAVED, {
+            historyKey: historyKey,
+            historyList: ui.historyList
+          });
+          syncEditorState(ui, quill, keys, initialHtml, historyKey);
         });
 
         quill.on("text-change", function (delta, oldDelta, source) {
@@ -1673,6 +1817,11 @@
 
           clearTimeout(editTimer);
           clearTimeout(autosaveTimer);
+          toggleBeforeUnload(true);
+          setSaveStatus(ui, SAVE_STATUS.UNSAVED, {
+            historyKey: historyKey,
+            historyList: ui.historyList
+          });
 
           editTimer = setTimeout(function () {
             saveHistory(
@@ -1685,7 +1834,7 @@
 
             renderHistory(historyKey, ui.historyList);
 
-            syncEditorState(ui, quill, keys, initialHtml, historyKey, "Draft updated", "Draft");
+            syncEditorState(ui, quill, keys, initialHtml, historyKey);
           }, 700);
 
           autosaveTimer = setTimeout(function () {
@@ -1696,13 +1845,20 @@
               "Autosaved " + formatTimestamp(snapshot.timestamp),
               "autosave"
             );
-            ui.autosaveStatus.textContent =
-              "Autosaved at " + formatTimestamp(snapshot.timestamp);
-            syncEditorState(ui, quill, keys, initialHtml, historyKey, "Autosaved at " + formatTimestamp(snapshot.timestamp), "Draft");
+            setSaveStatus(ui, SAVE_STATUS.AUTOSAVED, {
+              historyKey: historyKey,
+              historyList: ui.historyList,
+              lastAutosaveAt: snapshot.timestamp
+            });
+            syncEditorState(ui, quill, keys, initialHtml, historyKey);
           }, AUTOSAVE_DELAY);
         });
 
         ui.saveButton.addEventListener("click", function () {
+          setSaveStatus(ui, SAVE_STATUS.SAVING, {
+            historyKey: historyKey,
+            historyList: ui.historyList
+          });
           const currentHtml = quill.root.innerHTML;
 
           localStorage.setItem(keys.review, "completed");
@@ -1727,7 +1883,13 @@
           );
 
           renderHistory(historyKey, ui.historyList);
-          syncEditorState(ui, quill, keys, initialHtml, historyKey, "Review saved", "Draft");
+          toggleBeforeUnload(false);
+          setSaveStatus(ui, SAVE_STATUS.SAVED, {
+            historyKey: historyKey,
+            historyList: ui.historyList,
+            lastSavedAt: Date.now()
+          });
+          syncEditorState(ui, quill, keys, initialHtml, historyKey);
           showSuccess("Review saved successfully.");
         });
 
@@ -1739,6 +1901,11 @@
             if (!result.isConfirmed) {
               return;
             }
+
+            setSaveStatus(ui, SAVE_STATUS.SAVING, {
+              historyKey: historyKey,
+              historyList: ui.historyList
+            });
 
             const currentHtml = quill.root.innerHTML;
 
@@ -1764,7 +1931,13 @@
             );
 
             renderHistory(historyKey, ui.historyList);
-            syncEditorState(ui, quill, keys, initialHtml, historyKey, "Published", "Published");
+            toggleBeforeUnload(false);
+            setSaveStatus(ui, SAVE_STATUS.SAVED, {
+              historyKey: historyKey,
+              historyList: ui.historyList,
+              lastSavedAt: Date.now()
+            });
+            syncEditorState(ui, quill, keys, initialHtml, historyKey);
             showSuccess(
               "The documentation has been published successfully."
             );

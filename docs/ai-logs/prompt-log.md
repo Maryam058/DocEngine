@@ -1136,3 +1136,52 @@ Import PDF into DocEngine using MarkItDown with minimal changes, extract and pla
 - The new Health Kiosk Integration document is imported, image-complete, linked in navigation, validated, built successfully, and recorded through the existing editorial/audit workflow history with a simulated approval, commit, CI, and publish sequence.
 
 ---
+
+## Prompt #19
+
+**Date:**
+2026-08-05
+
+**Time:**
+22:10
+
+**Task Summary:**
+Implement a single Docs-as-Code editorial workflow for all supported source types with mandatory draft, human review, approval, validation, build/deploy/publish stages, and full audit logging.
+
+**Full Prompt:**
+```text
+Master Prompt – DocEngine Editorial Workflow: unify ingestion for PDF, AI markdown, markdown, text, OpenAPI, and future sources; enforce Draft -> Human Review -> Approved/Rejected -> Validation -> Commit -> Build -> Deploy -> Published with audit trail and no bypass.
+```
+
+**Files Created**
+- tools/editorial_workflow.py
+- docs/ai-logs/editorial-audit-log.md
+- docs/.workflow/workflow-state.json
+
+**Files Modified**
+- run_pipeline.py
+- tools/validate_docs.py
+- docs/javascripts/doc-authoring.js
+- docs/ai-logs/prompt-log.md
+- docs/ai-logs/daily-summary.md
+
+**Actions Performed**
+- Added a new unified workflow engine in `tools/editorial_workflow.py` to ingest and track all source types under one lifecycle.
+- Added CLI commands in `run_pipeline.py`: `ingest`, `review`, `publish`, and `status` while preserving existing commands.
+- Enforced draft-first processing for all sources; new ingested content lands in `docs/drafts/` and is not published until approved.
+- Added required workflow transitions and audit persistence with timestamp, actor, action, and status in both JSON state and Markdown audit logs.
+- Implemented publish gating: approval required before validation, commit simulation, MkDocs build (with up to 3 retries), deploy simulation (with failure report after retries), then published state.
+- Extended `tools/validate_docs.py` to include heading/table checks and ignore external `http/https` references in MkDocs extra assets validation.
+- Updated the existing human review workspace script (`docs/javascripts/doc-authoring.js`) so saving updates draft only and public view renders only when explicitly published.
+- Upgraded browser-side audit entries to include Actor and Status fields in edit trail rendering.
+
+**Verification**
+- `python run_pipeline.py --help` (new workflow commands available)
+- `python run_pipeline.py validate` (pass)
+- `python run_pipeline.py status` (pass, state initialized)
+- `python -m mkdocs build --clean` (successful)
+
+**Result**
+- DocEngine now has a single reusable editorial workflow path for multiple source types with mandatory draft and human approval gates, auditable transitions, validation/build/deploy publish stages, and no duplicate subsystem introduced.
+
+---

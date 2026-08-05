@@ -34,6 +34,8 @@ class ValidationReport:
     broken_internal_links: list[str] = field(default_factory=list)
     invalid_relative_paths: list[str] = field(default_factory=list)
     missing_mkdocs_references: list[str] = field(default_factory=list)
+    heading_issues: list[str] = field(default_factory=list)
+    table_issues: list[str] = field(default_factory=list)
 
     def total_issues(self) -> int:
         """Return the total number of validation issues."""
@@ -167,6 +169,44 @@ def _scan_markdown_file(report: ValidationReport, markdown_path: Path, docs_dir:
             if _slugify_heading(fragment) not in anchors:
                 report.broken_internal_links.append(f"{markdown_path}: {raw_target}")
 
+    heading_matches = [m.group(1).strip() for m in HEADING_PATTERN.finditer(markdown_text)]
+    if not heading_matches:
+        report.heading_issues.append(f"{markdown_path}: missing heading structure")
+    else:
+        level_pattern = re.compile(r"^(#{1,6})\s+")
+        levels: list[int] = []
+        for line in markdown_text.splitlines():
+            match = level_pattern.match(line)
+            if match:
+                levels.append(len(match.group(1)))
+
+        for index, level in enumerate(levels[1:], start=1):
+            previous = levels[index - 1]
+            if level > previous + 1:
+                report.heading_issues.append(
+                    f"{markdown_path}: heading jump from H{previous} to H{level}"
+                )
+
+    lines = markdown_text.splitlines()
+    for index, line in enumerate(lines):
+        stripped_line = line.strip()
+        if stripped_line.count("|") < 2:
+            continue
+
+        # Detect potential GFM header rows and validate separator row shape.
+        if index + 1 >= len(lines):
+            continue
+
+        separator = lines[index + 1].strip()
+        if "|" not in separator or "-" not in separator:
+            continue
+
+        normalized = separator.replace(" ", "")
+        if not re.fullmatch(r"\|?[:\-\|]+\|?", normalized):
+            report.table_issues.append(
+                f"{markdown_path}: possible malformed table separator near line {index + 2}"
+            )
+
 
 def _load_mkdocs_config(config_path: Path) -> dict[str, object]:
     """Load mkdocs.yml."""
@@ -191,6 +231,8 @@ def _validate_mkdocs_references(report: ValidationReport, config_path: Path, doc
 
     for key in ("extra_css", "extra_javascript"):
         for reference in config.get(key, []) or []:
+            if isinstance(reference, str) and reference.startswith(("http://", "https://")):
+                continue
             target = (docs_dir / reference).resolve()
             if not target.exists():
                 report.missing_mkdocs_references.append(f"{key}: {reference}")
@@ -218,6 +260,8 @@ def _print_report(report: ValidationReport) -> None:
     print(f"Broken internal links: {len(report.broken_internal_links)}")
     print(f"Invalid relative paths: {len(report.invalid_relative_paths)}")
     print(f"Missing MkDocs references: {len(report.missing_mkdocs_references)}")
+    print(f"Heading issues: {len(report.heading_issues)}")
+    print(f"Table issues: {len(report.table_issues)}")
 
     if report.total_issues() == 0:
         print("No validation issues found.")
@@ -229,6 +273,8 @@ def _print_report(report: ValidationReport) -> None:
         ("Broken internal links", report.broken_internal_links),
         ("Invalid relative paths", report.invalid_relative_paths),
         ("Missing MkDocs references", report.missing_mkdocs_references),
+        ("Heading issues", report.heading_issues),
+        ("Table issues", report.table_issues),
     ):
         if not values:
             continue

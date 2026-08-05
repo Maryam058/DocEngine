@@ -8,6 +8,15 @@ from pathlib import Path
 from typing import Sequence
 
 from tools.generate_api_docs import generate_api_docs
+from tools.editorial_workflow import (
+    SOURCE_TYPES,
+    get_document_status,
+    ingest_source,
+    list_documents,
+    print_record,
+    publish_document,
+    transition_review,
+)
 from tools.generate_release_notes import generate_release_notes
 from tools.import_pdf import convert_pdf
 from tools.validate_docs import validate_docs
@@ -49,6 +58,56 @@ def _build_parser() -> argparse.ArgumentParser:
         "validate",
         help="Validate documentation links and references.",
     )
+
+    ingest_parser = subparsers.add_parser(
+        "ingest",
+        help="Auto-detect a source and create a Draft in the editorial workflow.",
+    )
+    ingest_parser.add_argument("source", type=Path, help="Source file path")
+    ingest_parser.add_argument(
+        "--source-type",
+        choices=sorted(SOURCE_TYPES),
+        default="auto",
+        help="Source type override (default: auto)",
+    )
+    ingest_parser.add_argument(
+        "--section",
+        choices=["user-guide", "api", "release-notes"],
+        help="Published destination section",
+    )
+    ingest_parser.add_argument("--actor", default="AI", help="Audit actor name")
+
+    review_parser = subparsers.add_parser(
+        "review",
+        help="Transition a draft through Human Review states.",
+    )
+    review_parser.add_argument("document_id", help="Workflow document id")
+    review_parser.add_argument(
+        "--action",
+        required=True,
+        choices=["submit", "approve", "reject"],
+        help="Review transition action",
+    )
+    review_parser.add_argument("--actor", default="Human", help="Audit actor name")
+
+    publish_parser = subparsers.add_parser(
+        "publish",
+        help="Publish an approved document with validation, build, and deploy stages.",
+    )
+    publish_parser.add_argument("document_id", help="Workflow document id")
+    publish_parser.add_argument("--actor", default="AI", help="Audit actor name")
+    publish_parser.add_argument(
+        "--deploy-fail-attempts",
+        type=int,
+        default=0,
+        help="Simulate deployment failures for first N attempts (0-3).",
+    )
+
+    status_parser = subparsers.add_parser(
+        "status",
+        help="Show editorial workflow status.",
+    )
+    status_parser.add_argument("document_id", nargs="?", help="Optional document id")
 
     return parser
 
@@ -105,7 +164,47 @@ def _run_validate() -> int:
     print(f"Broken internal links: {len(report.broken_internal_links)}", file=sys.stderr)
     print(f"Invalid relative paths: {len(report.invalid_relative_paths)}", file=sys.stderr)
     print(f"Missing MkDocs references: {len(report.missing_mkdocs_references)}", file=sys.stderr)
+    print(f"Heading issues: {len(report.heading_issues)}", file=sys.stderr)
+    print(f"Table issues: {len(report.table_issues)}", file=sys.stderr)
     return 1
+
+
+def _run_ingest(source: Path, source_type: str, section: str | None, actor: str) -> int:
+    record = ingest_source(source, source_type=source_type, section=section, actor=actor)
+    _print_success(f"Ingested source into draft workflow: {print_record(record)}")
+    return 0
+
+
+def _run_review(document_id: str, action: str, actor: str) -> int:
+    record = transition_review(document_id, action=action, actor=actor)
+    _print_success(f"Review transition applied: {print_record(record)}")
+    return 0
+
+
+def _run_publish(document_id: str, actor: str, deploy_fail_attempts: int) -> int:
+    record = publish_document(
+        document_id,
+        actor=actor,
+        deploy_fail_attempts=max(0, min(3, deploy_fail_attempts)),
+    )
+    _print_success(f"Document published: {print_record(record)}")
+    return 0
+
+
+def _run_status(document_id: str | None) -> int:
+    if document_id:
+        record = get_document_status(document_id)
+        print(print_record(record))
+        return 0
+
+    records = list_documents()
+    if not records:
+        print("No workflow documents tracked yet.")
+        return 0
+
+    for record in records:
+        print(print_record(record))
+    return 0
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -127,6 +226,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _run_api_docs(args.openapi_spec)
         if args.command == "validate":
             return _run_validate()
+        if args.command == "ingest":
+            return _run_ingest(args.source, args.source_type, args.section, args.actor)
+        if args.command == "review":
+            return _run_review(args.document_id, args.action, args.actor)
+        if args.command == "publish":
+            return _run_publish(args.document_id, args.actor, args.deploy_fail_attempts)
+        if args.command == "status":
+            return _run_status(args.document_id)
     except Exception as exc:  # pragma: no cover - exercised through CLI behavior
         _print_error(str(exc))
         return 1

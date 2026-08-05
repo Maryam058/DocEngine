@@ -97,6 +97,7 @@
   function getStorageKeys(docKey) {
     return {
       original: docKey + ":original",
+      draftContent: docKey + ":draftContent",
       review: docKey + ":review",
       published: docKey + ":published",
       publishedContent: docKey + ":publishedContent",
@@ -141,10 +142,59 @@
     ).slice(0, 14);
   }
 
-  function createAuditEntry(action, details) {
+  function inferAuditActor(action) {
+    if (!action) {
+      return "System";
+    }
+
+    if (action.indexOf("ci-") === 0 || action === "published") {
+      return "CI";
+    }
+
+    if (
+      action.indexOf("review-") === 0 ||
+      action.indexOf("content-") === 0 ||
+      action.indexOf("heading-") === 0 ||
+      action.indexOf("suggestion-") === 0 ||
+      action.indexOf("alt-text-") === 0 ||
+      action.indexOf("autosave-") === 0 ||
+      action.indexOf("original-") === 0 ||
+      action.indexOf("markdown-") === 0 ||
+      action.indexOf("comparison-") === 0 ||
+      action.indexOf("version-") === 0
+    ) {
+      return "Human";
+    }
+
+    return "AI";
+  }
+
+  function inferAuditStatus(action) {
+    if (action === "review-submitted") {
+      return DOCUMENT_STATUS.IN_REVIEW;
+    }
+
+    if (action === "review-approved") {
+      return DOCUMENT_STATUS.APPROVED;
+    }
+
+    if (action === "review-rejected") {
+      return DOCUMENT_STATUS.DRAFT;
+    }
+
+    if (action === "published") {
+      return DOCUMENT_STATUS.PUBLISHED;
+    }
+
+    return "Recorded";
+  }
+
+  function createAuditEntry(action, details, actor, status) {
     return {
       action: action,
       details: details,
+      actor: actor || inferAuditActor(action),
+      status: status || inferAuditStatus(action),
       timestamp: new Date().toLocaleString()
     };
   }
@@ -1446,11 +1496,18 @@
 
     history.forEach(function (item) {
       const li = document.createElement("li");
+      const actor = item.actor || inferAuditActor(item.action);
+      const status = item.status || inferAuditStatus(item.action);
+
       li.textContent =
         item.timestamp +
-        " - " +
+        " | Actor: " +
+        actor +
+        " | Action: " +
         item.action +
-        " - " +
+        " | Status: " +
+        status +
+        " | " +
         item.details;
 
       historyList.appendChild(li);
@@ -2286,11 +2343,11 @@
       return;
     }
 
-    const publishedContent = localStorage.getItem(
-      keys.publishedContent
-    );
+    const publishedContent = localStorage.getItem(keys.publishedContent);
+    const isPublished = localStorage.getItem(keys.published) === "true";
 
     if (
+      isPublished &&
       publishedContent &&
       mode !== "draft" &&
       mode !== "review"
@@ -2326,7 +2383,7 @@
 
     createBanner(contentRoot);
 
-    const initialHtml = contentRoot.innerHTML;
+    const initialHtml = localStorage.getItem(keys.draftContent) || contentRoot.innerHTML;
     contentRoot.classList.add("review-editable-page");
     contentRoot.setAttribute("hidden", "hidden");
 
@@ -2557,16 +2614,15 @@
           const currentHtml = quill.root.innerHTML;
 
           localStorage.setItem(keys.review, "completed");
-          localStorage.setItem(
-            keys.publishedContent,
-            currentHtml
-          );
+          localStorage.setItem(keys.draftContent, currentHtml);
 
           saveHistory(
             historyKey,
             createAuditEntry(
               "review-saved",
-              "Human review completed"
+              "Draft saved in review workspace",
+              "Human",
+              DOCUMENT_STATUS.DRAFT
             )
           );
 
@@ -2606,6 +2662,7 @@
             }
 
             localStorage.setItem(keys.published, "false");
+            localStorage.setItem(keys.draftContent, quill.root.innerHTML);
             localStorage.removeItem(keys.commitId);
             localStorage.removeItem(keys.ciStage);
             setDocumentStatus(keys, DOCUMENT_STATUS.IN_REVIEW);
@@ -2631,6 +2688,7 @@
           }
 
           setDocumentStatus(keys, DOCUMENT_STATUS.APPROVED);
+          localStorage.setItem(keys.draftContent, quill.root.innerHTML);
           saveHistory(
             historyKey,
             createAuditEntry(
@@ -2689,7 +2747,7 @@
           localStorage.setItem(keys.commitId, commitId);
           localStorage.setItem(keys.ciStage, "Commit");
           localStorage.setItem(keys.review, "completed");
-          localStorage.setItem(keys.publishedContent, currentHtml);
+          localStorage.setItem(keys.draftContent, currentHtml);
 
           saveHistory(
             historyKey,

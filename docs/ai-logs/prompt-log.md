@@ -724,3 +724,252 @@ Keep MkDocs Material styling.
 - The review editor now uses Quill.js with the requested features while retaining audit history and existing review/publish workflow.
 
 ---
+
+## Prompt #12
+
+**Date:**
+2026-08-05
+
+**Time:**
+15:02
+
+**Task Summary:**
+Integrate SweetAlert2 globally into the MkDocs site without changing existing functionality.
+
+**Full Prompt:**
+```text
+I am building a MkDocs documentation website called DocEngine.
+
+Task:
+Integrate SweetAlert2 into the project.
+
+Requirements:
+- Add SweetAlert2 globally so every page can use it.
+- Do not modify any existing functionality.
+- Do not remove any JavaScript.
+- Only include the required script in the correct MkDocs template or layout.
+- Explain which file was modified.
+```
+
+**Files Created**
+- None
+
+**Files Modified**
+- mkdocs.yml
+
+**Actions Performed**
+- Located the global MkDocs JavaScript inclusion point in the site configuration.
+- Added the SweetAlert2 CDN script to `extra_javascript` while preserving the existing JavaScript include.
+- Ran a clean MkDocs build to validate the configuration change.
+
+**Result**
+- SweetAlert2 is now loaded globally across the MkDocs site, existing functionality remains intact, and the build succeeds.
+
+---
+
+## Prompt #13
+
+**Date:**
+2026-08-05
+
+**Time:**
+15:06
+
+**Task Summary:**
+Replace every browser `alert()` in the authoring script with SweetAlert2 while keeping the existing logic intact.
+
+**Full Prompt:**
+```text
+Replace every browser alert() used in doc-authoring.js with SweetAlert2.
+
+Requirements:
+
+Success actions:
+- Show a green toast.
+- Position: top-right.
+- Auto close after 3 seconds.
+- No OK button.
+
+Error actions:
+- Show a red modal.
+
+Warning actions:
+- Show a yellow modal.
+
+Do not change any existing logic.
+Only replace alert().
+```
+
+**Files Created**
+- None
+
+**Files Modified**
+- docs/javascripts/doc-authoring.js
+- docs/ai-logs/prompt-log.md
+- docs/ai-logs/daily-summary.md
+
+**Actions Performed**
+- Located each `alert()` call site in the global authoring script.
+- Added small SweetAlert2 helper functions for success toast, error modal, and warning modal styles.
+- Replaced the two success alerts with top-right green toasts and the Quill load failure alert with a red error modal.
+- Verified that no `alert()` calls remain in the touched script and ran a clean MkDocs build.
+
+**Result**
+- The authoring workflow now uses SweetAlert2 notifications instead of browser alerts, with no logic changes to save, publish, or error handling paths.
+
+---
+
+## Prompt #14
+
+**Date:**
+2026-08-05
+
+**Time:**
+15:10
+
+**Task Summary:**
+Add a SweetAlert2 confirmation step before publishing documentation.
+
+**Full Prompt:**
+```text
+Before publishing documentation, show a SweetAlert2 confirmation dialog.
+
+Requirements:
+
+Title:
+Approve & Publish
+
+Message:
+Are you sure you want to publish this documentation?
+
+Buttons:
+Cancel
+Publish
+
+If Cancel:
+Do nothing.
+
+If Publish:
+Run the existing publish logic exactly as it is.
+
+Do not modify the publish functionality.
+Only wrap it inside a confirmation dialog.
+```
+
+**Files Created**
+- None
+
+**Files Modified**
+- docs/javascripts/doc-authoring.js
+- docs/ai-logs/prompt-log.md
+- docs/ai-logs/daily-summary.md
+
+**Actions Performed**
+- Wrapped the existing publish button handler in a SweetAlert2 confirmation dialog with Cancel and Publish actions.
+- Preserved the existing publish logic exactly as-is inside the confirmed branch.
+- Validated the touched script for diagnostics and ran a clean MkDocs build.
+
+**Result**
+- Publishing now requires explicit confirmation, cancel leaves the page unchanged, and the documentation site still builds successfully.
+
+---
+
+## Prompt #15
+
+**Date:**
+2026-08-05
+
+**Time:**
+15:15
+
+**Task Summary:**
+Show a SweetAlert2 success modal after publishing completes.
+
+**Full Prompt:**
+```text
+After successful publishing, show a SweetAlert2 success modal.
+
+Include:
+
+Success icon
+
+Title:
+Documentation Published
+
+Message:
+The documentation has been published successfully.
+
+Buttons:
+Close
+
+Do not change the existing publish logic.
+Only display the success modal after publishing finishes.
+```
+
+**Files Created**
+- None
+
+**Files Modified**
+- docs/javascripts/doc-authoring.js
+- docs/ai-logs/prompt-log.md
+- docs/ai-logs/daily-summary.md
+
+**Actions Performed**
+- Located the existing post-publish success toast call inside the confirmed publish branch.
+- Added a dedicated SweetAlert2 success modal helper with the requested icon, title, message, and Close button.
+- Replaced only the post-publish toast call, leaving the publish logic unchanged, and ran a clean MkDocs build.
+
+**Result**
+- Successful publishing now ends with the requested SweetAlert2 success modal, while the existing publish flow remains unchanged and the documentation build still succeeds.
+
+---
+
+## Prompt #16
+
+**Date:**
+2026-08-05
+
+**Time:**
+15:19
+
+**Task Summary:**
+Refactor notification handling in the authoring script into reusable SweetAlert2 helpers.
+
+**Full Prompt:**
+```text
+Refactor notification handling in doc-authoring.js.
+
+Create reusable helper functions:
+
+showSuccess(message)
+
+showError(message)
+
+showWarning(message)
+
+showConfirm(title, message)
+
+All notifications should use SweetAlert2.
+
+Replace duplicated notification code with these helper functions.
+
+Do not change any existing business logic.
+```
+
+**Files Created**
+- None
+
+**Files Modified**
+- docs/javascripts/doc-authoring.js
+- docs/ai-logs/prompt-log.md
+- docs/ai-logs/daily-summary.md
+
+**Actions Performed**
+- Replaced the earlier notification-specific helpers with a shared SweetAlert2 wrapper and the requested `showSuccess`, `showError`, `showWarning`, and `showConfirm` helper functions.
+- Updated the save, publish confirmation, publish success, and load failure notification call sites to use the new helper surface while preserving the existing workflow behavior.
+- Validated the touched script for diagnostics and ran a clean MkDocs build.
+
+**Result**
+- Notification handling is now centralized behind the requested reusable SweetAlert2 helpers, with the existing save, confirmation, error, and publish-success behaviors preserved and the documentation build still succeeding.
+
+---

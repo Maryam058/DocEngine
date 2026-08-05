@@ -44,6 +44,7 @@ extra_css:
   - stylesheets/doc-authoring.css
 
 extra_javascript:
+  - https://cdn.jsdelivr.net/npm/sweetalert2@11
   - javascripts/doc-authoring.js
 
 markdown_extensions:

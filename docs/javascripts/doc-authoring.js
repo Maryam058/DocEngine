@@ -6,6 +6,66 @@
   const QUILL_JS_URL =
     "https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js";
 
+  function showAlert(options) {
+    return window.Swal.fire(options);
+  }
+
+  function showSuccess(message) {
+    if (
+      message ===
+      "The documentation has been published successfully."
+    ) {
+      return showAlert({
+        icon: "success",
+        title: "Documentation Published",
+        text: message,
+        confirmButtonText: "Close",
+        confirmButtonColor: "#3085d6"
+      });
+    }
+
+    return showAlert({
+      toast: true,
+      icon: "success",
+      title: message,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  }
+
+  function showError(message) {
+    return showAlert({
+      icon: "error",
+      title: "Error",
+      text: message,
+      confirmButtonColor: "#d33"
+    });
+  }
+
+  function showWarning(message) {
+    return showAlert({
+      icon: "warning",
+      title: "Warning",
+      text: message,
+      confirmButtonColor: "#e0a800"
+    });
+  }
+
+  function showConfirm(title, message) {
+    return showAlert({
+      title: title,
+      text: message,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Publish",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#6c757d"
+    });
+  }
+
   function getDocKey() {
     const path =
       (window.location.pathname || "/")
@@ -462,34 +522,45 @@
           );
 
           renderHistory(historyKey, ui.historyList);
-          alert("Review saved successfully.");
+          showSuccess("Review saved successfully.");
         });
 
         ui.publishButton.addEventListener("click", function () {
-          const currentHtml = quill.root.innerHTML;
+          showConfirm(
+            "Approve & Publish",
+            "Are you sure you want to publish this documentation?"
+          ).then(function (result) {
+            if (!result.isConfirmed) {
+              return;
+            }
 
-          localStorage.setItem(keys.published, "true");
-          localStorage.setItem(
-            keys.publishedContent,
-            currentHtml
-          );
+            const currentHtml = quill.root.innerHTML;
 
-          saveHistory(
-            historyKey,
-            createAuditEntry(
-              "published",
-              "Documentation approved"
-            )
-          );
+            localStorage.setItem(keys.published, "true");
+            localStorage.setItem(
+              keys.publishedContent,
+              currentHtml
+            );
 
-          renderHistory(historyKey, ui.historyList);
-          alert("Documentation published successfully.");
+            saveHistory(
+              historyKey,
+              createAuditEntry(
+                "published",
+                "Documentation approved"
+              )
+            );
+
+            renderHistory(historyKey, ui.historyList);
+            showSuccess(
+              "The documentation has been published successfully."
+            );
+          });
         });
       })
       .catch(function () {
         contentRoot.removeAttribute("hidden");
         ui.wrapper.remove();
-        alert(
+        showError(
           "Unable to load Quill editor. Please check network access and reload the page."
         );
       });

@@ -143,6 +143,43 @@ const DraftManager = {
 
 );
     },
+    loadDocument(){
+
+    const doc = localStorage.getItem(
+        "currentDoc"
+    );
+
+
+    if(!doc){
+        return;
+    }
+
+
+    const documents = Storage.load(
+        "docengine_documents",
+        {}
+    );
+
+
+    if(documents[doc]){
+
+        this.setContent(
+            documents[doc].content
+        );
+
+
+        AppState.currentStatus =
+            documents[doc].status;
+
+
+        AppState.currentVersion =
+            documents[doc].version;
+
+
+    }
+
+
+},
     load() {
 
     const draft = Storage.load(
@@ -193,6 +230,7 @@ const DraftManager = {
         );
 
     }
+
 };
 /*    History Manager */
 
@@ -250,13 +288,38 @@ if (history.length > MAX_HISTORY) {
 
 }
 
-        Storage.save(
+        const doc =
+localStorage.getItem("currentDoc");
 
-            CONFIG.STORAGE.history,
 
-            history
+let documents =
+Storage.load(
+"docengine_documents",
+{}
+);
 
-        );
+
+documents[doc] = {
+
+content:
+this.getContent(),
+
+status:
+AppState.currentStatus,
+
+version:
+AppState.currentVersion,
+
+savedAt:
+Time.now()
+
+};
+
+
+Storage.save(
+"docengine_documents",
+documents
+);
 
     },
 
@@ -451,9 +514,11 @@ const App = {
 
         this.bindEvents();
 
+        DraftManager.loadDocument();
+
         DraftManager.load();
 
-        registerDraftEvents();
+      registerDraftEvents();
 
         startAutoSave();
 
@@ -489,16 +554,40 @@ const App = {
 
     initEditor() {
 
-        if (!this.ui.editor) {
+       if(!this.ui.editor){
+        return;
+      }
+      AppState.editor = new Quill(
+      "#editor",
+      {
+        theme:"snow",
+        modules:{
+          toolbar:[
+            ["bold","italic","underline"],
 
-            console.error("Editor not found.");
+            [
+{header:1},
+{header:2}
+],
 
-            return;
+[
+"image",
+"link"
+],
 
-        }
+[
+"code-block"
+],
 
+[
+"bullet",
+"list"
+]
 
+]
+}
 
+});
     },
 
     bindEvents() {
@@ -567,11 +656,26 @@ document.addEventListener(
     }
 
 );
-function openEditor() {
+function openEditor(){
 
-    const currentPage = window.location.pathname;
+    const content = document.querySelector(
+        ".md-content"
+    );
 
-    localStorage.setItem("currentDoc", currentPage);
+    if(!content){
+        console.log("Content area not found");
+        return;
+    }
 
-    window.location.href = "/DocEngine/editor/";
+    content.contentEditable = true;
+
+    content.classList.add(
+        "editing-mode"
+    );
+
+    console.log(
+        "Editing:",
+        window.location.pathname
+    );
+
 }

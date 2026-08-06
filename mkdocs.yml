@@ -20,7 +20,7 @@ nav:
       - Medical Warnings: UserGuide/Medical_Warnings.md
 
   - Editor:
-    - Document Workspace: editor/index.md
+    - Document Workspace: editor.md
 
   - API Reference:
       - OpenAPI: api/api-reference.md

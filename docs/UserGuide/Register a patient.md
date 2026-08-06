@@ -1,7 +1,4 @@
 # Register a Patient
-<a href="../../editor/" class="edit-document-btn">
-✏️ Edit Document
-</a>
 
 Create a complete patient profile for care coordination by following the registration process below.
 

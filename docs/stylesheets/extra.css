@@ -394,3 +394,8 @@ opacity: 0.85;
 .edit-btn:hover{
     background:#1565c0;
 }
+.editing-mode {
+    border: 2px solid #2196f3;
+    padding: 20px;
+    background: #fff;
+}

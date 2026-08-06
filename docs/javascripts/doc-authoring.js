@@ -1,273 +1,366 @@
-/*Configuration*/
+/* ==========================================================
+   DocEngine Editor
+   Part 1
+========================================================== */
+
 const CONFIG = {
 
     AUTOSAVE_DELAY: 5000,
 
     STORAGE: {
-        draft: "docengine_draft",
-        history: "docengine_history",
-        versions: "docengine_versions"
+
+        DOCUMENTS: "docengine_documents",
+
+        HISTORY: "docengine_history",
+
+        VERSIONS: "docengine_versions"
+
     },
 
     WORKFLOW: {
+
         DRAFT: "draft",
+
         REVIEW: "review",
+
         APPROVED: "approved",
+
         REJECTED: "rejected",
+
         PUBLISHED: "published"
+
     }
 
 };
-/*   Application State */
+
+
+/* ==========================================================
+   Application State
+========================================================== */
+
 const AppState = {
+
     editor: null,
+
+    currentDocument: null,
+
     currentStatus: CONFIG.WORKFLOW.DRAFT,
+
     currentVersion: 1,
+
     draftChanged: false,
+
     lastSaved: null,
+
     statusText: "Draft"
+
 };
-/*    Storage Manager */
+
+
+/* ==========================================================
+   Storage
+========================================================== */
 
 const Storage = {
+
     load(key, defaultValue = null) {
+
         try {
-            const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : defaultValue;
+
+            const value = localStorage.getItem(key);
+
+            return value
+                ? JSON.parse(value)
+                : defaultValue;
+
         }
+
         catch (error) {
-            console.error("Storage Load Error:", error);
+
+            console.error(error);
+
             return defaultValue;
+
         }
+
     },
+
     save(key, value) {
-        try {
-            localStorage.setItem(
-                key,
-                JSON.stringify(value)
-            );
-        }
-        catch (error) {
-            console.error("Storage Save Error:", error);
-        }
-    },
-    remove(key) {
-        localStorage.removeItem(key);
+
+        localStorage.setItem(
+
+            key,
+
+            JSON.stringify(value)
+
+        );
+
     }
+
 };
-/*    Time Helper */
+
+
+/* ==========================================================
+   Time Helper
+========================================================== */
+
 const Time = {
+
     now() {
+
         return new Date().toISOString();
+
     },
+
     format(date = new Date()) {
+
         return date.toLocaleString();
+
     }
+
 };
-/*    Auto Save*/
 
-let autoSaveTimer = null;
-function startAutoSave() {
-    if (autoSaveTimer) {
-        clearInterval(autoSaveTimer);
-    }
-    autoSaveTimer = setInterval(() => {
-        if (!AppState.draftChanged) {
-            return;
-        }
-        DraftManager.save();
-        console.log(
-            "Draft Autosaved",
-            Time.format()
+
+/* ==========================================================
+   Document Store
+========================================================== */
+
+const DocumentStore = {
+
+    getAll() {
+
+        return Storage.load(
+
+            CONFIG.STORAGE.DOCUMENTS,
+
+            {}
+
         );
-    },
-    CONFIG.AUTOSAVE_DELAY);
-}
-/*    Change Detection*/
 
-function registerDraftEvents() {
-    if (!AppState.editor) {
-        return;
-    }
-    AppState.editor.on(
-        "text-change",
-        () => {
-            AppState.draftChanged = true;
-            updateSaveStatus(
-               "Unsaved changes"
-              );
-        }
-    );
-}
-/*   Save Status */
+    },
 
-function updateSaveStatus(message) {
-    const status = document.querySelector(
-        "#save-status"
-    );
-    if (!status) {
-        return;
-    }
-    status.textContent = message;
-}
-/*    Draft Manager */
-const DraftManager = {
-    getContent() {
-        if (!AppState.editor) {
-            return "";
-        }
-        return AppState.editor.root.innerHTML;
+    get(page) {
+
+        const docs = this.getAll();
+
+        return docs[page] || null;
+
     },
-    setContent(content) {
-        if (!AppState.editor) {
-            return;
-        }
-        AppState.editor.root.innerHTML = content;
-    },
-    save() {
-        const draft = {
-            content: this.getContent(),
-            savedAt: Time.now(),
-            status: AppState.currentStatus,
-            version: AppState.currentVersion
-        };
+
+    save(page, data) {
+
+        const docs = this.getAll();
+
+        docs[page] = data;
+
         Storage.save(
-            CONFIG.STORAGE.draft,
-            draft
+
+            CONFIG.STORAGE.DOCUMENTS,
+
+            docs
+
         );
-        AppState.lastSaved = draft.savedAt;
-        AppState.draftChanged = false;
-        updateSaveStatus(
-        "Saved " +
-        Time.format()
 
-);
-    },
-    loadDocument(){
-
-    const doc = localStorage.getItem(
-        "currentDoc"
-    );
-
-
-    if(!doc){
-        return;
     }
 
+};
 
-    const documents = Storage.load(
-        "docengine_documents",
-        {}
+
+/* ==========================================================
+   Save Status
+========================================================== */
+
+function updateSaveStatus(message){
+
+    const el = document.querySelector(
+
+        "#save-status"
+
     );
 
+    if(el){
 
-    if(documents[doc]){
+        el.textContent = message;
+
+    }
+
+}
+
+
+/* ==========================================================
+   Draft Manager
+========================================================== */
+
+const DraftManager = {
+
+    getContent(){
+
+        if(!AppState.editor){
+
+            return "";
+
+        }
+
+        return AppState.editor.root.innerHTML;
+
+    },
+
+    setContent(html){
+
+        if(!AppState.editor){
+
+            return;
+
+        }
+
+        AppState.editor.root.innerHTML = html;
+
+    },
+
+    load(){
+
+        const page = AppState.currentDocument;
+
+        if(!page){
+
+            return;
+
+        }
+
+        const doc = DocumentStore.get(page);
+
+        if(!doc){
+
+            return;
+
+        }
 
         this.setContent(
-            documents[doc].content
+
+            doc.content
+
         );
 
-
         AppState.currentStatus =
-            documents[doc].status;
 
+            doc.status;
 
         AppState.currentVersion =
-            documents[doc].version;
 
+            doc.version;
 
-    }
+        AppState.statusText =
 
+            doc.status.charAt(0).toUpperCase() +
 
-},
-    load() {
+            doc.status.slice(1);
 
-    const draft = Storage.load(
+        AppState.lastSaved =
 
-        CONFIG.STORAGE.draft,
+            doc.updatedAt;
 
-        null
-
-    );
-
-    if (!draft) {
-
-        return;
-
-    }
-
-    this.setContent(
-
-        draft.content
-
-    );
-
-    AppState.lastSaved = draft.savedAt;
-
-    AppState.currentStatus = draft.status;
-
-    AppState.currentVersion = draft.version;
-
-    AppState.statusText =
-
-        draft.status.charAt(0).toUpperCase() +
-
-        draft.status.slice(1);
-
-    UIManager.refresh();
-
-    updateSaveStatus(
-
-        "Draft restored"
-    );
     },
-    clear() {
 
-        Storage.remove(
+    save(){
 
-            CONFIG.STORAGE.draft
+        const page =
+
+            AppState.currentDocument;
+
+        if(!page){
+
+            return;
+
+        }
+
+        DocumentStore.save(
+
+            page,
+
+            {
+
+                content:
+
+                    this.getContent(),
+
+                status:
+
+                    AppState.currentStatus,
+
+                version:
+
+                    AppState.currentVersion,
+
+                updatedAt:
+
+                    Time.now()
+
+            }
+
+        );
+
+        AppState.lastSaved =
+
+            Time.now();
+
+        AppState.draftChanged = false;
+
+        updateSaveStatus(
+
+            "Saved " +
+
+            Time.format()
 
         );
 
     }
 
 };
-/*    History Manager */
+
+
+/* ==========================================================
+   Autosave
+========================================================== */
+
+let autoSave = null;
+
+function startAutoSave(){
+
+    clearInterval(autoSave);
+
+    autoSave = setInterval(()=>{
+
+        if(
+
+            AppState.draftChanged
+
+        ){
+
+            DraftManager.save();
+
+        }
+
+    },
+
+    CONFIG.AUTOSAVE_DELAY);
+
+}
+/* ==========================================================
+   History Manager
+========================================================== */
 
 const HistoryManager = {
 
     getAll() {
 
         return Storage.load(
-
-            CONFIG.STORAGE.history,
-
+            CONFIG.STORAGE.HISTORY,
             []
-
         );
 
     },
 
     add(action, message) {
-
-        // Only workflow events are stored
-        const allowed = [
-
-            "review",
-
-            "approve",
-
-            "reject",
-
-            "publish"
-
-        ];
-
-        if (!allowed.includes(action)) {
-
-            return;
-
-        }
 
         const history = this.getAll();
 
@@ -277,63 +370,31 @@ const HistoryManager = {
 
             message,
 
-            time: Time.now()
+            time: Time.now(),
+
+            document: AppState.currentDocument
 
         });
-        const MAX_HISTORY = 100;
 
-if (history.length > MAX_HISTORY) {
+        if (history.length > 100) {
 
-    history.length = MAX_HISTORY;
+            history.length = 100;
 
-}
+        }
 
-        const doc =
-localStorage.getItem("currentDoc");
+        Storage.save(
 
+            CONFIG.STORAGE.HISTORY,
 
-let documents =
-Storage.load(
-"docengine_documents",
-{}
-);
-
-
-documents[doc] = {
-
-content:
-this.getContent(),
-
-status:
-AppState.currentStatus,
-
-version:
-AppState.currentVersion,
-
-savedAt:
-Time.now()
-
-};
-
-
-Storage.save(
-"docengine_documents",
-documents
-);
-
-    },
-
-    clear() {
-
-        Storage.remove(
-
-            CONFIG.STORAGE.history
+            history
 
         );
 
     }
 
 };
+
+
 /* ==========================================================
    Version Manager
 ========================================================== */
@@ -344,7 +405,7 @@ const VersionManager = {
 
         return Storage.load(
 
-            CONFIG.STORAGE.versions,
+            CONFIG.STORAGE.VERSIONS,
 
             []
 
@@ -358,54 +419,42 @@ const VersionManager = {
 
         versions.unshift({
 
+            document: AppState.currentDocument,
+
             version: AppState.currentVersion,
 
-            action,
+            action: action,
 
             content: DraftManager.getContent(),
 
             createdAt: Time.now()
 
         });
-        const MAX_VERSIONS = 20;
 
-if (versions.length > MAX_VERSIONS) {
+        if (versions.length > 50) {
 
-    versions.length = MAX_VERSIONS;
+            versions.length = 50;
 
-}
+        }
 
         Storage.save(
 
-            CONFIG.STORAGE.versions,
+            CONFIG.STORAGE.VERSIONS,
 
             versions
-
-        );
-
-    },
-
-    clear() {
-
-        Storage.remove(
-
-            CONFIG.STORAGE.versions
 
         );
 
     }
 
 };
-/*   Workflow Manager*/
+
+
+/* ==========================================================
+   Workflow Manager
+========================================================== */
+
 const WorkflowManager = {
-
-    saveWorkflow(action, message) {
-
-        HistoryManager.add(action, message);
-
-        VersionManager.create(action);
-
-    },
 
     changeStatus(status) {
 
@@ -413,13 +462,28 @@ const WorkflowManager = {
 
         switch (status) {
 
+            case CONFIG.WORKFLOW.DRAFT:
+
+                AppState.statusText = "Draft";
+
+                break;
+
             case CONFIG.WORKFLOW.REVIEW:
 
                 AppState.statusText = "Under Review";
 
-                this.saveWorkflow(
+                HistoryManager.add(
+
                     "review",
-                    "Submitted for review"
+
+                    "Submitted for Review"
+
+                );
+
+                VersionManager.create(
+
+                    "review"
+
                 );
 
                 break;
@@ -428,9 +492,18 @@ const WorkflowManager = {
 
                 AppState.statusText = "Approved";
 
-                this.saveWorkflow(
+                HistoryManager.add(
+
                     "approve",
-                    "Document approved"
+
+                    "Document Approved"
+
+                );
+
+                VersionManager.create(
+
+                    "approve"
+
                 );
 
                 break;
@@ -439,9 +512,18 @@ const WorkflowManager = {
 
                 AppState.statusText = "Rejected";
 
-                this.saveWorkflow(
+                HistoryManager.add(
+
                     "reject",
-                    "Document rejected"
+
+                    "Document Rejected"
+
+                );
+
+                VersionManager.create(
+
+                    "reject"
+
                 );
 
                 break;
@@ -450,9 +532,18 @@ const WorkflowManager = {
 
                 AppState.statusText = "Published";
 
-                this.saveWorkflow(
+                HistoryManager.add(
+
                     "publish",
-                    "Document published"
+
+                    "Document Published"
+
+                );
+
+                VersionManager.create(
+
+                    "publish"
+
                 );
 
                 AppState.currentVersion++;
@@ -468,40 +559,53 @@ const WorkflowManager = {
     }
 
 };
+
+
 /* ==========================================================
    UI Manager
 ========================================================== */
 
 const UIManager = {
 
-    updateStatus() {
-
-        if (!App.ui?.status) return;
-
-        App.ui.status.textContent =
-            AppState.statusText;
-
-    },
-
-    updateVersion() {
-
-        if (!App.ui?.version) return;
-
-        App.ui.version.textContent =
-            "v" + AppState.currentVersion;
-
-    },
-
     refresh() {
 
-        this.updateStatus();
+        const status = document.querySelector(
 
-        this.updateVersion();
+            "#workflow-status"
+
+        );
+
+        const version = document.querySelector(
+
+            "#version-label"
+
+        );
+
+        if (status) {
+
+            status.textContent =
+
+                AppState.statusText;
+
+        }
+
+        if (version) {
+
+            version.textContent =
+
+                "v" +
+
+                AppState.currentVersion;
+
+        }
 
     }
 
 };
-/*Application Controller */
+/* ==========================================================
+   Application Controller
+========================================================== */
+
 const App = {
 
     ui: {},
@@ -514,17 +618,20 @@ const App = {
 
         this.bindEvents();
 
-        DraftManager.loadDocument();
+        AppState.currentDocument =
+            localStorage.getItem("currentDoc");
 
         DraftManager.load();
 
-      registerDraftEvents();
+        registerDraftEvents();
 
         startAutoSave();
 
         UIManager.refresh();
 
-        console.log("DocEngine initialized.");
+        console.log(
+            "DocEngine Ready"
+        );
 
     },
 
@@ -532,21 +639,23 @@ const App = {
 
         this.ui = {
 
-            editor: document.querySelector("#editor"),
+            editor:
+                document.querySelector("#editor"),
 
-            saveDraft: document.querySelector("#btn-save"),
+            save:
+                document.querySelector("#btn-save"),
 
-            review: document.querySelector("#btn-review"),
+            review:
+                document.querySelector("#btn-review"),
 
-            approve: document.querySelector("#btn-approve"),
+            approve:
+                document.querySelector("#btn-approve"),
 
-            reject: document.querySelector("#btn-reject"),
+            reject:
+                document.querySelector("#btn-reject"),
 
-            publish: document.querySelector("#btn-publish"),
-
-            status: document.querySelector("#workflow-status"),
-
-            version: document.querySelector("#version-label")
+            publish:
+                document.querySelector("#btn-publish")
 
         };
 
@@ -554,241 +663,195 @@ const App = {
 
     initEditor() {
 
-       if(!this.ui.editor){
-        return;
-      }
-      AppState.editor = new Quill(
-      "#editor",
-      {
-        theme:"snow",
-        modules:{
-          toolbar:[
-            ["bold","italic","underline"],
+        if (!this.ui.editor) {
 
-            [
-{header:1},
-{header:2}
-],
+            return;
 
-[
-"image",
-"link"
-],
+        }
 
-[
-"code-block"
-],
+        AppState.editor = new Quill(
 
-[
-"bullet",
-"list"
-]
+            "#editor",
 
-]
-}
+            {
 
-});
+                theme: "snow",
+
+                modules: {
+
+                    toolbar: [
+
+                        ["bold", "italic", "underline"],
+
+                        [{ header: 1 }, { header: 2 }],
+
+                        [{ list: "ordered" }, { list: "bullet" }],
+
+                        ["blockquote", "code-block"],
+
+                        ["link", "image"],
+
+                        ["clean"]
+
+                    ]
+
+                }
+
+            }
+
+        );
+
     },
 
     bindEvents() {
 
-    this.ui.saveDraft?.addEventListener("click", () => {
+        this.ui.save?.addEventListener(
 
-        DraftManager.save();
+            "click",
 
-    });
+            () => DraftManager.save()
 
-    this.ui.review?.addEventListener("click", () => {
-
-        WorkflowManager.changeStatus(
-            CONFIG.WORKFLOW.REVIEW
         );
 
-    });
+        this.ui.review?.addEventListener(
 
-    this.ui.approve?.addEventListener("click", () => {
+            "click",
 
-        WorkflowManager.changeStatus(
-            CONFIG.WORKFLOW.APPROVED
+            () => WorkflowManager.changeStatus(
+                CONFIG.WORKFLOW.REVIEW
+            )
+
         );
 
-    });
+        this.ui.approve?.addEventListener(
 
-    this.ui.reject?.addEventListener("click", () => {
+            "click",
 
-        WorkflowManager.changeStatus(
-            CONFIG.WORKFLOW.REJECTED
+            () => WorkflowManager.changeStatus(
+                CONFIG.WORKFLOW.APPROVED
+            )
+
         );
 
-    });
+        this.ui.reject?.addEventListener(
 
-    this.ui.publish?.addEventListener("click", () => {
+            "click",
 
-        WorkflowManager.changeStatus(
-            CONFIG.WORKFLOW.PUBLISHED
+            () => WorkflowManager.changeStatus(
+                CONFIG.WORKFLOW.REJECTED
+            )
+
         );
 
-    });
+        this.ui.publish?.addEventListener(
 
-    document.addEventListener("keydown", (event) => {
+            "click",
 
-        if (event.ctrlKey && event.key.toLowerCase() === "s") {
+            () => WorkflowManager.changeStatus(
+                CONFIG.WORKFLOW.PUBLISHED
+            )
 
-            event.preventDefault();
+        );
 
-            DraftManager.save();
+        document.addEventListener(
+
+            "keydown",
+
+            function (e) {
+
+                if (
+
+                    e.ctrlKey &&
+
+                    e.key.toLowerCase() === "s"
+
+                ) {
+
+                    e.preventDefault();
+
+                    DraftManager.save();
+
+                }
+
+            }
+
+        );
+
+    }
+
+};
+
+
+/* ==========================================================
+   Draft Change Events
+========================================================== */
+
+function registerDraftEvents() {
+
+    if (!AppState.editor) {
+
+        return;
+
+    }
+
+    AppState.editor.on(
+
+        "text-change",
+
+        function () {
+
+            AppState.draftChanged = true;
+
+            updateSaveStatus(
+
+                "Unsaved Changes"
+
+            );
 
         }
 
-    });
+    );
 
 }
 
-};
+
+/* ==========================================================
+   Open Editor
+========================================================== */
+
+function openEditor() {
+
+    const page =
+
+        window.location.pathname;
+
+    localStorage.setItem(
+
+        "currentDoc",
+
+        page
+
+    );
+
+    window.location.href =
+
+        "/DocEngine/editor/";
+
+}
+
+
+/* ==========================================================
+   Start
+========================================================== */
+
 document.addEventListener(
 
     "DOMContentLoaded",
 
-    () => {
+    function () {
 
         App.init();
 
     }
 
 );
-function openEditor(){
-
-    const content = document.querySelector(
-        ".md-content__inner"
-    );
-
-
-    if(!content){
-        console.log("Content area not found");
-        return;
-    }
-
-
-    content.contentEditable = true;
-
-
-    // Toolbar
-    const toolbar = document.createElement("div");
-
-    toolbar.id = "editor-toolbar";
-
-
-    toolbar.innerHTML = `
-
-    <button data-command="bold">B</button>
-
-    <button data-command="italic">I</button>
-
-    <button data-command="underline">U</button>
-
-    <button data-command="insertUnorderedList">
-    • List
-    </button>
-
-    <button data-command="insertOrderedList">
-    1. List
-    </button>
-
-    `;
-
-
-
-    toolbar.querySelectorAll("button")
-    .forEach(button=>{
-
-        button.addEventListener(
-            "mousedown",
-            function(e){
-
-                e.preventDefault();
-
-                content.focus();
-
-
-                document.execCommand(
-                    this.dataset.command,
-                    false,
-                    null
-                );
-
-            }
-        );
-
-    });
-
-
-
-    // Save Button
-
-    const saveBtn = document.createElement("button");
-
-    saveBtn.id = "save-page-draft";
-
-    saveBtn.textContent =
-        "💾 Save Draft";
-
-
-    saveBtn.onclick = function(){
-
-
-        const page =
-            window.location.pathname;
-
-
-        const drafts =
-        JSON.parse(
-            localStorage.getItem(
-                "docengine_drafts"
-            )
-        ) || {};
-
-
-
-        drafts[page] = {
-
-            content:
-            content.innerHTML,
-
-            savedAt:
-            new Date()
-
-        };
-
-
-
-        localStorage.setItem(
-            "docengine_drafts",
-            JSON.stringify(drafts)
-        );
-
-
-        alert(
-            "Draft saved"
-        );
-
-    };
-
-
-
-    // Add UI
-
-    content.parentElement.prepend(
-        saveBtn
-    );
-
-
-    content.parentElement.prepend(
-        toolbar
-    );
-
-
-    console.log(
-        "Editing:",
-        window.location.pathname
-    );
-}

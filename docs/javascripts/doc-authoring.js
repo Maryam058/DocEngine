@@ -659,23 +659,136 @@ document.addEventListener(
 function openEditor(){
 
     const content = document.querySelector(
-        ".md-content"
+        ".md-content__inner"
     );
+
 
     if(!content){
         console.log("Content area not found");
         return;
     }
 
+
     content.contentEditable = true;
 
-    content.classList.add(
-        "editing-mode"
+
+    // Toolbar
+    const toolbar = document.createElement("div");
+
+    toolbar.id = "editor-toolbar";
+
+
+    toolbar.innerHTML = `
+
+    <button data-command="bold">B</button>
+
+    <button data-command="italic">I</button>
+
+    <button data-command="underline">U</button>
+
+    <button data-command="insertUnorderedList">
+    • List
+    </button>
+
+    <button data-command="insertOrderedList">
+    1. List
+    </button>
+
+    `;
+
+
+
+    toolbar.querySelectorAll("button")
+    .forEach(button=>{
+
+        button.addEventListener(
+            "mousedown",
+            function(e){
+
+                e.preventDefault();
+
+                content.focus();
+
+
+                document.execCommand(
+                    this.dataset.command,
+                    false,
+                    null
+                );
+
+            }
+        );
+
+    });
+
+
+
+    // Save Button
+
+    const saveBtn = document.createElement("button");
+
+    saveBtn.id = "save-page-draft";
+
+    saveBtn.textContent =
+        "💾 Save Draft";
+
+
+    saveBtn.onclick = function(){
+
+
+        const page =
+            window.location.pathname;
+
+
+        const drafts =
+        JSON.parse(
+            localStorage.getItem(
+                "docengine_drafts"
+            )
+        ) || {};
+
+
+
+        drafts[page] = {
+
+            content:
+            content.innerHTML,
+
+            savedAt:
+            new Date()
+
+        };
+
+
+
+        localStorage.setItem(
+            "docengine_drafts",
+            JSON.stringify(drafts)
+        );
+
+
+        alert(
+            "Draft saved"
+        );
+
+    };
+
+
+
+    // Add UI
+
+    content.parentElement.prepend(
+        saveBtn
     );
+
+
+    content.parentElement.prepend(
+        toolbar
+    );
+
 
     console.log(
         "Editing:",
         window.location.pathname
     );
-
 }

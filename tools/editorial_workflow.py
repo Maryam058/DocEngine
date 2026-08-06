@@ -57,6 +57,15 @@ class WorkflowRecord:
 	section: str
 
 
+@dataclass(frozen=True)
+class NavUpdateResult:
+	"""Result of attempting to update mkdocs navigation."""
+
+	updated: bool
+	section_name: str
+	file_path: str
+
+
 def _utc_now() -> str:
 	return datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
@@ -242,27 +251,99 @@ def _save_record(state: dict[str, Any], record: WorkflowRecord) -> None:
 	}
 
 
-def _upsert_nav_entry(markdown_path: Path, section: str) -> None:
+def _title_from_markdown_path(markdown_path: Path) -> str:
+	return markdown_path.stem.replace("-", " ").replace("_", " ").strip().title()
+
+
+def _audit_safe(value: str, limit: int = 220) -> str:
+	cleaned = re.sub(r"\s+", " ", value).strip()
+	if len(cleaned) <= limit:
+		return cleaned
+	return f"{cleaned[: limit - 3]}..."
+
+
+def _mkdocs_section_heading(section: str) -> str:
+	mapping = {
+		"user-guide": "User Guide",
+		"api": "API Reference",
+		"release-notes": "Release Notes",
+	}
+	return mapping.get(section, "User Guide")
+
+
+def _line_matches_top_level_nav_item(line: str) -> bool:
+	return bool(re.match(r"^\s{2}-\s+[^\n]+", line))
+
+
+def _line_matches_section_heading(line: str, heading: str) -> bool:
+	return bool(re.match(rf"^\s{{2}}-\s+{re.escape(heading)}:\s*$", line))
+
+
+def _nav_entry_exists(mkdocs_content: str, relative_path: str) -> bool:
+	pattern = rf":\s*['\"]?{re.escape(relative_path)}['\"]?\s*$"
+	return bool(re.search(pattern, mkdocs_content, flags=re.MULTILINE))
+
+
+def _find_nav_block(lines: list[str]) -> tuple[int, int]:
+	nav_start = -1
+	for idx, line in enumerate(lines):
+		if line.strip() == "nav:":
+			nav_start = idx
+			break
+
+	if nav_start < 0:
+		return -1, -1
+
+	nav_end = len(lines)
+	for idx in range(nav_start + 1, len(lines)):
+		line = lines[idx]
+		if line.strip() and not line.startswith((" ", "\t")):
+			nav_end = idx
+			break
+
+	return nav_start, nav_end
+
+
+def _upsert_nav_entry(markdown_path: Path, section: str) -> NavUpdateResult:
 	mkdocs_path = PROJECT_ROOT / "mkdocs.yml"
 	if not mkdocs_path.exists():
-		return
+		return NavUpdateResult(updated=False, section_name=_mkdocs_section_heading(section), file_path="")
 
 	relative = markdown_path.relative_to(DOCS_DIR).as_posix()
+	section_heading = _mkdocs_section_heading(section)
 	content = mkdocs_path.read_text(encoding="utf-8")
-	if relative in content:
-		return
+	if _nav_entry_exists(content, relative):
+		return NavUpdateResult(updated=False, section_name=section_heading, file_path=relative)
 
-	heading = "  - User Guide:" if section == "user-guide" else "  - API:" if section == "api" else "  - Release Notes:"
-	entry_title = markdown_path.stem.replace("-", " ").replace("_", " ").strip().title()
-	entry = f"    - {entry_title}: {relative}"
+	lines = content.splitlines(keepends=True)
+	nav_start, nav_end = _find_nav_block(lines)
+	entry_title = _title_from_markdown_path(markdown_path)
+	entry_line = f"      - {entry_title}: {relative}\n"
 
-	if heading in content:
-		updated = content.replace(heading, f"{heading}\n{entry}", 1)
+	if nav_start < 0:
+		updated = content.rstrip() + f"\n\nnav:\n  - {entry_title}: {relative}\n"
+		mkdocs_path.write_text(updated, encoding="utf-8")
+		return NavUpdateResult(updated=True, section_name=section_heading, file_path=relative)
+
+	section_start = -1
+	for idx in range(nav_start + 1, nav_end):
+		if _line_matches_section_heading(lines[idx], section_heading):
+			section_start = idx
+			break
+
+	if section_start >= 0:
+		insert_at = nav_end
+		for idx in range(section_start + 1, nav_end):
+			if _line_matches_top_level_nav_item(lines[idx]):
+				insert_at = idx
+				break
+		lines.insert(insert_at, entry_line)
 	else:
-		nav_block = f"nav:\n  - {entry_title}: {relative}\n"
-		updated = content + "\n" + nav_block
+		section_lines = [f"  - {section_heading}:\n", entry_line]
+		lines[nav_end:nav_end] = section_lines
 
-	mkdocs_path.write_text(updated, encoding="utf-8")
+	mkdocs_path.write_text("".join(lines), encoding="utf-8")
+	return NavUpdateResult(updated=True, section_name=section_heading, file_path=relative)
 
 
 def ingest_source(
@@ -435,21 +516,40 @@ def publish_document(
 
 	published_path.parent.mkdir(parents=True, exist_ok=True)
 	shutil.copyfile(draft_path, published_path)
-	_upsert_nav_entry(published_path, record.section)
+	mkdocs_path = PROJECT_ROOT / "mkdocs.yml"
+	previous_mkdocs_content = mkdocs_path.read_text(encoding="utf-8") if mkdocs_path.exists() else None
+	nav_update = _upsert_nav_entry(published_path, record.section)
+	if nav_update.updated:
+		_audit(
+			state,
+			record.document_id,
+			actor,
+			f"nav-auto-updated:file={nav_update.file_path};section={nav_update.section_name}",
+			STATUS_COMMITTED,
+		)
 
 	commit_id = f"doc{int(datetime.now(UTC).timestamp()):x}"[:14]
 	_audit(state, record.document_id, actor, f"commit-created:{commit_id}", STATUS_COMMITTED)
 
 	max_attempts = 3
 	build_success = False
+	last_build_output = ""
 	for attempt in range(1, max_attempts + 1):
-		build_success, _ = _run_mkdocs_build()
+		build_success, build_output = _run_mkdocs_build()
+		last_build_output = build_output
 		if build_success:
 			_audit(state, record.document_id, "CI", f"mkdocs-build-success-attempt-{attempt}", STATUS_BUILT)
 			break
 		_audit(state, record.document_id, "CI", f"mkdocs-build-retry-{attempt}", STATUS_BUILT)
 
 	if not build_success:
+		if previous_mkdocs_content is not None and mkdocs_path.exists():
+			mkdocs_path.write_text(previous_mkdocs_content, encoding="utf-8")
+			_audit(state, record.document_id, actor, "mkdocs-nav-rollback:restored-previous-state", STATUS_BUILT)
+
+		failure_summary = _audit_safe(last_build_output or "No build output available")
+		_audit(state, record.document_id, "CI", f"mkdocs-build-failed:{failure_summary}", STATUS_BUILT)
+		_save_state(state)
 		raise RuntimeError("MkDocs build failed after 3 attempts. Publishing stopped.")
 
 	deployed, deploy_attempt = _simulate_deploy(max_attempts, max(0, deploy_fail_attempts))

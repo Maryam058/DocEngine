@@ -18,6 +18,7 @@ nav:
       - Covid CCM: UserGuide/Covid-CCM.md
       - Health Kiosk Integration: UserGuide/Health-Kiosk-Integration.md
 
+      - Medical Warnings: UserGuide/Medical_Warnings.md
   - API Reference:
       - OpenAPI: api/api-reference.md
 

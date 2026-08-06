@@ -1233,3 +1233,123 @@ Complete only the missing frontend integration.
 - Human Review is now accessible from MkDocs navigation, lists all draft pages under `docs/drafts`, and opens each draft in the existing review editor flow without backend changes or duplicate UI.
 
 ---
+
+## Prompt #21
+
+**Date:**
+2026-08-05
+
+**Time:**
+22:15
+
+**Task Summary:**
+Implement automatic MkDocs navigation registration in the existing publish workflow with section-based placement, duplicate prevention, rollback on build failure, and audit traceability.
+
+**Full Prompt:**
+```text
+Implement automatic MkDocs navigation registration during the existing publish workflow.
+```
+
+**Files Created**
+- None
+
+**Files Modified**
+- tools/editorial_workflow.py
+- mkdocs.yml
+- docs/.workflow/workflow-state.json
+- docs/ai-logs/editorial-audit-log.md
+- docs/ai-logs/prompt-log.md
+- docs/ai-logs/daily-summary.md
+
+**Actions Performed**
+- Reworked publish-time nav registration logic in `tools/editorial_workflow.py` to map metadata sections to MkDocs headings (`User Guide`, `API Reference`, `Release Notes`) and append new entries at the end of the matching section.
+- Preserved existing nav order by inserting only one new line in the targeted section and avoiding any reordering of existing items.
+- Added duplicate checks against existing nav path mappings so repeated publishes do not create duplicate entries.
+- Added publish-stage rollback logic to restore the prior `mkdocs.yml` content if all MkDocs build attempts fail after nav update.
+- Added audit entries for automatic nav updates and rollback/build-failure details.
+- Verified with `Medical_Warnings`: removed its manual nav line, reran ingest/review/approve/publish, confirmed automatic nav insertion under User Guide, confirmed placement at the bottom of the User Guide list, and ran a successful clean MkDocs build.
+
+**Verification**
+- `python run_pipeline.py ingest docs/UserGuide/Medical_Warnings.md --source-type markdown --section user-guide --actor AI` (successful)
+- `python run_pipeline.py review medical-warnings --action submit --actor Human` (successful)
+- `python run_pipeline.py review medical-warnings --action approve --actor Human` (successful)
+- `python run_pipeline.py publish medical-warnings --actor AI` (successful)
+- `python -m mkdocs build --clean` (successful)
+
+**Result**
+- Publish now auto-registers new pages in the correct nav section without reordering existing entries, logs nav update metadata to the audit trail, and includes safety rollback behavior for failed post-nav MkDocs builds.
+
+---
+
+## Prompt #22
+
+**Date:**
+2026-08-05
+
+**Time:**
+22:21
+
+**Task Summary:**
+Create a new AI-generated User Guide draft Markdown document for DocEngine workflow testing and register it in Draft state without publish or nav changes.
+
+**Full Prompt:**
+```text
+Create a new AI-generated Markdown documentation file for DocEngine testing.
+
+Document details:
+
+Title:
+Password Reset Guide
+
+Document type:
+User Guide
+
+Purpose:
+This is a test document to verify the complete AI Markdown editorial workflow.
+
+Create clean Markdown content with:
+
+- Title
+- Introduction
+- Prerequisites
+- Step-by-step instructions
+- Notes section
+- Warning section
+- FAQ section
+
+Save it as an AI draft only.
+
+Requirements:
+- Do not publish it.
+- Do not add it to mkdocs.yml.
+- Save it in the draft workflow location.
+- Register it in the DocEngine workflow with:
+  source_type = ai-markdown
+  status = Draft
+
+The document must enter Human Review workflow.
+```
+
+**Files Created**
+- docs/drafts/password-reset-guide.md
+
+**Files Modified**
+- docs/.workflow/workflow-state.json
+- docs/ai-logs/prompt-log.md
+- docs/ai-logs/daily-summary.md
+
+**Actions Performed**
+- Created a new AI-authored User Guide draft Markdown document with the requested structure and sections.
+- Ingested the draft through the editorial pipeline with explicit `--source-type ai-markdown` and `--section user-guide`.
+- Verified workflow registration for `password-reset-guide` with `status=Draft` and `source_type=ai-markdown`.
+- Confirmed no publish action was run and no `mkdocs.yml` navigation entry was added for this draft.
+
+**Verification**
+- `python run_pipeline.py ingest docs/drafts/password-reset-guide.md --source-type ai-markdown --section user-guide --actor AI` (successful)
+- `python run_pipeline.py status` shows `document_id=password-reset-guide | status=Draft | source_type=ai-markdown`
+- `Select-String -Path mkdocs.yml -Pattern "password-reset-guide|Password Reset Guide"` (no matches)
+
+**Result**
+- The Password Reset Guide was created as a draft-only AI markdown source, registered in workflow with Draft status, and left unpublished with no MkDocs nav changes.
+
+---

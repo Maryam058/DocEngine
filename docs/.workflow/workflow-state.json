@@ -1,10 +1,18 @@
 {
   "documents": {
     "medical-warnings": {
-      "source_type": "pdf",
-      "source_path": "C:\\Users\\maryam.rehman\\DocEngine\\docs\\UserGuide\\Medical_Warnings.pdf",
-      "draft_path": "C:\\Users\\maryam.rehman\\DocEngine\\docs\\drafts\\medical-warnings.md",
+      "source_type": "markdown",
+      "source_path": "C:\\Users\\maryam.rehman\\DocEngine\\docs\\UserGuide\\Medical_Warnings.md",
+      "draft_path": "C:\\Users\\maryam.rehman\\DocEngine\\docs\\drafts\\medical-warnings-1.md",
       "published_path": "C:\\Users\\maryam.rehman\\DocEngine\\docs\\UserGuide\\Medical_Warnings.md",
+      "status": "Published",
+      "section": "user-guide"
+    },
+    "password-reset-guide": {
+      "source_type": "ai-markdown",
+      "source_path": "C:\\Users\\maryam.rehman\\DocEngine\\docs\\drafts\\password-reset-guide.md",
+      "draft_path": "C:\\Users\\maryam.rehman\\DocEngine\\docs\\drafts\\password-reset-guide-1.md",
+      "published_path": "C:\\Users\\maryam.rehman\\DocEngine\\docs\\UserGuide\\password-reset-guide.md",
       "status": "Draft",
       "section": "user-guide"
     }
@@ -20,6 +28,139 @@
     {
       "timestamp": "2026-08-05T16:31:23Z",
       "document_id": "medical-warnings",
+      "actor": "AI",
+      "action": "draft-created",
+      "status": "Draft"
+    },
+    {
+      "timestamp": "2026-08-05T16:59:52Z",
+      "document_id": "medical-warnings",
+      "actor": "Human",
+      "action": "sent-to-human-review",
+      "status": "Human Review"
+    },
+    {
+      "timestamp": "2026-08-05T17:00:19Z",
+      "document_id": "medical-warnings",
+      "actor": "Human",
+      "action": "approved",
+      "status": "Approved"
+    },
+    {
+      "timestamp": "2026-08-05T17:04:34Z",
+      "document_id": "medical-warnings",
+      "actor": "AI",
+      "action": "validation-passed",
+      "status": "Validation"
+    },
+    {
+      "timestamp": "2026-08-05T17:04:34Z",
+      "document_id": "medical-warnings",
+      "actor": "AI",
+      "action": "commit-created:doc6a736d22",
+      "status": "Commit"
+    },
+    {
+      "timestamp": "2026-08-05T17:04:41Z",
+      "document_id": "medical-warnings",
+      "actor": "CI",
+      "action": "mkdocs-build-success-attempt-1",
+      "status": "MkDocs Build"
+    },
+    {
+      "timestamp": "2026-08-05T17:04:41Z",
+      "document_id": "medical-warnings",
+      "actor": "CI",
+      "action": "deploy-success-attempt-1",
+      "status": "Deploy"
+    },
+    {
+      "timestamp": "2026-08-05T17:04:41Z",
+      "document_id": "medical-warnings",
+      "actor": "CI",
+      "action": "published",
+      "status": "Published"
+    },
+    {
+      "timestamp": "2026-08-05T17:14:02Z",
+      "document_id": "medical-warnings",
+      "actor": "AI",
+      "action": "new",
+      "status": "New"
+    },
+    {
+      "timestamp": "2026-08-05T17:14:02Z",
+      "document_id": "medical-warnings",
+      "actor": "AI",
+      "action": "draft-created",
+      "status": "Draft"
+    },
+    {
+      "timestamp": "2026-08-05T17:14:06Z",
+      "document_id": "medical-warnings",
+      "actor": "Human",
+      "action": "sent-to-human-review",
+      "status": "Human Review"
+    },
+    {
+      "timestamp": "2026-08-05T17:14:15Z",
+      "document_id": "medical-warnings",
+      "actor": "Human",
+      "action": "approved",
+      "status": "Approved"
+    },
+    {
+      "timestamp": "2026-08-05T17:14:20Z",
+      "document_id": "medical-warnings",
+      "actor": "AI",
+      "action": "validation-passed",
+      "status": "Validation"
+    },
+    {
+      "timestamp": "2026-08-05T17:14:20Z",
+      "document_id": "medical-warnings",
+      "actor": "AI",
+      "action": "nav-auto-updated:file=UserGuide/Medical_Warnings.md;section=User Guide",
+      "status": "Commit"
+    },
+    {
+      "timestamp": "2026-08-05T17:14:20Z",
+      "document_id": "medical-warnings",
+      "actor": "AI",
+      "action": "commit-created:doc6a736f6c",
+      "status": "Commit"
+    },
+    {
+      "timestamp": "2026-08-05T17:14:30Z",
+      "document_id": "medical-warnings",
+      "actor": "CI",
+      "action": "mkdocs-build-success-attempt-1",
+      "status": "MkDocs Build"
+    },
+    {
+      "timestamp": "2026-08-05T17:14:30Z",
+      "document_id": "medical-warnings",
+      "actor": "CI",
+      "action": "deploy-success-attempt-1",
+      "status": "Deploy"
+    },
+    {
+      "timestamp": "2026-08-05T17:14:30Z",
+      "document_id": "medical-warnings",
+      "actor": "CI",
+      "action": "published",
+      "status": "Published"
+    },
+    {
+      "timestamp": "2026-08-05T17:21:23Z",
+      "document_id": "password-reset-guide",
+      "actor": "AI",
+      "action": "new",
+      "status": "New"
+    },
+    {
+      "timestamp": "2026-08-05T17:21:23Z",
+      "document_id": "password-reset-guide",
       "actor": "AI",
       "action": "draft-created",
       "status": "Draft"

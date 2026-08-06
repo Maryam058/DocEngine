@@ -17,8 +17,11 @@ nav:
       - Manage Appointments: UserGuide/manage-appointments.md
       - Covid CCM: UserGuide/Covid-CCM.md
       - Health Kiosk Integration: UserGuide/Health-Kiosk-Integration.md
-
       - Medical Warnings: UserGuide/Medical_Warnings.md
+
+  - Editor:
+    - Document Workspace: editor/index.md
+
   - API Reference:
       - OpenAPI: api/api-reference.md
 
@@ -32,6 +35,7 @@ nav:
 
 theme:
   name: material
+  custom_dir: overrides
 
   features:
     - navigation.tabs
@@ -43,8 +47,10 @@ plugins:
   - search
 
 extra_css:
+  - https://cdn.quilljs.com/1.3.6/quill.snow.css
   - stylesheets/extra.css
   - stylesheets/doc-authoring.css
+  
 
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/sweetalert2@11

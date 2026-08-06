@@ -1499,3 +1499,129 @@ button[data-action="publish"]:hover{
         top: calc(var(--md-header-height, 3.2rem) + 0.25rem);
     }
 }
+/* ==========================================================
+   CONFLUENCE STYLE TOOLBAR
+========================================================== */
+
+.review-editor-host{
+    border:1px solid #dfe1e6;
+    border-radius:12px;
+    overflow:hidden;
+    background:#fff;
+    box-shadow:0 8px 24px rgba(9,30,66,.08);
+}
+
+#review-editor-toolbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:8px;
+
+    padding:10px 14px;
+
+    background:#f7f8fa;
+
+    border-bottom:1px solid #dfe1e6;
+}
+
+#review-editor-toolbar .ql-formats{
+    display:flex;
+    align-items:center;
+    gap:6px;
+
+    padding-right:10px;
+    margin-right:8px;
+
+    border-right:1px solid #dfe1e6;
+}
+
+#review-editor-toolbar .ql-formats:last-child{
+    border-right:none;
+    margin-right:0;
+    padding-right:0;
+}
+
+#review-editor-toolbar button,
+#review-editor-toolbar select{
+
+    height:34px;
+
+    border-radius:8px;
+
+    transition:.2s;
+
+}
+
+#review-editor-toolbar button:hover{
+
+    background:#e9f2ff;
+
+}
+
+#review-editor-toolbar button.ql-active{
+
+    background:#0052cc;
+    color:#fff;
+
+}
+
+#review-quill-editor{
+
+    min-height:700px;
+
+    background:#fff;
+
+}
+
+.ql-toolbar.ql-snow{
+
+    border:none !important;
+
+}
+
+.ql-container.ql-snow{
+
+    border:none !important;
+
+}
+
+.ql-editor{
+
+    font-size:16px;
+    line-height:1.8;
+
+    padding:30px;
+
+}
+
+.ql-editor h1{
+
+    font-size:2rem;
+
+}
+
+.ql-editor h2{
+
+    font-size:1.7rem;
+
+}
+
+.ql-editor h3{
+
+    font-size:1.4rem;
+
+}
+
+.review-actions{
+
+    border-top:1px solid #dfe1e6;
+
+    padding:15px;
+
+    background:#fafbfc;
+
+}

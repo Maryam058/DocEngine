@@ -370,6 +370,27 @@ opacity: 0.85;
     font-size: 14px;
 }
 
+
 .doc-actions button:hover {
     background: #1d4ed8;
+}
+
+.doc-actions{
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:20px;
+}
+
+.edit-btn{
+    background:#1976d2;
+    color:white;
+    border:none;
+    padding:10px 18px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.edit-btn:hover{
+    background:#1565c0;
 }

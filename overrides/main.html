@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  {% if page.url != "" and page.url != "index/" %}
+
+  <div class="doc-actions">
+      <button class="edit-btn" onclick="openEditor()">
+          ✏️ Edit Page
+      </button>
+  </div>
+
+  {% endif %}
+
+  {{ super() }}
+
+{% endblock %}

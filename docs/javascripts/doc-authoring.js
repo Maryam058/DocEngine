@@ -567,3 +567,11 @@ document.addEventListener(
     }
 
 );
+function openEditor() {
+
+    const currentPage = window.location.pathname;
+
+    localStorage.setItem("currentDoc", currentPage);
+
+    window.location.href = "/DocEngine/editor/";
+}

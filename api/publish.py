@@ -1,6 +1,6 @@
 from http.server import BaseHTTPRequestHandler
 from html.parser import HTMLParser
-from urllib.parse import unquote
+from urllib.parse import unquote, quote
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 import base64
@@ -229,8 +229,9 @@ def github_request(method, path, payload=None):
         "https://api.github.com/repos/"
         f"{GITHUB_OWNER}/"
         f"{GITHUB_REPO}/"
-        f"contents/{path}"
-    )
+        "/contents/"
+        + quote(path, safe="/")
+        )
 
     headers = {
         "Authorization": f"Bearer {GITHUB_TOKEN}",

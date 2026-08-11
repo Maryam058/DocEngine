@@ -1595,7 +1595,7 @@ document
                  */
                 const response =
                     await fetch(
-    "https://doc-engine-g2cbb3gw2-doc-engine.vercel.app/api/publish",
+                    "https://doc-engine-nu.vercel.app/api/publish",
                         {
                             method: "POST",
 

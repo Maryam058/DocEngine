@@ -1,6 +1,11 @@
 /* ==========================================================
    DocEngine Editor
-   Part 1
+   Inline Documentation Editor
+========================================================== */
+
+
+/* ==========================================================
+   Configuration
 ========================================================== */
 
 const CONFIG = {
@@ -10,9 +15,7 @@ const CONFIG = {
     STORAGE: {
 
         DOCUMENTS: "docengine_documents",
-
         HISTORY: "docengine_history",
-
         VERSIONS: "docengine_versions"
 
     },
@@ -20,13 +23,7 @@ const CONFIG = {
     WORKFLOW: {
 
         DRAFT: "draft",
-
-        REVIEW: "review",
-
         APPROVED: "approved",
-
-        REJECTED: "rejected",
-
         PUBLISHED: "published"
 
     }
@@ -52,7 +49,9 @@ const AppState = {
 
     lastSaved: null,
 
-    statusText: "Draft"
+    statusText: "Draft",
+
+    inlineMode: false
 
 };
 
@@ -67,7 +66,8 @@ const Storage = {
 
         try {
 
-            const value = localStorage.getItem(key);
+            const value =
+                localStorage.getItem(key);
 
             return value
                 ? JSON.parse(value)
@@ -77,7 +77,10 @@ const Storage = {
 
         catch (error) {
 
-            console.error(error);
+            console.error(
+                "Storage load error:",
+                error
+            );
 
             return defaultValue;
 
@@ -85,15 +88,26 @@ const Storage = {
 
     },
 
+
     save(key, value) {
 
-        localStorage.setItem(
+        try {
 
-            key,
+            localStorage.setItem(
+                key,
+                JSON.stringify(value)
+            );
 
-            JSON.stringify(value)
+        }
 
-        );
+        catch (error) {
+
+            console.error(
+                "Storage save error:",
+                error
+            );
+
+        }
 
     }
 
@@ -111,6 +125,7 @@ const Time = {
         return new Date().toISOString();
 
     },
+
 
     format(date = new Date()) {
 
@@ -130,35 +145,41 @@ const DocumentStore = {
     getAll() {
 
         return Storage.load(
-
             CONFIG.STORAGE.DOCUMENTS,
-
             {}
-
         );
 
     },
 
+
     get(page) {
 
-        const docs = this.getAll();
+        if (!page) {
+            return null;
+        }
+
+        const docs =
+            this.getAll();
 
         return docs[page] || null;
 
     },
 
+
     save(page, data) {
 
-        const docs = this.getAll();
+        if (!page) {
+            return;
+        }
+
+        const docs =
+            this.getAll();
 
         docs[page] = data;
 
         Storage.save(
-
             CONFIG.STORAGE.DOCUMENTS,
-
             docs
-
         );
 
     }
@@ -170,19 +191,32 @@ const DocumentStore = {
    Save Status
 ========================================================== */
 
-function updateSaveStatus(message){
+function updateSaveStatus(message) {
 
-    const el = document.querySelector(
+    const elements = [
 
-        "#save-status"
+        document.querySelector(
+            "#save-status"
+        ),
 
+        document.querySelector(
+            "#inline-save-status"
+        )
+
+    ];
+
+    elements.forEach(
+        element => {
+
+            if (element) {
+
+                element.textContent =
+                    message;
+
+            }
+
+        }
     );
-
-    if(el){
-
-        el.textContent = message;
-
-    }
 
 }
 
@@ -193,9 +227,9 @@ function updateSaveStatus(message){
 
 const DraftManager = {
 
-    getContent(){
+    getContent() {
 
-        if(!AppState.editor){
+        if (!AppState.editor) {
 
             return "";
 
@@ -205,73 +239,95 @@ const DraftManager = {
 
     },
 
-    setContent(html){
 
-        if(!AppState.editor){
+    setContent(html) {
+
+        if (!AppState.editor) {
 
             return;
 
         }
 
-        AppState.editor.root.innerHTML = html;
+        AppState.editor.root.innerHTML =
+            html || "";
 
     },
 
-    load(){
 
-        const page = AppState.currentDocument;
+    load() {
 
-        if(!page){
+        const page =
+            AppState.currentDocument;
 
-            return;
+        if (!page) {
+
+            return null;
 
         }
 
-        const doc = DocumentStore.get(page);
+        const doc =
+            DocumentStore.get(page);
 
-        if(!doc){
+        if (!doc) {
 
-            return;
+            return null;
 
         }
 
         this.setContent(
-
             doc.content
-
         );
 
         AppState.currentStatus =
-
-            doc.status;
+            doc.status ||
+            CONFIG.WORKFLOW.DRAFT;
 
         AppState.currentVersion =
-
-            doc.version;
+            doc.version || 1;
 
         AppState.statusText =
-
-            doc.status.charAt(0).toUpperCase() +
-
-            doc.status.slice(1);
+            this.getStatusText(
+                AppState.currentStatus
+            );
 
         AppState.lastSaved =
+            doc.updatedAt || null;
 
-            doc.updatedAt;
+        AppState.draftChanged =
+            false;
+
+        return doc;
 
     },
 
-    save(){
+
+    save() {
 
         const page =
-
             AppState.currentDocument;
 
-        if(!page){
+        if (!page) {
+
+            console.warn(
+                "No current document selected."
+            );
 
             return;
 
         }
+
+        if (!AppState.editor) {
+
+            console.warn(
+                "Editor is not initialized."
+            );
+
+            return;
+
+        }
+
+        const now =
+            Time.now();
 
         DocumentStore.save(
 
@@ -280,38 +336,50 @@ const DraftManager = {
             {
 
                 content:
-
                     this.getContent(),
 
                 status:
-
                     AppState.currentStatus,
 
                 version:
-
                     AppState.currentVersion,
 
                 updatedAt:
-
-                    Time.now()
+                    now
 
             }
 
         );
 
         AppState.lastSaved =
+            now;
 
-            Time.now();
-
-        AppState.draftChanged = false;
+        AppState.draftChanged =
+            false;
 
         updateSaveStatus(
-
             "Saved " +
-
             Time.format()
-
         );
+
+    },
+
+
+    getStatusText(status) {
+
+        switch (status) {
+
+        case CONFIG.WORKFLOW.APPROVED:
+            return "Approved";
+
+        case CONFIG.WORKFLOW.PUBLISHED:
+            return "Published";
+
+        default:
+            return "Draft";
+
+
+        }
 
     }
 
@@ -324,27 +392,35 @@ const DraftManager = {
 
 let autoSave = null;
 
-function startAutoSave(){
+
+function startAutoSave() {
 
     clearInterval(autoSave);
 
-    autoSave = setInterval(()=>{
+    autoSave =
+        setInterval(
 
-        if(
+            () => {
 
-            AppState.draftChanged
+                if (
+                    AppState.draftChanged &&
+                    AppState.editor &&
+                    AppState.currentDocument
+                ) {
 
-        ){
+                    DraftManager.save();
 
-            DraftManager.save();
+                }
 
-        }
+            },
 
-    },
+            CONFIG.AUTOSAVE_DELAY
 
-    CONFIG.AUTOSAVE_DELAY);
+        );
 
 }
+
+
 /* ==========================================================
    History Manager
 ========================================================== */
@@ -360,9 +436,11 @@ const HistoryManager = {
 
     },
 
+
     add(action, message) {
 
-        const history = this.getAll();
+        const history =
+            this.getAll();
 
         history.unshift({
 
@@ -370,24 +448,25 @@ const HistoryManager = {
 
             message,
 
-            time: Time.now(),
+            time:
+                Time.now(),
 
-            document: AppState.currentDocument
+            document:
+                AppState.currentDocument
 
         });
 
-        if (history.length > 100) {
+        if (
+            history.length > 100
+        ) {
 
             history.length = 100;
 
         }
 
         Storage.save(
-
             CONFIG.STORAGE.HISTORY,
-
             history
-
         );
 
     }
@@ -404,45 +483,47 @@ const VersionManager = {
     getAll() {
 
         return Storage.load(
-
             CONFIG.STORAGE.VERSIONS,
-
             []
-
         );
 
     },
 
+
     create(action) {
 
-        const versions = this.getAll();
+        const versions =
+            this.getAll();
 
         versions.unshift({
 
-            document: AppState.currentDocument,
+            document:
+                AppState.currentDocument,
 
-            version: AppState.currentVersion,
+            version:
+                AppState.currentVersion,
 
-            action: action,
+            action,
 
-            content: DraftManager.getContent(),
+            content:
+                DraftManager.getContent(),
 
-            createdAt: Time.now()
+            createdAt:
+                Time.now()
 
         });
 
-        if (versions.length > 50) {
+        if (
+            versions.length > 50
+        ) {
 
             versions.length = 50;
 
         }
 
         Storage.save(
-
             CONFIG.STORAGE.VERSIONS,
-
             versions
-
         );
 
     }
@@ -454,96 +535,71 @@ const VersionManager = {
    Workflow Manager
 ========================================================== */
 
+/* ==========================================================
+   Workflow Manager
+========================================================== */
+
 const WorkflowManager = {
 
     changeStatus(status) {
 
-        AppState.currentStatus = status;
+        if (!AppState.currentDocument) {
+
+            return;
+
+        }
+
+        /*
+         * Always save latest editor content
+         * before changing workflow state.
+         */
+
+        if (AppState.editor) {
+
+            DraftManager.save();
+
+        }
+
+
+        AppState.currentStatus =
+            status;
+
+        AppState.statusText =
+            DraftManager.getStatusText(
+                status
+            );
+
 
         switch (status) {
 
             case CONFIG.WORKFLOW.DRAFT:
 
-                AppState.statusText = "Draft";
-
                 break;
 
-            case CONFIG.WORKFLOW.REVIEW:
-
-                AppState.statusText = "Under Review";
-
-                HistoryManager.add(
-
-                    "review",
-
-                    "Submitted for Review"
-
-                );
-
-                VersionManager.create(
-
-                    "review"
-
-                );
-
-                break;
 
             case CONFIG.WORKFLOW.APPROVED:
 
-                AppState.statusText = "Approved";
-
                 HistoryManager.add(
-
                     "approve",
-
                     "Document Approved"
-
                 );
 
                 VersionManager.create(
-
                     "approve"
-
                 );
 
                 break;
 
-            case CONFIG.WORKFLOW.REJECTED:
-
-                AppState.statusText = "Rejected";
-
-                HistoryManager.add(
-
-                    "reject",
-
-                    "Document Rejected"
-
-                );
-
-                VersionManager.create(
-
-                    "reject"
-
-                );
-
-                break;
 
             case CONFIG.WORKFLOW.PUBLISHED:
 
-                AppState.statusText = "Published";
-
                 HistoryManager.add(
-
                     "publish",
-
                     "Document Published"
-
                 );
 
                 VersionManager.create(
-
                     "publish"
-
                 );
 
                 AppState.currentVersion++;
@@ -551,6 +607,11 @@ const WorkflowManager = {
                 break;
 
         }
+
+
+        /*
+         * Save workflow state.
+         */
 
         DraftManager.save();
 
@@ -569,39 +630,85 @@ const UIManager = {
 
     refresh() {
 
-        const status = document.querySelector(
+        const statusElements = [
 
-            "#workflow-status"
+            document.querySelector(
+                "#workflow-status"
+            ),
 
+            document.querySelector(
+                "#inline-workflow-status"
+            )
+
+        ];
+
+
+        const versionElements = [
+
+            document.querySelector(
+                "#version-label"
+            ),
+
+            document.querySelector(
+                "#inline-version-label"
+            )
+
+        ];
+
+
+        statusElements.forEach(
+            element => {
+
+                if (element) {
+
+                    element.textContent =
+                        AppState.statusText;
+
+                }
+
+            }
         );
 
-        const version = document.querySelector(
 
-            "#version-label"
+        versionElements.forEach(
+            element => {
 
+                if (element) {
+
+                    element.textContent =
+                        AppState.currentVersion;
+
+                }
+
+            }
         );
 
-        if (status) {
 
-            status.textContent =
+        /*
+         * Update save status if a saved time exists.
+         */
 
-                AppState.statusText;
+        if (
+            AppState.lastSaved &&
+            !AppState.draftChanged
+        ) {
 
-        }
-
-        if (version) {
-
-            version.textContent =
-
-                "v" +
-
-                AppState.currentVersion;
+            updateSaveStatus(
+                "Saved " +
+                Time.format(
+                    new Date(
+                        AppState.lastSaved
+                    )
+                )
+            );
 
         }
 
     }
 
 };
+
+
 /* ==========================================================
    Application Controller
 ========================================================== */
@@ -610,20 +717,43 @@ const App = {
 
     ui: {},
 
+
     init() {
+
+        /*
+         * Identify current document FIRST.
+         */
+
+        AppState.currentDocument =
+            localStorage.getItem(
+                "currentDoc"
+            ) ||
+            window.location.pathname;
+
 
         this.cacheDOM();
 
-        this.initEditor();
+        /*
+         * Keep standalone editor compatibility.
+         * This only runs if #editor exists.
+         */
+
+        this.initStandaloneEditor();
 
         this.bindEvents();
 
-        AppState.currentDocument =
-            localStorage.getItem("currentDoc");
+        /*
+         * Load existing saved document
+         * if a standalone editor is being used.
+         */
 
-        DraftManager.load();
+        if (AppState.editor) {
 
-        registerDraftEvents();
+            DraftManager.load();
+
+            registerDraftEvents();
+
+        }
 
         startAutoSave();
 
@@ -635,33 +765,45 @@ const App = {
 
     },
 
+
     cacheDOM() {
 
         this.ui = {
 
             editor:
-                document.querySelector("#editor"),
+                document.querySelector(
+                    "#editor"
+                ),
 
             save:
-                document.querySelector("#btn-save"),
-
-            review:
-                document.querySelector("#btn-review"),
+                document.querySelector(
+                    "#btn-save"
+                ),
 
             approve:
-                document.querySelector("#btn-approve"),
-
-            reject:
-                document.querySelector("#btn-reject"),
+                document.querySelector(
+                    "#btn-approve"
+                ),
 
             publish:
-                document.querySelector("#btn-publish")
+                document.querySelector(
+                    "#btn-publish"
+                )
 
         };
 
     },
 
-    initEditor() {
+
+    initStandaloneEditor() {
+
+        /*
+         * This is only for the old
+         * standalone editor page.
+         *
+         * Normal documentation pages
+         * use InlineEditor instead.
+         */
 
         if (!this.ui.editor) {
 
@@ -669,102 +811,117 @@ const App = {
 
         }
 
-        AppState.editor = new Quill(
 
-            "#editor",
+        AppState.editor =
+            new Quill(
 
-            {
+                "#editor",
 
-                theme: "snow",
+                {
 
-                modules: {
+                    theme: "snow",
 
-                    toolbar: [
+                    modules: {
 
-                        ["bold", "italic", "underline"],
+                        toolbar: [
 
-                        [{ header: 1 }, { header: 2 }],
+                            [
+                                "bold",
+                                "italic",
+                                "underline",
+                                "strike"
+                            ],
 
-                        [{ list: "ordered" }, { list: "bullet" }],
+                            [
+                                {
+                                    header: 1
+                                },
+                                {
+                                    header: 2
+                                },
+                                {
+                                    header: 3
+                                }
+                            ],
 
-                        ["blockquote", "code-block"],
+                            [
+                                {
+                                    list: "ordered"
+                                },
+                                {
+                                    list: "bullet"
+                                }
+                            ],
 
-                        ["link", "image"],
+                            [
+                                {
+                                    align: []
+                                }
+                            ],
 
-                        ["clean"]
+                            [
+                                "blockquote",
+                                "code-block"
+                            ],
 
-                    ]
+                            [
+                                "link",
+                                "image"
+                            ],
+
+                            [
+                                "clean"
+                            ]
+
+                        ]
+
+                    }
 
                 }
 
-            }
-
-        );
+            );
 
     },
+
 
     bindEvents() {
 
         this.ui.save?.addEventListener(
-
             "click",
-
-            () => DraftManager.save()
-
+            () =>
+                DraftManager.save()
         );
 
-        this.ui.review?.addEventListener(
-
-            "click",
-
-            () => WorkflowManager.changeStatus(
-                CONFIG.WORKFLOW.REVIEW
-            )
-
-        );
 
         this.ui.approve?.addEventListener(
-
             "click",
-
-            () => WorkflowManager.changeStatus(
-                CONFIG.WORKFLOW.APPROVED
-            )
-
-        );
-
-        this.ui.reject?.addEventListener(
-
-            "click",
-
-            () => WorkflowManager.changeStatus(
-                CONFIG.WORKFLOW.REJECTED
-            )
-
+            () =>
+                WorkflowManager.changeStatus(
+                    CONFIG.WORKFLOW.APPROVED
+                )
         );
 
         this.ui.publish?.addEventListener(
-
             "click",
-
-            () => WorkflowManager.changeStatus(
-                CONFIG.WORKFLOW.PUBLISHED
-            )
-
+            () =>
+                WorkflowManager.changeStatus(
+                    CONFIG.WORKFLOW.PUBLISHED
+                )
         );
 
+
+        /*
+         * Ctrl + S
+         */
+
         document.addEventListener(
-
             "keydown",
-
             function (e) {
 
                 if (
-
-                    e.ctrlKey &&
-
+                    (e.ctrlKey ||
+                        e.metaKey) &&
                     e.key.toLowerCase() === "s"
-
                 ) {
 
                     e.preventDefault();
@@ -774,7 +931,6 @@ const App = {
                 }
 
             }
-
         );
 
     }
@@ -794,54 +950,751 @@ function registerDraftEvents() {
 
     }
 
+
+    /*
+     * Prevent duplicate listeners.
+     */
+
+    if (
+        AppState.editor.__draftListenerRegistered
+    ) {
+
+        return;
+
+    }
+
+    AppState.editor.__draftListenerRegistered =
+        true;
+
+
     AppState.editor.on(
-
         "text-change",
-
         function () {
 
-            AppState.draftChanged = true;
+            AppState.draftChanged =
+                true;
 
             updateSaveStatus(
-
                 "Unsaved Changes"
-
             );
 
         }
-
     );
 
 }
 
 
 /* ==========================================================
-   Open Editor
+   Open Inline Editor
 ========================================================== */
 
 function openEditor() {
 
     const page =
-
         window.location.pathname;
 
+
+    /*
+     * Remember exactly which page
+     * the user is editing.
+     */
+
     localStorage.setItem(
-
         "currentDoc",
-
         page
-
     );
 
-    window.location.href =
 
-        "/DocEngine/editor/";
+    /*
+     * Do NOT redirect to /editor/.
+     */
+
+    InlineEditor.start();
 
 }
 
 
 /* ==========================================================
-   Start
+   Inline Editor
+========================================================== */
+
+const InlineEditor = {
+
+
+    start() {
+
+        /*
+         * Prevent duplicate editor creation.
+         */
+
+        if (
+            document.querySelector(
+                "#inline-editor"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        const contentRoot =
+            document.querySelector(
+                ".md-content__inner"
+            );
+
+
+        if (!contentRoot) {
+
+            console.error(
+                "Documentation content area not found."
+            );
+
+            return;
+
+        }
+
+
+        /*
+         * Current page becomes the document key.
+         */
+
+        AppState.currentDocument =
+            window.location.pathname;
+
+        localStorage.setItem(
+            "currentDoc",
+            AppState.currentDocument
+        );
+
+
+        /*
+         * Store the original rendered page.
+         * This is used only when no saved draft exists.
+         */
+
+        const originalContent =
+            contentRoot.innerHTML;
+
+
+        /*
+         * Check whether this page already
+         * has a saved draft.
+         */
+
+        const savedDocument =
+            DocumentStore.get(
+                AppState.currentDocument
+            );
+
+
+        if (savedDocument) {
+
+            AppState.currentStatus =
+                savedDocument.status ||
+                CONFIG.WORKFLOW.DRAFT;
+
+            AppState.currentVersion =
+                savedDocument.version ||
+                1;
+
+            AppState.statusText =
+                DraftManager.getStatusText(
+                    AppState.currentStatus
+                );
+
+            AppState.lastSaved =
+                savedDocument.updatedAt ||
+                null;
+
+        }
+
+        else {
+
+            AppState.currentStatus =
+                CONFIG.WORKFLOW.DRAFT;
+
+            AppState.currentVersion =
+                1;
+
+            AppState.statusText =
+                "Draft";
+
+            AppState.lastSaved =
+                null;
+
+        }
+
+
+        /*
+         * Remove Edit Page button
+         * from the editable content.
+         */
+
+        const tempContent =
+            document.createElement(
+                "div"
+            );
+
+        tempContent.innerHTML =
+            originalContent;
+
+
+        tempContent
+            .querySelectorAll(
+                ".edit-page-button"
+            )
+            .forEach(
+                element =>
+                    element.remove()
+            );
+
+
+        /*
+         * Create editor workspace.
+         */
+
+        const workspace =
+            document.createElement(
+                "div"
+            );
+
+        workspace.className =
+            "inline-editor-workspace";
+
+
+        /*
+         * Toolbar container.
+         */
+
+        const toolbar =
+            document.createElement(
+                "div"
+            );
+
+        toolbar.id =
+            "inline-editor-toolbar";
+
+
+        /*
+         * Editor container.
+         */
+
+        const editorContainer =
+            document.createElement(
+                "div"
+            );
+
+        editorContainer.id =
+            "inline-editor";
+
+
+        /*
+         * Status area.
+         */
+
+        const status =
+            document.createElement(
+                "div"
+            );
+
+        status.className =
+            "inline-editor-status";
+
+
+        status.innerHTML = `
+
+            <span>
+                Status:
+                <strong id="inline-workflow-status">
+                    ${AppState.statusText}
+                </strong>
+            </span>
+
+            <span id="inline-save-status">
+                ${
+                    AppState.lastSaved
+                        ? "Saved " +
+                          Time.format(
+                              new Date(
+                                  AppState.lastSaved
+                              )
+                          )
+                        : "Ready to edit"
+                }
+            </span>
+
+            <span>
+                v<span id="inline-version-label">
+                    ${AppState.currentVersion}
+                </span>
+            </span>
+
+        `;
+
+
+        /*
+         * Workflow actions.
+         */
+
+        const actions =
+            document.createElement(
+                "div"
+            );
+
+        actions.className =
+            "inline-editor-actions";
+
+        actions.innerHTML = `
+<button
+    type="button"
+    id="inline-save"
+    class="editor-btn save-btn">
+    💾 Save Draft
+</button>
+
+<button
+    type="button"
+    id="inline-approve"
+    class="editor-btn approve-btn">
+    ✅ Approve
+</button>
+
+<button
+    type="button"
+    id="inline-publish"
+    class="editor-btn publish-btn">
+    🚀 Publish
+</button>
+
+<button
+    type="button"
+    id="inline-cancel"
+    class="editor-btn cancel-btn">
+    ✖ Cancel
+</button>
+`;
+        
+
+        /*
+         * Build workspace.
+         */
+
+        workspace.appendChild(
+            toolbar
+        );
+
+        workspace.appendChild(
+            editorContainer
+        );
+
+        workspace.appendChild(
+            status
+        );
+
+        workspace.appendChild(
+            actions
+        );
+
+
+        /*
+         * Replace documentation content
+         * with the editor workspace.
+         */
+
+        contentRoot.innerHTML = "";
+
+        contentRoot.appendChild(
+            workspace
+        );
+
+
+        /*
+         * Initialize Quill.
+         */
+
+        AppState.editor =
+            new Quill(
+
+                "#inline-editor",
+
+                {
+
+                    theme: "snow",
+
+                    modules: {
+
+                        toolbar: [
+
+                            [
+                                "bold",
+                                "italic",
+                                "underline",
+                                "strike"
+                            ],
+
+                            [
+                                {
+                                    header: 1
+                                },
+                                {
+                                    header: 2
+                                },
+                                {
+                                    header: 3
+                                }
+                            ],
+
+                            [
+                                {
+                                    list: "ordered"
+                                },
+                                {
+                                    list: "bullet"
+                                }
+                            ],
+
+                            [
+                                {
+                                    align: []
+                                }
+                            ],
+
+                            [
+                                "blockquote",
+                                "code-block"
+                            ],
+
+                            [
+                                "link",
+                                "image"
+                            ],
+
+                            [
+                                "clean"
+                            ]
+
+                        ]
+
+                    }
+
+                }
+
+            );
+
+
+        /*
+         * Move Quill toolbar into
+         * our custom toolbar container.
+         */
+
+        const quillToolbar =
+            workspace.querySelector(
+                ".ql-toolbar"
+            );
+
+
+        if (quillToolbar) {
+
+            toolbar.appendChild(
+                quillToolbar
+            );
+
+        }
+
+
+        /*
+         * Load saved draft if one exists.
+         * Otherwise load the current page content.
+         */
+
+        if (
+            savedDocument &&
+            savedDocument.content
+        ) {
+
+            AppState.editor.root.innerHTML =
+                savedDocument.content;
+
+        }
+
+        else {
+
+            AppState.editor.root.innerHTML =
+                tempContent.innerHTML;
+
+        }
+
+
+        /*
+         * Register editor changes.
+         */
+
+        registerDraftEvents();
+
+
+        /*
+         * Inline Save.
+         */
+
+        document
+            .querySelector(
+                "#inline-save"
+            )
+            ?.addEventListener(
+                "click",
+                function () {
+
+                    DraftManager.save();
+
+                }
+            );
+
+
+        /*
+         * Approve.
+         */
+
+        document
+            .querySelector(
+                "#inline-approve"
+            )
+            ?.addEventListener(
+                "click",
+                function () {
+
+                    WorkflowManager.changeStatus(
+                        CONFIG.WORKFLOW.APPROVED
+                    );
+
+                }
+            );
+
+        /*
+         * Publish.
+         */
+
+document
+    .querySelector(
+        "#inline-publish"
+    )
+    ?.addEventListener(
+        "click",
+        async function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            const publishButton =
+                document.querySelector(
+                    "#inline-publish"
+                );
+
+            if (publishButton) {
+                publishButton.disabled = true;
+                publishButton.textContent =
+                    "🚀 Publishing...";
+            }
+
+            try {
+
+                console.log(
+                    "Publish button clicked"
+                );
+
+                /*
+                 * Save latest editor content locally.
+                 */
+                DraftManager.save();
+
+                const page =
+                    AppState.currentDocument;
+
+                const html =
+                    DraftManager.getContent();
+
+                console.log(
+                    "Publishing page:",
+                    page
+                );
+
+                /*
+                 * Send content to local
+                 * Git publish server.
+                 */
+                const response =
+                    await fetch(
+                        "http://127.0.0.1:5000/publish",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body: JSON.stringify({
+                                page: page,
+                                content: html
+                            })
+                        }
+                    );
+
+                console.log(
+                    "Publish server response:",
+                    response.status
+                );
+
+                const result =
+                    await response.json();
+
+                console.log(
+                    "Publish result:",
+                    result
+                );
+
+                if (
+                    !response.ok ||
+                    !result.success
+                ) {
+
+                    throw new Error(
+                        result.message ||
+                        "Publishing failed."
+                    );
+
+                }
+
+                /*
+                 * Only mark Published after
+                 * GitHub publish succeeds.
+                 */
+                WorkflowManager.changeStatus(
+                    CONFIG.WORKFLOW.PUBLISHED
+                );
+
+                updateSaveStatus(
+                    "Published successfully"
+                );
+
+                alert(
+                    "✅ Published successfully!"
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Publish error:",
+                    error
+                );
+
+                alert(
+                    "❌ Publish failed:\n\n" +
+                    error.message
+                );
+
+            }
+
+            finally {
+
+                if (publishButton) {
+
+                    publishButton.disabled =
+                        false;
+
+                    publishButton.textContent =
+                        "🚀 Publish";
+
+                }
+
+            }
+
+        }
+    );
+
+        /*
+         * Cancel.
+         */
+
+        document
+            .querySelector(
+                "#inline-cancel"
+            )
+            ?.addEventListener(
+                "click",
+                function () {
+
+                    InlineEditor.cancel();
+
+                }
+            );
+
+
+        /*
+         * Hide any remaining Edit Page buttons.
+         */
+
+        document
+            .querySelectorAll(
+                ".edit-page-button"
+            )
+            .forEach(
+                button => {
+
+                    button.style.display =
+                        "none";
+
+                }
+            );
+
+
+        AppState.inlineMode =
+            true;
+
+        AppState.draftChanged =
+            false;
+
+
+        /*
+         * Refresh status/version UI.
+         */
+
+        UIManager.refresh();
+
+
+        /*
+         * Move user to editor.
+         */
+
+        window.scrollTo({
+
+            top: 0,
+
+            behavior: "smooth"
+
+        });
+
+    },
+
+
+    cancel() {
+
+        /*
+         * Do not delete the saved draft.
+         * Cancel simply exits editing mode.
+         */
+
+        window.location.reload();
+
+    }
+
+};
+
+
+/* ==========================================================
+   Start Application
 ========================================================== */
 
 document.addEventListener(

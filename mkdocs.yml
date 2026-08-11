@@ -19,9 +19,6 @@ nav:
       - Health Kiosk Integration: UserGuide/Health-Kiosk-Integration.md
       - Medical Warnings: UserGuide/Medical_Warnings.md
 
-  - API Reference:
-      - OpenAPI: api/api-reference.md
-
   - Release Notes:
       - Latest Release Notes: release-notes/latest-release-notes.md
       - Sprint v2.3.4.7 (Feb 2026): release-notes/Release Notes_Sprint v2.3.4.7-feb26.md

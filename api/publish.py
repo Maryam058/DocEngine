@@ -170,6 +170,7 @@ class MarkdownConverter(HTMLParser):
             self.output.append("\n")
 
     def handle_data(self, data):
+
         if not data:
             return
 
@@ -182,6 +183,7 @@ class MarkdownConverter(HTMLParser):
         )
 
     def get_markdown(self):
+
         text = "".join(self.output)
 
         text = re.sub(
@@ -200,9 +202,12 @@ class MarkdownConverter(HTMLParser):
 
 
 def html_to_markdown(content):
+
     converter = MarkdownConverter()
+
     converter.feed(content)
     converter.close()
+
     return converter.get_markdown()
 
 
@@ -218,7 +223,7 @@ def is_allowed_origin(origin):
     if origin in ALLOWED_ORIGINS:
         return True
 
-    # Allow Vercel preview deployments.
+    # Allow Vercel preview deployments
     if (
         origin.startswith("https://doc-engine-")
         and origin.endswith(".vercel.app")
@@ -239,23 +244,20 @@ def github_request(method, path, payload=None):
             "DOCENGINE_GITHUB_TOKEN is not configured."
         )
 
+    # ------------------------------------------------------
     # IMPORTANT:
+    # URL-encode every GitHub path segment.
     #
-    # GitHub API file paths can contain spaces.
-    # The path must be URL encoded before putting
-    # it into the API URL.
-    #
-    # Example:
-    #
-    # UserGuide/Register a patient.md
-    #
-    # becomes:
-    #
-    # UserGuide/Register%20a%20patient.md
-    #
-    encoded_path = quote(
-        path.lstrip("/"),
-        safe="/"
+    # This prevents filenames containing spaces from causing:
+    # "URL can't contain control characters"
+    # ------------------------------------------------------
+
+    encoded_path = "/".join(
+        quote(
+            segment,
+            safe=""
+        )
+        for segment in path.split("/")
     )
 
     url = (
@@ -317,7 +319,8 @@ def github_request(method, path, payload=None):
         )
 
         raise RuntimeError(
-            f"GitHub API error {error.code}: "
+            f"GitHub API error "
+            f"{error.code}: "
             f"{error_body}"
         )
 
@@ -332,24 +335,73 @@ def get_document_path(page):
         str(page)
     ).strip("/")
 
-    # Remove GitHub Pages project prefix.
-    if page_path.startswith("DocEngine/"):
+    # ------------------------------------------------------
+    # Remove GitHub Pages project prefix
+    # ------------------------------------------------------
+
+    if page_path.startswith(
+        "DocEngine/"
+    ):
 
         page_path = page_path[
             len("DocEngine/"):
         ]
 
-    if not page_path:
-        return "index.md"
 
-    # If the frontend already sends a .md
-    # path, keep it.
+    # ------------------------------------------------------
+    # Remove docs prefix if already present
+    # ------------------------------------------------------
+
+    if page_path.startswith(
+        "docs/"
+    ):
+
+        page_path = page_path[
+            len("docs/"):
+        ]
+
+
+    # ------------------------------------------------------
+    # Homepage
+    # ------------------------------------------------------
+
+    if not page_path:
+        return "docs/index.md"
+
+
+    # ------------------------------------------------------
+    # Already a Markdown file
+    # ------------------------------------------------------
+
     if page_path.endswith(".md"):
-        return page_path
+
+        return "docs/" + page_path
+
+
+    # ------------------------------------------------------
+    # Remove trailing slash
+    # ------------------------------------------------------
 
     page_path = page_path.rstrip("/")
 
-    return page_path + ".md"
+
+    # ------------------------------------------------------
+    # Convert URL path to Markdown path
+    #
+    # Example:
+    #
+    # UserGuide/Register a patient
+    #
+    # becomes:
+    #
+    # docs/UserGuide/Register a patient.md
+    # ------------------------------------------------------
+
+    return (
+        "docs/"
+        + page_path
+        + ".md"
+    )
 
 
 # ==========================================================
@@ -366,8 +418,10 @@ def find_github_file(page):
         candidate
     ]
 
-    # Also support directory/index.md
-    # structure used by MkDocs.
+    # ------------------------------------------------------
+    # Also support directory index.md
+    # ------------------------------------------------------
+
     if not candidate.endswith(
         "/index.md"
     ):
@@ -380,6 +434,11 @@ def find_github_file(page):
         candidates.append(
             directory_index
         )
+
+
+    # ------------------------------------------------------
+    # Check GitHub
+    # ------------------------------------------------------
 
     for path in candidates:
 
@@ -397,6 +456,7 @@ def find_github_file(page):
             if "404" not in str(error):
                 raise
 
+
     return candidate, None
 
 
@@ -404,28 +464,53 @@ def find_github_file(page):
 # Publish document
 # ==========================================================
 
-def publish_document(page, content):
+def publish_document(
+    page,
+    content
+):
 
-    # Convert Quill HTML → Markdown.
+    # ------------------------------------------------------
+    # Convert editor HTML to Markdown
+    # ------------------------------------------------------
+
     markdown_content = (
-        html_to_markdown(content)
+        html_to_markdown(
+            content
+        )
     )
 
-    # Find the actual file in GitHub.
+
+    # ------------------------------------------------------
+    # Resolve correct docs/ path
+    # ------------------------------------------------------
+
     file_path, existing = (
-        find_github_file(page)
+        find_github_file(
+            page
+        )
     )
 
-    # Encode Markdown for GitHub API.
+
+    # ------------------------------------------------------
+    # Encode Markdown
+    # ------------------------------------------------------
+
     encoded_content = (
         base64
         .b64encode(
-            markdown_content.encode("utf-8")
+            markdown_content
+            .encode("utf-8")
         )
         .decode("utf-8")
     )
 
+
+    # ------------------------------------------------------
+    # GitHub payload
+    # ------------------------------------------------------
+
     payload = {
+
         "message":
             f"Publish documentation: "
             f"{file_path}",
@@ -434,15 +519,25 @@ def publish_document(page, content):
             encoded_content,
 
         "branch":
-            GITHUB_BRANCH,
+            GITHUB_BRANCH
+
     }
 
-    # Updating an existing file requires SHA.
+
+    # ------------------------------------------------------
+    # Existing file requires SHA
+    # ------------------------------------------------------
+
     if existing:
 
         payload["sha"] = (
             existing["sha"]
         )
+
+
+    # ------------------------------------------------------
+    # Update / create GitHub file
+    # ------------------------------------------------------
 
     result = github_request(
         "PUT",
@@ -450,7 +545,9 @@ def publish_document(page, content):
         payload
     )
 
+
     return {
+
         "success": True,
 
         "message":
@@ -461,8 +558,14 @@ def publish_document(page, content):
 
         "commit":
             result
-            .get("commit", {})
-            .get("sha"),
+            .get(
+                "commit",
+                {}
+            )
+            .get(
+                "sha"
+            )
+
     }
 
 
@@ -470,7 +573,13 @@ def publish_document(page, content):
 # Vercel Function
 # ==========================================================
 
-class handler(BaseHTTPRequestHandler):
+class handler(
+    BaseHTTPRequestHandler
+):
+
+    # ======================================================
+    # CORS Headers
+    # ======================================================
 
     def send_cors_headers(self):
 
@@ -483,28 +592,33 @@ class handler(BaseHTTPRequestHandler):
 
             self.send_header(
                 "Access-Control-Allow-Origin",
-                origin,
+                origin
             )
 
         self.send_header(
             "Access-Control-Allow-Methods",
-            "POST, OPTIONS, GET",
+            "POST, OPTIONS, GET"
         )
 
         self.send_header(
             "Access-Control-Allow-Headers",
-            "Content-Type",
+            "Content-Type"
         )
 
         self.send_header(
             "Access-Control-Max-Age",
-            "86400",
+            "86400"
         )
 
         self.send_header(
             "Vary",
-            "Origin",
+            "Origin"
         )
+
+
+    # ======================================================
+    # JSON Response
+    # ======================================================
 
     def send_json(
         self,
@@ -522,7 +636,7 @@ class handler(BaseHTTPRequestHandler):
 
         self.send_header(
             "Content-Type",
-            "application/json",
+            "application/json"
         )
 
         self.send_cors_headers()
@@ -533,21 +647,36 @@ class handler(BaseHTTPRequestHandler):
             response
         )
 
+
+    # ======================================================
+    # GET
+    # ======================================================
+
     def do_GET(self):
 
         self.send_json(
+
             200,
+
             {
-                "success": True,
+
+                "success":
+                    True,
 
                 "message":
-                    "DocEngine Publish API "
-                    "is running.",
+                    "DocEngine Publish API is running.",
 
                 "method":
-                    "GET",
-            },
+                    "GET"
+
+            }
+
         )
+
+
+    # ======================================================
+    # OPTIONS
+    # ======================================================
 
     def do_OPTIONS(self):
 
@@ -561,7 +690,9 @@ class handler(BaseHTTPRequestHandler):
             and not is_allowed_origin(origin)
         ):
 
-            self.send_response(403)
+            self.send_response(
+                403
+            )
 
             self.send_header(
                 "Vary",
@@ -572,11 +703,19 @@ class handler(BaseHTTPRequestHandler):
 
             return
 
-        self.send_response(204)
+
+        self.send_response(
+            204
+        )
 
         self.send_cors_headers()
 
         self.end_headers()
+
+
+    # ======================================================
+    # POST
+    # ======================================================
 
     def do_POST(self):
 
@@ -589,13 +728,18 @@ class handler(BaseHTTPRequestHandler):
                 )
             )
 
+
             body = self.rfile.read(
                 content_length
             )
 
+
             data = json.loads(
-                body.decode("utf-8")
+                body.decode(
+                    "utf-8"
+                )
             )
+
 
             page = data.get(
                 "page"
@@ -605,33 +749,42 @@ class handler(BaseHTTPRequestHandler):
                 "content"
             )
 
+
             if (
                 not page
                 or content is None
             ):
 
                 self.send_json(
+
                     400,
+
                     {
-                        "success": False,
+
+                        "success":
+                            False,
 
                         "message":
-                            "Page and content "
-                            "are required.",
-                    },
+                            "Page and content are required."
+
+                    }
+
                 )
 
                 return
+
 
             result = publish_document(
                 page,
                 content
             )
 
+
             self.send_json(
                 200,
                 result
             )
+
 
         except Exception as error:
 
@@ -640,12 +793,19 @@ class handler(BaseHTTPRequestHandler):
                 error
             )
 
+
             self.send_json(
+
                 500,
+
                 {
-                    "success": False,
+
+                    "success":
+                        False,
 
                     "message":
-                        str(error),
-                },
+                        str(error)
+
+                }
+
             )

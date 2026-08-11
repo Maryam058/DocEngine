@@ -388,8 +388,8 @@ def find_github_file(page):
     ):
 
         directory_index = (
-            candidate.rstrip(".md")
-            + "/index.md"
+          candidate[:-3]
+           + "/index.md"
         )
 
         candidates.append(
@@ -524,6 +524,16 @@ class handler(BaseHTTPRequestHandler):
 
         self.wfile.write(
             response
+        )
+    def do_GET(self):
+
+        self.send_json(
+            200,
+            {
+                "success": True,
+                "message": "DocEngine Publish API is running.",
+                "method": "GET"
+            }
         )
 
     def do_OPTIONS(self):

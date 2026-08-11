@@ -1060,30 +1060,17 @@ function registerDraftEvents() {
 ========================================================== */
 
 function openEditor() {
-
-    const page =
-        window.location.pathname;
-
-
-    /*
-     * Remember exactly which page
-     * the user is editing.
-     */
+    const page = window.location.pathname;
 
     localStorage.setItem(
         "currentDoc",
         page
     );
 
-
-    /*
-     * Do NOT redirect to /editor/.
-     */
-
     InlineEditor.start();
-
 }
 
+window.openEditor = openEditor;
 
 /* ==========================================================
    Inline Editor

@@ -8,6 +8,8 @@ Create a complete patient profile for care coordination by following the registr
 
 ## Steps to Follow[¶](#steps-to-follow)
 
+new steps
+
 ## Verify the Registration[¶](#verify-the-registration)
 
 ## Next Steps[¶](#next-steps)

@@ -1,6 +1,6 @@
 from http.server import BaseHTTPRequestHandler
 from html.parser import HTMLParser
-from urllib.parse import unquote
+from urllib.parse import unquote, quote
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 import base64
@@ -117,7 +117,9 @@ class MarkdownConverter(HTMLParser):
             alt = attrs.get("alt", "")
 
             if src:
-                self.output.append(f"![{alt}]({src})")
+                self.output.append(
+                    f"![{alt}]({src})"
+                )
 
     def handle_endtag(self, tag):
 
@@ -175,13 +177,24 @@ class MarkdownConverter(HTMLParser):
             self.output.append(data)
             return
 
-        self.output.append(html.unescape(data))
+        self.output.append(
+            html.unescape(data)
+        )
 
     def get_markdown(self):
         text = "".join(self.output)
 
-        text = re.sub(r"\n{3,}", "\n\n", text)
-        text = re.sub(r"[ \t]+\n", "\n", text)
+        text = re.sub(
+            r"\n{3,}",
+            "\n\n",
+            text
+        )
+
+        text = re.sub(
+            r"[ \t]+\n",
+            "\n",
+            text
+        )
 
         return text.strip() + "\n"
 
@@ -198,13 +211,14 @@ def html_to_markdown(content):
 # ==========================================================
 
 def is_allowed_origin(origin):
+
     if not origin:
         return False
 
     if origin in ALLOWED_ORIGINS:
         return True
 
-    # Allow Vercel preview deployments for this project.
+    # Allow Vercel preview deployments.
     if (
         origin.startswith("https://doc-engine-")
         and origin.endswith(".vercel.app")
@@ -225,11 +239,30 @@ def github_request(method, path, payload=None):
             "DOCENGINE_GITHUB_TOKEN is not configured."
         )
 
+    # IMPORTANT:
+    #
+    # GitHub API file paths can contain spaces.
+    # The path must be URL encoded before putting
+    # it into the API URL.
+    #
+    # Example:
+    #
+    # UserGuide/Register a patient.md
+    #
+    # becomes:
+    #
+    # UserGuide/Register%20a%20patient.md
+    #
+    encoded_path = quote(
+        path.lstrip("/"),
+        safe="/"
+    )
+
     url = (
         "https://api.github.com/repos/"
         f"{GITHUB_OWNER}/"
         f"{GITHUB_REPO}/"
-        f"contents/{path}"
+        f"contents/{encoded_path}"
     )
 
     headers = {
@@ -242,8 +275,14 @@ def github_request(method, path, payload=None):
     body = None
 
     if payload is not None:
-        body = json.dumps(payload).encode("utf-8")
-        headers["Content-Type"] = "application/json"
+
+        body = json.dumps(
+            payload
+        ).encode("utf-8")
+
+        headers["Content-Type"] = (
+            "application/json"
+        )
 
     request = Request(
         url,
@@ -253,15 +292,33 @@ def github_request(method, path, payload=None):
     )
 
     try:
-        with urlopen(request, timeout=30) as response:
-            response_body = response.read().decode("utf-8")
-            return json.loads(response_body)
+
+        with urlopen(
+            request,
+            timeout=30
+        ) as response:
+
+            response_body = (
+                response
+                .read()
+                .decode("utf-8")
+            )
+
+            return json.loads(
+                response_body
+            )
 
     except HTTPError as error:
-        error_body = error.read().decode("utf-8")
+
+        error_body = (
+            error
+            .read()
+            .decode("utf-8")
+        )
 
         raise RuntimeError(
-            f"GitHub API error {error.code}: {error_body}"
+            f"GitHub API error {error.code}: "
+            f"{error_body}"
         )
 
 
@@ -271,15 +328,22 @@ def github_request(method, path, payload=None):
 
 def get_document_path(page):
 
-    page_path = unquote(str(page)).strip("/")
+    page_path = unquote(
+        str(page)
+    ).strip("/")
 
     # Remove GitHub Pages project prefix.
     if page_path.startswith("DocEngine/"):
-        page_path = page_path[len("DocEngine/"):]
+
+        page_path = page_path[
+            len("DocEngine/"):
+        ]
 
     if not page_path:
         return "index.md"
 
+    # If the frontend already sends a .md
+    # path, keep it.
     if page_path.endswith(".md"):
         return page_path
 
@@ -294,20 +358,42 @@ def get_document_path(page):
 
 def find_github_file(page):
 
-    candidate = get_document_path(page)
+    candidate = get_document_path(
+        page
+    )
 
-    candidates = [candidate]
+    candidates = [
+        candidate
+    ]
 
-    if not candidate.endswith("/index.md"):
-        directory_index = candidate[:-3] + "/index.md"
-        candidates.append(directory_index)
+    # Also support directory/index.md
+    # structure used by MkDocs.
+    if not candidate.endswith(
+        "/index.md"
+    ):
+
+        directory_index = (
+            candidate[:-3]
+            + "/index.md"
+        )
+
+        candidates.append(
+            directory_index
+        )
 
     for path in candidates:
+
         try:
-            result = github_request("GET", path)
+
+            result = github_request(
+                "GET",
+                path
+            )
+
             return path, result
 
         except RuntimeError as error:
+
             if "404" not in str(error):
                 raise
 
@@ -320,34 +406,63 @@ def find_github_file(page):
 
 def publish_document(page, content):
 
-    markdown_content = html_to_markdown(content)
+    # Convert Quill HTML → Markdown.
+    markdown_content = (
+        html_to_markdown(content)
+    )
 
-    file_path, existing = find_github_file(page)
+    # Find the actual file in GitHub.
+    file_path, existing = (
+        find_github_file(page)
+    )
 
-    encoded_content = base64.b64encode(
-        markdown_content.encode("utf-8")
-    ).decode("utf-8")
+    # Encode Markdown for GitHub API.
+    encoded_content = (
+        base64
+        .b64encode(
+            markdown_content.encode("utf-8")
+        )
+        .decode("utf-8")
+    )
 
     payload = {
-        "message": f"Publish documentation: {file_path}",
-        "content": encoded_content,
-        "branch": GITHUB_BRANCH,
+        "message":
+            f"Publish documentation: "
+            f"{file_path}",
+
+        "content":
+            encoded_content,
+
+        "branch":
+            GITHUB_BRANCH,
     }
 
+    # Updating an existing file requires SHA.
     if existing:
-        payload["sha"] = existing["sha"]
+
+        payload["sha"] = (
+            existing["sha"]
+        )
 
     result = github_request(
         "PUT",
         file_path,
-        payload,
+        payload
     )
 
     return {
         "success": True,
-        "message": "Published successfully.",
-        "file": file_path,
-        "commit": result.get("commit", {}).get("sha"),
+
+        "message":
+            "Published successfully.",
+
+        "file":
+            file_path,
+
+        "commit":
+            result
+            .get("commit", {})
+            .get("sha"),
     }
 
 
@@ -359,9 +474,13 @@ class handler(BaseHTTPRequestHandler):
 
     def send_cors_headers(self):
 
-        origin = self.headers.get("Origin", "")
+        origin = self.headers.get(
+            "Origin",
+            ""
+        )
 
         if is_allowed_origin(origin):
+
             self.send_header(
                 "Access-Control-Allow-Origin",
                 origin,
@@ -387,11 +506,19 @@ class handler(BaseHTTPRequestHandler):
             "Origin",
         )
 
-    def send_json(self, status_code, data):
+    def send_json(
+        self,
+        status_code,
+        data
+    ):
 
-        response = json.dumps(data).encode("utf-8")
+        response = json.dumps(
+            data
+        ).encode("utf-8")
 
-        self.send_response(status_code)
+        self.send_response(
+            status_code
+        )
 
         self.send_header(
             "Content-Type",
@@ -402,7 +529,9 @@ class handler(BaseHTTPRequestHandler):
 
         self.end_headers()
 
-        self.wfile.write(response)
+        self.wfile.write(
+            response
+        )
 
     def do_GET(self):
 
@@ -410,19 +539,37 @@ class handler(BaseHTTPRequestHandler):
             200,
             {
                 "success": True,
-                "message": "DocEngine Publish API is running.",
-                "method": "GET",
+
+                "message":
+                    "DocEngine Publish API "
+                    "is running.",
+
+                "method":
+                    "GET",
             },
         )
 
     def do_OPTIONS(self):
 
-        origin = self.headers.get("Origin", "")
+        origin = self.headers.get(
+            "Origin",
+            ""
+        )
 
-        if origin and not is_allowed_origin(origin):
+        if (
+            origin
+            and not is_allowed_origin(origin)
+        ):
+
             self.send_response(403)
-            self.send_header("Vary", "Origin")
+
+            self.send_header(
+                "Vary",
+                "Origin"
+            )
+
             self.end_headers()
+
             return
 
         self.send_response(204)
@@ -434,50 +581,71 @@ class handler(BaseHTTPRequestHandler):
     def do_POST(self):
 
         try:
+
             content_length = int(
-                self.headers.get("Content-Length", "0")
+                self.headers.get(
+                    "Content-Length",
+                    "0"
+                )
             )
 
-            body = self.rfile.read(content_length)
+            body = self.rfile.read(
+                content_length
+            )
 
             data = json.loads(
                 body.decode("utf-8")
             )
 
-            page = data.get("page")
-            content = data.get("content")
+            page = data.get(
+                "page"
+            )
 
-            if not page or content is None:
+            content = data.get(
+                "content"
+            )
+
+            if (
+                not page
+                or content is None
+            ):
+
                 self.send_json(
                     400,
                     {
                         "success": False,
-                        "message": "Page and content are required.",
+
+                        "message":
+                            "Page and content "
+                            "are required.",
                     },
                 )
+
                 return
 
             result = publish_document(
                 page,
-                content,
+                content
             )
 
             self.send_json(
                 200,
-                result,
+                result
             )
 
         except Exception as error:
 
             print(
                 "Publish error:",
-                error,
+                error
             )
 
             self.send_json(
                 500,
                 {
                     "success": False,
-                    "message": str(error),
+
+                    "message":
+                        str(error),
                 },
             )

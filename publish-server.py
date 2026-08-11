@@ -587,8 +587,10 @@ class PublishHandler(BaseHTTPRequestHandler):
 
 def run_server():
 
+    port = int(os.environ.get("PORT", 5000))
+
     server = HTTPServer(
-        ("127.0.0.1", 5000),
+        ("0.0.0.0", port),
         PublishHandler
     )
 
@@ -597,7 +599,7 @@ def run_server():
     )
 
     print(
-        "http://127.0.0.1:5000"
+    f"http://0.0.0.0:{port}"
     )
 
     server.serve_forever()

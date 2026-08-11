@@ -271,16 +271,18 @@ def github_request(method, path, payload=None):
 # ==========================================================
 def get_document_path(page):
 
-    page_path = unquote(str(page)).strip("/")
+    page_path = unquote(
+        str(page)
+    ).strip("/")
 
-    # Remove GitHub Pages project prefix
     if page_path.startswith("DocEngine/"):
-        page_path = page_path[len("DocEngine/"):]
+        page_path = page_path[
+            len("DocEngine/"):
+        ]
 
     if not page_path:
         return "docs/index.md"
 
-    # GitHub source files are inside docs/
     if not page_path.startswith("docs/"):
         page_path = "docs/" + page_path
 
@@ -299,21 +301,38 @@ def find_github_file(page):
 
     candidate = get_document_path(page)
 
-    candidates = [candidate]
+    candidates = [
+        candidate
+    ]
 
     if not candidate.endswith("/index.md"):
-        directory_index = candidate[:-3] + "/index.md"
-        candidates.append(directory_index)
+        directory_index = (
+            candidate[:-3] + "/index.md"
+        )
+
+        candidates.append(
+            directory_index
+        )
 
     for path in candidates:
+
         try:
-            result = github_request("GET", path)
+            result = github_request(
+                "GET",
+                path
+            )
+
             return path, result
 
         except RuntimeError as error:
+
             if "404" not in str(error):
                 raise
 
+    raise RuntimeError(
+        f"GitHub file not found. "
+        f"Tried: {', '.join(candidates)}"
+    )
     return candidate, None
 
 

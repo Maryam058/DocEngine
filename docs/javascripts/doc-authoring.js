@@ -1022,6 +1022,59 @@ const App = {
             DraftManager.load();
 
             registerDraftEvents();
+            const inlineSave =
+    document.querySelector("#inline-save");
+
+const inlineApprove =
+    document.querySelector("#inline-approve");
+
+const inlinePublish =
+    document.querySelector("#inline-publish");
+
+const inlineCancel =
+    document.querySelector("#inline-cancel");
+
+
+inlineSave?.addEventListener(
+    "click",
+    () => {
+        DraftManager.save();
+    }
+);
+
+
+inlineApprove?.addEventListener(
+    "click",
+    async () => {
+
+        await WorkflowManager.changeStatus(
+            CONFIG.WORKFLOW.APPROVED
+        );
+
+    }
+);
+
+
+inlinePublish?.addEventListener(
+    "click",
+    async () => {
+
+        await WorkflowManager.changeStatus(
+            CONFIG.WORKFLOW.PUBLISHED
+        );
+
+    }
+);
+
+
+inlineCancel?.addEventListener(
+    "click",
+    () => {
+
+        InlineEditor.cancel();
+
+    }
+);
 
         }
 
@@ -1858,8 +1911,79 @@ const InlineEditor = {
         /*
          * Register editor change events.
          */
+        if (AppState.editor) {
 
-        registerDraftEvents();
+    DraftManager.load();
+            registerDraftEvents();
+
+
+        /* ======================================================
+           Inline Workflow Button Events
+        ====================================================== */
+
+        const inlineSave =
+            document.querySelector("#inline-save");
+
+        const inlineApprove =
+            document.querySelector("#inline-approve");
+
+        const inlinePublish =
+            document.querySelector("#inline-publish");
+
+        const inlineCancel =
+            document.querySelector("#inline-cancel");
+
+
+        inlineSave?.addEventListener(
+            "click",
+            function () {
+
+                console.log("Save Draft clicked");
+
+                DraftManager.save();
+
+            }
+        );
+
+
+        inlineApprove?.addEventListener(
+            "click",
+            async function () {
+
+                console.log("Approve clicked");
+
+                await WorkflowManager.changeStatus(
+                    CONFIG.WORKFLOW.APPROVED
+                );
+
+            }
+        );
+
+
+        inlinePublish?.addEventListener(
+            "click",
+            async function () {
+
+                console.log("Publish clicked");
+
+                await WorkflowManager.changeStatus(
+                    CONFIG.WORKFLOW.PUBLISHED
+                );
+
+            }
+        );
+
+
+        inlineCancel?.addEventListener(
+            "click",
+            function () {
+
+                console.log("Cancel clicked");
+
+                InlineEditor.cancel();
+
+            }
+        );
 
 
         /*
@@ -1872,7 +1996,7 @@ const InlineEditor = {
 
         AppState.draftChanged =
             false;
-
+    }
 
         /*
          * Refresh status/version UI.
@@ -1913,3 +2037,15 @@ const InlineEditor = {
     }
 
 };
+/* ==========================================================
+   DocEngine Application Startup
+========================================================== */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        App.init();
+
+    }
+);

@@ -269,17 +269,20 @@ def github_request(method, path, payload=None):
 # ==========================================================
 # Website URL → Markdown file path
 # ==========================================================
-
 def get_document_path(page):
 
     page_path = unquote(str(page)).strip("/")
 
-    # Remove GitHub Pages project prefix.
+    # Remove GitHub Pages project prefix
     if page_path.startswith("DocEngine/"):
         page_path = page_path[len("DocEngine/"):]
 
     if not page_path:
-        return "index.md"
+        return "docs/index.md"
+
+    # GitHub source files are inside docs/
+    if not page_path.startswith("docs/"):
+        page_path = "docs/" + page_path
 
     if page_path.endswith(".md"):
         return page_path
@@ -287,7 +290,6 @@ def get_document_path(page):
     page_path = page_path.rstrip("/")
 
     return page_path + ".md"
-
 
 # ==========================================================
 # Find actual Markdown file in GitHub

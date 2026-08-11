@@ -3,7 +3,6 @@
    Inline Documentation Editor
 ========================================================== */
 
-
 /* ==========================================================
    Configuration
 ========================================================== */
@@ -11,6 +10,7 @@
 const CONFIG = {
 
     AUTOSAVE_DELAY: 5000,
+
     PUBLISH_API:
         "https://doc-engine-nu.vercel.app/api/publish",
 
@@ -43,7 +43,8 @@ const AppState = {
 
     currentDocument: null,
 
-    currentStatus: CONFIG.WORKFLOW.DRAFT,
+    currentStatus:
+        CONFIG.WORKFLOW.DRAFT,
 
     currentVersion: 1,
 
@@ -114,8 +115,6 @@ const Storage = {
     }
 
 };
-
-
 /* ==========================================================
    Time Helper
 ========================================================== */
@@ -157,7 +156,9 @@ const DocumentStore = {
     get(page) {
 
         if (!page) {
+
             return null;
+
         }
 
         const docs =
@@ -171,7 +172,9 @@ const DocumentStore = {
     save(page, data) {
 
         if (!page) {
+
             return;
+
         }
 
         const docs =
@@ -207,6 +210,7 @@ function updateSaveStatus(message) {
 
     ];
 
+
     elements.forEach(
         element => {
 
@@ -221,8 +225,6 @@ function updateSaveStatus(message) {
     );
 
 }
-
-
 /* ==========================================================
    Draft Manager
 ========================================================== */
@@ -371,23 +373,25 @@ const DraftManager = {
 
         switch (status) {
 
-        case CONFIG.WORKFLOW.APPROVED:
-            return "Approved";
+            case CONFIG.WORKFLOW.APPROVED:
 
-        case CONFIG.WORKFLOW.PUBLISHED:
-            return "Published";
+                return "Approved";
 
-        default:
-            return "Draft";
 
+            case CONFIG.WORKFLOW.PUBLISHED:
+
+                return "Published";
+
+
+            default:
+
+                return "Draft";
 
         }
 
     }
 
 };
-
-
 /* ==========================================================
    Autosave
 ========================================================== */
@@ -399,26 +403,25 @@ function startAutoSave() {
 
     clearInterval(autoSave);
 
-    autoSave =
-        setInterval(
+    autoSave = setInterval(
 
-            () => {
+        () => {
 
-                if (
-                    AppState.draftChanged &&
-                    AppState.editor &&
-                    AppState.currentDocument
-                ) {
+            if (
+                AppState.draftChanged &&
+                AppState.editor &&
+                AppState.currentDocument
+            ) {
 
-                    DraftManager.save();
+                DraftManager.save();
 
-                }
+            }
 
-            },
+        },
 
-            CONFIG.AUTOSAVE_DELAY
+        CONFIG.AUTOSAVE_DELAY
 
-        );
+    );
 
 }
 
@@ -446,25 +449,24 @@ const HistoryManager = {
 
         history.unshift({
 
-            action,
+            action: action,
 
-            message,
+            message: message,
 
-            time:
-                Time.now(),
+            time: Time.now(),
 
             document:
                 AppState.currentDocument
 
         });
 
-        if (
-            history.length > 100
-        ) {
+
+        if (history.length > 100) {
 
             history.length = 100;
 
         }
+
 
         Storage.save(
             CONFIG.STORAGE.HISTORY,
@@ -505,7 +507,7 @@ const VersionManager = {
             version:
                 AppState.currentVersion,
 
-            action,
+            action: action,
 
             content:
                 DraftManager.getContent(),
@@ -515,13 +517,13 @@ const VersionManager = {
 
         });
 
-        if (
-            versions.length > 50
-        ) {
+
+        if (versions.length > 50) {
 
             versions.length = 50;
 
         }
+
 
         Storage.save(
             CONFIG.STORAGE.VERSIONS,
@@ -531,35 +533,102 @@ const VersionManager = {
     }
 
 };
-
-
 /* ==========================================================
    Workflow Manager
 ========================================================== */
 
-/* ==========================================================
-   Workflow Manager
-========================================================== */
 const WorkflowManager = {
 
     async changeStatus(status) {
 
         if (!AppState.currentDocument) {
-            return;
+
+            console.warn(
+                "No current document selected."
+            );
+
+            return false;
+
         }
 
+
         /*
-         * Always save latest editor content
-         * before changing workflow state.
+         * Always save the latest editor content
+         * before workflow action.
          */
+
         if (AppState.editor) {
+
             DraftManager.save();
+
         }
 
-        /*
-         * Publish to GitHub through Vercel API.
-         */
-        if (status === CONFIG.WORKFLOW.PUBLISHED) {
+
+        /* ======================================================
+           APPROVE
+        ====================================================== */
+
+        if (
+            status ===
+            CONFIG.WORKFLOW.APPROVED
+        ) {
+
+            AppState.currentStatus =
+                CONFIG.WORKFLOW.APPROVED;
+
+            AppState.statusText =
+                "Approved";
+
+
+            /*
+             * Create history only for
+             * actual workflow action.
+             */
+
+            HistoryManager.add(
+                "approve",
+                "Document Approved"
+            );
+
+
+            /*
+             * Create a version for approval.
+             */
+
+            VersionManager.create(
+                "approve"
+            );
+
+
+            /*
+             * Increase version after
+             * creating the approved version.
+             */
+
+            AppState.currentVersion++;
+
+
+            DraftManager.save();
+
+            UIManager.refresh();
+
+            updateSaveStatus(
+                "Approved"
+            );
+
+            return true;
+
+        }
+
+
+        /* ======================================================
+           PUBLISH
+        ====================================================== */
+
+        if (
+            status ===
+            CONFIG.WORKFLOW.PUBLISHED
+        ) {
 
             try {
 
@@ -567,76 +636,188 @@ const WorkflowManager = {
                     "Publishing..."
                 );
 
-                const response = await fetch(
-                    CONFIG.PUBLISH_API,
-                    {
-                        method: "POST",
 
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
+                /*
+                 * Current page path.
+                 *
+                 * Example:
+                 * /DocEngine/UserGuide/Register a patient/
+                 */
 
-                        body: JSON.stringify({
-                            page:
-                                AppState.currentDocument,
+                const page =
+                    AppState.currentDocument;
 
-                            content:
-                                DraftManager.getContent()
-                        })
-                    }
+
+                /*
+                 * Current edited HTML.
+                 */
+
+                const content =
+                    DraftManager.getContent();
+
+
+                console.log(
+                    "Publishing document:",
+                    page
                 );
+
+
+                /*
+                 * Send ONE request to the
+                 * Vercel publish API.
+                 */
+
+                const response =
+                    await fetch(
+                        CONFIG.PUBLISH_API,
+                        {
+
+                            method: "POST",
+
+                            headers: {
+
+                                "Content-Type":
+                                    "application/json"
+
+                            },
+
+                            body:
+                                JSON.stringify({
+
+                                    page: page,
+
+                                    content: content
+
+                                })
+
+                        }
+                    );
+
+
+                /*
+                 * Read response safely.
+                 */
+
+                let result;
+
+                try {
+
+                    result =
+                        await response.json();
+
+                }
+
+                catch (jsonError) {
+
+                    throw new Error(
+                        "Publish server returned an invalid response."
+                    );
+
+                }
+
+
+                console.log(
+                    "Publish response:",
+                    response.status,
+                    result
+                );
+
+
+                /*
+                 * Stop if API returned
+                 * an error.
+                 */
 
                 if (!response.ok) {
 
                     throw new Error(
+
+                        result.message ||
                         `Publish API returned ${response.status}`
+
                     );
+
                 }
 
-                const result =
-                    await response.json();
 
-                if (!result.success) {
+                if (
+                    !result.success
+                ) {
 
                     throw new Error(
+
                         result.message ||
                         "Publishing failed."
+
                     );
+
                 }
 
+
+                /* ==================================================
+                   PUBLISH SUCCESS
+                ================================================== */
+
+
                 /*
-                 * Only mark Published after
-                 * the server confirms success.
+                 * Only change status AFTER
+                 * GitHub publish succeeds.
                  */
+
                 AppState.currentStatus =
                     CONFIG.WORKFLOW.PUBLISHED;
 
                 AppState.statusText =
                     "Published";
 
+
+                /*
+                 * Create history entry.
+                 */
+
                 HistoryManager.add(
                     "publish",
                     "Document Published"
                 );
 
+
+                /*
+                 * Create published version.
+                 */
+
                 VersionManager.create(
                     "publish"
                 );
 
+
+                /*
+                 * Increase version.
+                 */
+
                 AppState.currentVersion++;
 
+
+                /*
+                 * Save final state locally.
+                 */
+
                 DraftManager.save();
+
 
                 updateSaveStatus(
                     "Published successfully"
                 );
 
+
                 UIManager.refresh();
 
+
                 alert(
-                    "Published successfully!"
+                    "✅ Published successfully!"
                 );
+
+
+                return true;
 
             }
 
@@ -647,52 +828,47 @@ const WorkflowManager = {
                     error
                 );
 
+
                 updateSaveStatus(
                     "Publish failed"
                 );
 
+
                 alert(
-                    "Published failed: " +
+
+                    "❌ Publish failed:\n\n" +
                     error.message
+
                 );
+
+
+                /*
+                 * IMPORTANT:
+                 * Do NOT mark document as
+                 * Published when API fails.
+                 */
+
+                return false;
+
             }
 
-            return;
         }
 
-        /*
-         * Normal workflow states.
-         */
-        AppState.currentStatus =
-            status;
 
-        AppState.statusText =
-            DraftManager.getStatusText(
-                status
-            );
+        /* ======================================================
+           UNKNOWN STATUS
+        ====================================================== */
 
-        if (
-            status ===
-            CONFIG.WORKFLOW.APPROVED
-        ) {
+        console.warn(
+            "Unknown workflow status:",
+            status
+        );
 
-            HistoryManager.add(
-                "approve",
-                "Document Approved"
-            );
+        return false;
 
-            VersionManager.create(
-                "approve"
-            );
-        }
-
-        DraftManager.save();
-
-        UIManager.refresh();
     }
+
 };
-
-
 /* ==========================================================
    UI Manager
 ========================================================== */
@@ -727,6 +903,10 @@ const UIManager = {
         ];
 
 
+        /* ======================================================
+           Update Status
+        ====================================================== */
+
         statusElements.forEach(
             element => {
 
@@ -740,6 +920,10 @@ const UIManager = {
             }
         );
 
+
+        /* ======================================================
+           Update Version
+        ====================================================== */
 
         versionElements.forEach(
             element => {
@@ -755,9 +939,9 @@ const UIManager = {
         );
 
 
-        /*
-         * Update save status if a saved time exists.
-         */
+        /* ======================================================
+           Update Save Status
+        ====================================================== */
 
         if (
             AppState.lastSaved &&
@@ -765,12 +949,14 @@ const UIManager = {
         ) {
 
             updateSaveStatus(
+
                 "Saved " +
                 Time.format(
                     new Date(
                         AppState.lastSaved
                     )
                 )
+
             );
 
         }
@@ -789,10 +975,16 @@ const App = {
     ui: {},
 
 
+    /* ======================================================
+       Initialize Application
+    ====================================================== */
+
     init() {
 
         /*
-         * Identify current document FIRST.
+         * Identify the current document.
+         *
+         * currentDoc is set by openEditor().
          */
 
         AppState.currentDocument =
@@ -804,18 +996,25 @@ const App = {
 
         this.cacheDOM();
 
+
         /*
-         * Keep standalone editor compatibility.
-         * This only runs if #editor exists.
+         * Initialize standalone editor
+         * only if #editor exists.
          */
 
         this.initStandaloneEditor();
 
-        this.bindEvents();
 
         /*
-         * Load existing saved document
-         * if a standalone editor is being used.
+         * Bind standalone editor buttons.
+         */
+
+        this.bindEvents();
+
+
+        /*
+         * Load saved document if
+         * standalone editor is active.
          */
 
         if (AppState.editor) {
@@ -826,9 +1025,20 @@ const App = {
 
         }
 
+
+        /*
+         * Start autosave.
+         */
+
         startAutoSave();
 
+
+        /*
+         * Refresh UI.
+         */
+
         UIManager.refresh();
+
 
         console.log(
             "DocEngine Ready"
@@ -836,6 +1046,10 @@ const App = {
 
     },
 
+
+    /* ======================================================
+       Cache DOM
+    ====================================================== */
 
     cacheDOM() {
 
@@ -866,17 +1080,35 @@ const App = {
     },
 
 
+    /* ======================================================
+       Standalone Quill Editor
+    ====================================================== */
+
     initStandaloneEditor() {
 
         /*
-         * This is only for the old
-         * standalone editor page.
+         * The standalone editor is only
+         * used when #editor exists.
          *
-         * Normal documentation pages
-         * use InlineEditor instead.
+         * Documentation pages use
+         * InlineEditor instead.
          */
 
         if (!this.ui.editor) {
+
+            return;
+
+        }
+
+
+        if (
+            typeof Quill ===
+            "undefined"
+        ) {
+
+            console.error(
+                "Quill is not loaded."
+            );
 
             return;
 
@@ -955,29 +1187,64 @@ const App = {
     },
 
 
+    /* ======================================================
+       Bind Standalone Events
+    ====================================================== */
+
     bindEvents() {
 
+        /*
+         * Save
+         */
+
         this.ui.save?.addEventListener(
+
             "click",
-            () =>
-                DraftManager.save()
+
+            () => {
+
+                DraftManager.save();
+
+            }
+
         );
 
+
+        /*
+         * Approve
+         */
 
         this.ui.approve?.addEventListener(
+
             "click",
-            () =>
+
+            () => {
+
                 WorkflowManager.changeStatus(
                     CONFIG.WORKFLOW.APPROVED
-                )
+                );
+
+            }
+
         );
 
+
+        /*
+         * Publish
+         */
+
         this.ui.publish?.addEventListener(
+
             "click",
-            () =>
+
+            () => {
+
                 WorkflowManager.changeStatus(
                     CONFIG.WORKFLOW.PUBLISHED
-                )
+                );
+
+            }
+
         );
 
 
@@ -986,29 +1253,36 @@ const App = {
          */
 
         document.addEventListener(
+
             "keydown",
-            function (e) {
+
+            function (event) {
 
                 if (
-                    (e.ctrlKey ||
-                        e.metaKey) &&
-                    e.key.toLowerCase() === "s"
+
+                    (
+                        event.ctrlKey ||
+                        event.metaKey
+                    ) &&
+
+                    event.key.toLowerCase() ===
+                    "s"
+
                 ) {
 
-                    e.preventDefault();
+                    event.preventDefault();
 
                     DraftManager.save();
 
                 }
 
             }
+
         );
 
     }
 
 };
-
-
 /* ==========================================================
    Draft Change Events
 ========================================================== */
@@ -1034,6 +1308,7 @@ function registerDraftEvents() {
 
     }
 
+
     AppState.editor.__draftListenerRegistered =
         true;
 
@@ -1044,6 +1319,7 @@ function registerDraftEvents() {
 
             AppState.draftChanged =
                 true;
+
 
             updateSaveStatus(
                 "Unsaved Changes"
@@ -1060,24 +1336,65 @@ function registerDraftEvents() {
 ========================================================== */
 
 function openEditor() {
-    const page = window.location.pathname;
+
+    /*
+     * Get the exact current documentation
+     * page URL/path.
+     */
+
+    const page =
+        window.location.pathname;
+
+
+    /*
+     * Remember which documentation page
+     * is being edited.
+     */
 
     localStorage.setItem(
         "currentDoc",
         page
     );
 
+
+    /*
+     * Start inline editor directly.
+     *
+     * Do NOT redirect to /editor/.
+     */
+
+    if (
+        typeof InlineEditor ===
+        "undefined"
+    ) {
+
+        console.error(
+            "InlineEditor is not available."
+        );
+
+        return;
+
+    }
+
+
     InlineEditor.start();
+
 }
 
-window.openEditor = openEditor;
 
-/* ==========================================================
+/*
+ * Make openEditor() available to
+ * inline onclick="openEditor()"
+ * buttons generated by MkDocs.
+ */
+
+window.openEditor =
+    openEditor;
+    /* ==========================================================
    Inline Editor
 ========================================================== */
 
 const InlineEditor = {
-
 
     start() {
 
@@ -1095,6 +1412,10 @@ const InlineEditor = {
 
         }
 
+
+        /*
+         * Find MkDocs content area.
+         */
 
         const contentRoot =
             document.querySelector(
@@ -1114,11 +1435,13 @@ const InlineEditor = {
 
 
         /*
-         * Current page becomes the document key.
+         * Current documentation page
+         * becomes the document key.
          */
 
         AppState.currentDocument =
             window.location.pathname;
+
 
         localStorage.setItem(
             "currentDoc",
@@ -1127,8 +1450,8 @@ const InlineEditor = {
 
 
         /*
-         * Store the original rendered page.
-         * This is used only when no saved draft exists.
+         * Save original rendered content
+         * before replacing it with editor.
          */
 
         const originalContent =
@@ -1136,8 +1459,7 @@ const InlineEditor = {
 
 
         /*
-         * Check whether this page already
-         * has a saved draft.
+         * Check for existing local draft.
          */
 
         const savedDocument =
@@ -1146,20 +1468,27 @@ const InlineEditor = {
             );
 
 
+        /*
+         * Restore saved document state.
+         */
+
         if (savedDocument) {
 
             AppState.currentStatus =
                 savedDocument.status ||
                 CONFIG.WORKFLOW.DRAFT;
 
+
             AppState.currentVersion =
                 savedDocument.version ||
                 1;
+
 
             AppState.statusText =
                 DraftManager.getStatusText(
                     AppState.currentStatus
                 );
+
 
             AppState.lastSaved =
                 savedDocument.updatedAt ||
@@ -1172,11 +1501,14 @@ const InlineEditor = {
             AppState.currentStatus =
                 CONFIG.WORKFLOW.DRAFT;
 
+
             AppState.currentVersion =
                 1;
 
+
             AppState.statusText =
                 "Draft";
+
 
             AppState.lastSaved =
                 null;
@@ -1185,8 +1517,11 @@ const InlineEditor = {
 
 
         /*
-         * Remove Edit Page button
-         * from the editable content.
+         * Create temporary content container.
+         *
+         * This lets us remove the Edit button
+         * from the content before putting it
+         * inside Quill.
          */
 
         const tempContent =
@@ -1194,67 +1529,80 @@ const InlineEditor = {
                 "div"
             );
 
+
         tempContent.innerHTML =
             originalContent;
 
+
+        /*
+         * Remove Edit Page buttons from
+         * the editable document.
+         */
 
         tempContent
             .querySelectorAll(
                 ".edit-page-button"
             )
             .forEach(
-                element =>
-                    element.remove()
+                element => {
+
+                    element.remove();
+
+                }
             );
 
 
-        /*
-         * Create editor workspace.
-         */
+        /* ======================================================
+           Editor Workspace
+        ====================================================== */
 
         const workspace =
             document.createElement(
                 "div"
             );
 
+
         workspace.className =
             "inline-editor-workspace";
 
 
-        /*
-         * Toolbar container.
-         */
+        /* ======================================================
+           Toolbar
+        ====================================================== */
 
         const toolbar =
             document.createElement(
                 "div"
             );
 
+
         toolbar.id =
             "inline-editor-toolbar";
 
 
-        /*
-         * Editor container.
-         */
+        /* ======================================================
+           Quill Editor Container
+        ====================================================== */
 
         const editorContainer =
             document.createElement(
                 "div"
             );
 
+
         editorContainer.id =
             "inline-editor";
 
 
-        /*
-         * Status area.
-         */
+        /* ======================================================
+           Status Area
+        ====================================================== */
 
         const status =
             document.createElement(
                 "div"
             );
+
 
         status.className =
             "inline-editor-status";
@@ -1291,64 +1639,71 @@ const InlineEditor = {
         `;
 
 
-        /*
-         * Workflow actions.
-         */
+        /* ======================================================
+           Workflow Actions
+        ====================================================== */
 
         const actions =
             document.createElement(
                 "div"
             );
 
+
         actions.className =
             "inline-editor-actions";
 
+
         actions.innerHTML = `
-<button
-    type="button"
-    id="inline-save"
-    class="editor-btn save-btn">
-    💾 Save Draft
-</button>
 
-<button
-    type="button"
-    id="inline-approve"
-    class="editor-btn approve-btn">
-    ✅ Approve
-</button>
+            <button
+                type="button"
+                id="inline-save"
+            >
+                💾 Save Draft
+            </button>
 
-<button
-    type="button"
-    id="inline-publish"
-    class="editor-btn publish-btn">
-    🚀 Publish
-</button>
+            <button
+                type="button"
+                id="inline-approve"
+            >
+                ✅ Approve
+            </button>
 
-<button
-    type="button"
-    id="inline-cancel"
-    class="editor-btn cancel-btn">
-    ✖ Cancel
-</button>
-`;
-        
+            <button
+                type="button"
+                id="inline-publish"
+            >
+                🚀 Publish
+            </button>
 
-        /*
-         * Build workspace.
-         */
+            <button
+                type="button"
+                id="inline-cancel"
+            >
+                ✖ Cancel
+            </button>
+
+        `;
+
+
+        /* ======================================================
+           Build Workspace
+        ====================================================== */
 
         workspace.appendChild(
             toolbar
         );
 
+
         workspace.appendChild(
             editorContainer
         );
 
+
         workspace.appendChild(
             status
         );
+
 
         workspace.appendChild(
             actions
@@ -1357,19 +1712,37 @@ const InlineEditor = {
 
         /*
          * Replace documentation content
-         * with the editor workspace.
+         * with editor workspace.
          */
 
         contentRoot.innerHTML = "";
+
 
         contentRoot.appendChild(
             workspace
         );
 
 
-        /*
-         * Initialize Quill.
-         */
+        /* ======================================================
+           Initialize Quill
+        ====================================================== */
+
+        if (
+            typeof Quill ===
+            "undefined"
+        ) {
+
+            console.error(
+                "Quill is not loaded."
+            );
+
+            contentRoot.innerHTML =
+                originalContent;
+
+            return;
+
+        }
+
 
         AppState.editor =
             new Quill(
@@ -1441,10 +1814,9 @@ const InlineEditor = {
             );
 
 
-        /*
-         * Move Quill toolbar into
-         * our custom toolbar container.
-         */
+        /* ======================================================
+           Move Quill Toolbar
+        ====================================================== */
 
         const quillToolbar =
             workspace.querySelector(
@@ -1461,10 +1833,9 @@ const InlineEditor = {
         }
 
 
-        /*
-         * Load saved draft if one exists.
-         * Otherwise load the current page content.
-         */
+        /* ======================================================
+           Load Content
+        ====================================================== */
 
         if (
             savedDocument &&
@@ -1485,231 +1856,19 @@ const InlineEditor = {
 
 
         /*
-         * Register editor changes.
+         * Register editor change events.
          */
 
         registerDraftEvents();
 
 
         /*
-         * Inline Save.
+         * Editor is now active.
          */
-
-        document
-            .querySelector(
-                "#inline-save"
-            )
-            ?.addEventListener(
-                "click",
-                function () {
-
-                    DraftManager.save();
-
-                }
-            );
-
-
-        /*
-         * Approve.
-         */
-
-        document
-            .querySelector(
-                "#inline-approve"
-            )
-            ?.addEventListener(
-                "click",
-                function () {
-
-                    WorkflowManager.changeStatus(
-                        CONFIG.WORKFLOW.APPROVED
-                    );
-
-                }
-            );
-
-        /*
-         * Publish.
-         */
-
-document
-    .querySelector(
-        "#inline-publish"
-    )
-    ?.addEventListener(
-        "click",
-        async function (event) {
-
-            event.preventDefault();
-            event.stopPropagation();
-
-            const publishButton =
-                document.querySelector(
-                    "#inline-publish"
-                );
-
-            if (publishButton) {
-                publishButton.disabled = true;
-                publishButton.textContent =
-                    "🚀 Publishing...";
-            }
-
-            try {
-
-                console.log(
-                    "Publish button clicked"
-                );
-
-                /*
-                 * Save latest editor content locally.
-                 */
-                DraftManager.save();
-
-                const page =
-                    AppState.currentDocument;
-
-                const html =
-                    DraftManager.getContent();
-
-                console.log(
-                    "Publishing page:",
-                    page
-                );
-
-                /*
-                 * Send content to local
-                 * Git publish server.
-                 */
-                const response =
-                    await fetch(
-                    "https://doc-engine-nu.vercel.app/api/publish",
-                        {
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json"
-                            },
-
-                            body: JSON.stringify({
-                                page: page,
-                                content: html
-                            })
-                        }
-                    );
-
-                console.log(
-                    "Publish server response:",
-                    response.status
-                );
-
-                const result =
-                    await response.json();
-
-                console.log(
-                    "Publish result:",
-                    result
-                );
-
-                if (
-                    !response.ok ||
-                    !result.success
-                ) {
-
-                    throw new Error(
-                        result.message ||
-                        "Publishing failed."
-                    );
-
-                }
-
-                /*
-                 * Only mark Published after
-                 * GitHub publish succeeds.
-                 */
-                WorkflowManager.changeStatus(
-                    CONFIG.WORKFLOW.PUBLISHED
-                );
-
-                updateSaveStatus(
-                    "Published successfully"
-                );
-
-                alert(
-                    "✅ Published successfully!"
-                );
-
-            }
-
-            catch (error) {
-
-                console.error(
-                    "Publish error:",
-                    error
-                );
-
-                alert(
-                    "❌ Publish failed:\n\n" +
-                    error.message
-                );
-
-            }
-
-            finally {
-
-                if (publishButton) {
-
-                    publishButton.disabled =
-                        false;
-
-                    publishButton.textContent =
-                        "🚀 Publish";
-
-                }
-
-            }
-
-        }
-    );
-
-        /*
-         * Cancel.
-         */
-
-        document
-            .querySelector(
-                "#inline-cancel"
-            )
-            ?.addEventListener(
-                "click",
-                function () {
-
-                    InlineEditor.cancel();
-
-                }
-            );
-
-
-        /*
-         * Hide any remaining Edit Page buttons.
-         */
-
-        document
-            .querySelectorAll(
-                ".edit-page-button"
-            )
-            .forEach(
-                button => {
-
-                    button.style.display =
-                        "none";
-
-                }
-            );
-
 
         AppState.inlineMode =
             true;
+
 
         AppState.draftChanged =
             false;
@@ -1723,7 +1882,7 @@ document
 
 
         /*
-         * Move user to editor.
+         * Move user to top of editor.
          */
 
         window.scrollTo({
@@ -1737,11 +1896,16 @@ document
     },
 
 
+    /* ======================================================
+       Cancel Inline Editing
+    ====================================================== */
+
     cancel() {
 
         /*
-         * Do not delete the saved draft.
-         * Cancel simply exits editing mode.
+         * Do NOT delete the saved draft.
+         *
+         * Cancel only exits editing mode.
          */
 
         window.location.reload();
@@ -1749,20 +1913,3 @@ document
     }
 
 };
-
-
-/* ==========================================================
-   Start Application
-========================================================== */
-
-document.addEventListener(
-
-    "DOMContentLoaded",
-
-    function () {
-
-        App.init();
-
-    }
-
-);

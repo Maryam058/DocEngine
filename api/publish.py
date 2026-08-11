@@ -1,6 +1,6 @@
 from http.server import BaseHTTPRequestHandler
 from html.parser import HTMLParser
-from urllib.parse import unquote, quote
+from urllib.parse import unquote
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
 import base64
@@ -229,9 +229,8 @@ def github_request(method, path, payload=None):
         "https://api.github.com/repos/"
         f"{GITHUB_OWNER}/"
         f"{GITHUB_REPO}/"
-        "/contents/"
-        + quote(path, safe="/")
-        )
+        f"contents/{path}"
+    )
 
     headers = {
         "Authorization": f"Bearer {GITHUB_TOKEN}",
@@ -269,22 +268,17 @@ def github_request(method, path, payload=None):
 # ==========================================================
 # Website URL → Markdown file path
 # ==========================================================
+
 def get_document_path(page):
 
-    page_path = unquote(
-        str(page)
-    ).strip("/")
+    page_path = unquote(str(page)).strip("/")
 
+    # Remove GitHub Pages project prefix.
     if page_path.startswith("DocEngine/"):
-        page_path = page_path[
-            len("DocEngine/"):
-        ]
+        page_path = page_path[len("DocEngine/"):]
 
     if not page_path:
-        return "docs/index.md"
-
-    if not page_path.startswith("docs/"):
-        page_path = "docs/" + page_path
+        return "index.md"
 
     if page_path.endswith(".md"):
         return page_path
@@ -292,6 +286,7 @@ def get_document_path(page):
     page_path = page_path.rstrip("/")
 
     return page_path + ".md"
+
 
 # ==========================================================
 # Find actual Markdown file in GitHub
@@ -301,38 +296,21 @@ def find_github_file(page):
 
     candidate = get_document_path(page)
 
-    candidates = [
-        candidate
-    ]
+    candidates = [candidate]
 
     if not candidate.endswith("/index.md"):
-        directory_index = (
-            candidate[:-3] + "/index.md"
-        )
-
-        candidates.append(
-            directory_index
-        )
+        directory_index = candidate[:-3] + "/index.md"
+        candidates.append(directory_index)
 
     for path in candidates:
-
         try:
-            result = github_request(
-                "GET",
-                path
-            )
-
+            result = github_request("GET", path)
             return path, result
 
         except RuntimeError as error:
-
             if "404" not in str(error):
                 raise
 
-    raise RuntimeError(
-        f"GitHub file not found. "
-        f"Tried: {', '.join(candidates)}"
-    )
     return candidate, None
 
 

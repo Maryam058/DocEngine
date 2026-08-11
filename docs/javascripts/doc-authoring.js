@@ -11,6 +11,8 @@
 const CONFIG = {
 
     AUTOSAVE_DELAY: 5000,
+    PUBLISH_API:
+        "https://doc-engine-nu.vercel.app/api/publish",
 
     STORAGE: {
 
@@ -538,60 +540,80 @@ const VersionManager = {
 /* ==========================================================
    Workflow Manager
 ========================================================== */
-
 const WorkflowManager = {
 
-    changeStatus(status) {
+    async changeStatus(status) {
 
         if (!AppState.currentDocument) {
-
             return;
-
         }
 
         /*
          * Always save latest editor content
          * before changing workflow state.
          */
-
         if (AppState.editor) {
-
             DraftManager.save();
-
         }
 
+        /*
+         * Publish to GitHub through Vercel API.
+         */
+        if (status === CONFIG.WORKFLOW.PUBLISHED) {
 
-        AppState.currentStatus =
-            status;
+            try {
 
-        AppState.statusText =
-            DraftManager.getStatusText(
-                status
-            );
-
-
-        switch (status) {
-
-            case CONFIG.WORKFLOW.DRAFT:
-
-                break;
-
-
-            case CONFIG.WORKFLOW.APPROVED:
-
-                HistoryManager.add(
-                    "approve",
-                    "Document Approved"
+                updateSaveStatus(
+                    "Publishing..."
                 );
 
-                VersionManager.create(
-                    "approve"
+                const response = await fetch(
+                    CONFIG.PUBLISH_API,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            page:
+                                AppState.currentDocument,
+
+                            content:
+                                DraftManager.getContent()
+                        })
+                    }
                 );
 
-                break;
+                if (!response.ok) {
 
+                    throw new Error(
+                        `Publish API returned ${response.status}`
+                    );
+                }
 
-            case CONFIG.WORKFLOW.PUBLISHED:
+                const result =
+                    await response.json();
+
+                if (!result.success) {
+
+                    throw new Error(
+                        result.message ||
+                        "Publishing failed."
+                    );
+                }
+
+                /*
+                 * Only mark Published after
+                 * the server confirms success.
+                 */
+                AppState.currentStatus =
+                    CONFIG.WORKFLOW.PUBLISHED;
+
+                AppState.statusText =
+                    "Published";
 
                 HistoryManager.add(
                     "publish",
@@ -604,21 +626,70 @@ const WorkflowManager = {
 
                 AppState.currentVersion++;
 
-                break;
+                DraftManager.save();
 
+                updateSaveStatus(
+                    "Published successfully"
+                );
+
+                UIManager.refresh();
+
+                alert(
+                    "Published successfully!"
+                );
+
+            }
+
+            catch (error) {
+
+                console.error(
+                    "Publish error:",
+                    error
+                );
+
+                updateSaveStatus(
+                    "Publish failed"
+                );
+
+                alert(
+                    "Published failed: " +
+                    error.message
+                );
+            }
+
+            return;
         }
 
-
         /*
-         * Save workflow state.
+         * Normal workflow states.
          */
+        AppState.currentStatus =
+            status;
+
+        AppState.statusText =
+            DraftManager.getStatusText(
+                status
+            );
+
+        if (
+            status ===
+            CONFIG.WORKFLOW.APPROVED
+        ) {
+
+            HistoryManager.add(
+                "approve",
+                "Document Approved"
+            );
+
+            VersionManager.create(
+                "approve"
+            );
+        }
 
         DraftManager.save();
 
         UIManager.refresh();
-
     }
-
 };
 
 

@@ -12,7 +12,7 @@ const CONFIG = {
 
     AUTOSAVE_DELAY: 5000,
     PUBLISH_API:
-        "https://doc-engine-nu.vercel.app/api/publish"
+        "https://doc-engine-nu.vercel.app/api/publish",
 
     STORAGE: {
 

@@ -1,6 +1,6 @@
 # Technical Documentation Style Guide[¶](#technical-documentation-style-guide)
 
-This guide defines the voice, structure, and formatting standards for DocEngine documentation. Consistent writing helps readers scan content quickly, trust the information, and complete tasks with confidence.
+This guide defines the voice, structure, and formatting standards for DocEngine documentation. Consistent writing helps readers scan content quickly, trust the information, and complete tasks with confidence. 123
 
 ## Voice and Tone[¶](#voice-and-tone)
 

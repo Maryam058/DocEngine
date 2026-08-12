@@ -1,0 +1,4 @@
+Issue Type	Issue key	Issue id	Summary	Custom field (Expected Date)	Assignee	Assignee Id	Reporter	Reporter Id	Priority	Status	Resolution	Created	Updated	Custom field (Sprint Version)	Custom field (DLL Fix)
+Improvement	AUS-534	89510	Service Analysis Report to have filter options for both invoice date and seen/appointment date 		AxisSportsMed	6058240a27f5ae006ef39f4c	AxisSportsMed	6058240a27f5ae006ef39f4c	High	Closed	Fixed	12/4/2021 11:17	13/9/2021 23:31		Yes
+Improvement	AUS-525	89438	Can't accept a referral when creating it. Need accept/decline on creation screen		AxisSportsMed	6058240a27f5ae006ef39f4c	AxisSportsMed	6058240a27f5ae006ef39f4c	High	Closed	Fixed	12/4/2021 2:45	9/9/2021 3:32		No
+Improvement	AUS-271	82875	improvement in referral queue > acc claim		AxisSportsMed	6058240a27f5ae006ef39f4c	Muhammad Aamir Riaz	5f2795a0e8c45600225fe2b0	High	Closed	Fixed	17/12/2020 21:13	13/9/2021 23:43		Yes

@@ -1632,26 +1632,18 @@ const App = {
                         toolbar: [
 
                             [
+
+                                {
+                                    header: [1, 2, 3, false]
+                                }
+
+                            ],
+
+                            [
                                 "bold",
                                 "italic",
                                 "underline",
                                 "strike"
-                            ],
-
-                            [
-
-                                {
-                                    header: 1
-                                },
-
-                                {
-                                    header: 2
-                                },
-
-                                {
-                                    header: 3
-                                }
-
                             ],
 
                             [
@@ -2156,6 +2148,67 @@ const InlineEditor = {
 
 
         /* ==================================================
+           Metadata Row
+           (author avatar, name, read time, actions)
+        ================================================== */
+
+        const meta =
+            document.createElement(
+                "div"
+            );
+
+
+        meta.className =
+            "inline-editor-meta";
+
+
+        const authorName =
+            localStorage.getItem(
+                "docengine_author"
+            ) || "You";
+
+
+        const wordCount =
+            (
+                tempContent.textContent ||
+                ""
+            )
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean)
+                .length;
+
+        const readTime =
+            Math.max(
+                1,
+                Math.round(wordCount / 200)
+            );
+
+
+        meta.innerHTML = `
+
+            <span class="inline-editor-avatar">
+                ${authorName.charAt(0).toUpperCase()}
+            </span>
+
+            <span class="inline-editor-author">
+                ${authorName}
+            </span>
+
+            <span class="inline-editor-meta-dot">•</span>
+
+            <span>${readTime} min read</span>
+
+            <span class="inline-editor-meta-spacer"></span>
+
+            <span class="inline-editor-meta-icon" title="Listen">🔊</span>
+
+            <span class="inline-editor-meta-icon" title="Reactions">🙂</span>
+
+        `;
+
+
+        /* ==================================================
            Status Area
         ================================================== */
 
@@ -2269,6 +2322,11 @@ const InlineEditor = {
 
 
         workspace.appendChild(
+            meta
+        );
+
+
+        workspace.appendChild(
             editorContainer
         );
 
@@ -2339,26 +2397,18 @@ const InlineEditor = {
 
                             [
 
-                                "bold",
-                                "italic",
-                                "underline",
-                                "strike"
+                                {
+                                    header: [1, 2, 3, false]
+                                }
 
                             ],
 
                             [
 
-                                {
-                                    header: 1
-                                },
-
-                                {
-                                    header: 2
-                                },
-
-                                {
-                                    header: 3
-                                }
+                                "bold",
+                                "italic",
+                                "underline",
+                                "strike"
 
                             ],
 

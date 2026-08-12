@@ -1589,31 +1589,48 @@ button[data-action="publish"]:hover{
 
 }
 
+/* ==========================================================
+   Confluence-style Typography (shared editor content)
+========================================================== */
+
 .ql-editor{
-
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size:16px;
-    line-height:1.8;
-
+    line-height:1.5;
+    color:#172B4D;
     padding:30px;
-
 }
 
 .ql-editor h1{
-
-    font-size:2rem;
-
+    font-size:32px;
+    font-weight:700;
+    color:#172B4D;
+    margin-top:0;
+    margin-bottom:20px;
 }
 
 .ql-editor h2{
-
-    font-size:1.7rem;
-
+    font-size:24px;
+    font-weight:600;
+    color:#172B4D;
+    margin-top:32px;
+    margin-bottom:12px;
 }
 
 .ql-editor h3{
+    font-size:19px;
+    font-weight:600;
+    color:#172B4D;
+    margin-top:24px;
+    margin-bottom:8px;
+}
 
-    font-size:1.4rem;
-
+.ql-editor p,
+.ql-editor ul,
+.ql-editor ol,
+.ql-editor blockquote,
+.ql-editor pre.ql-syntax{
+    margin-bottom:24px;
 }
 
 .review-actions{
@@ -1625,15 +1642,132 @@ button[data-action="publish"]:hover{
     background:#fafbfc;
 
 }
+
+/* ==========================================================
+   Confluence-style Toolbar (shared editor toolbars)
+========================================================== */
+
+.ql-toolbar.ql-snow{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    padding:6px 8px;
+    background:#ffffff;
+    border:none !important;
+    border-bottom:1px solid #DFE1E6 !important;
+}
+
+.ql-toolbar.ql-snow .ql-formats{
+    display:flex;
+    align-items:center;
+    margin-right:8px !important;
+    padding-right:8px;
+    border-right:1px solid #DFE1E6;
+}
+
+.ql-toolbar.ql-snow .ql-formats:last-child{
+    margin-right:0 !important;
+    padding-right:0;
+    border-right:none;
+}
+
+.ql-toolbar.ql-snow button{
+    width:26px;
+    height:26px;
+    padding:4px;
+    margin:1px;
+    border-radius:4px;
+    color:#42526E;
+}
+
+.ql-toolbar.ql-snow button svg{
+    width:16px;
+    height:16px;
+}
+
+.ql-toolbar.ql-snow button:hover,
+.ql-toolbar.ql-snow button:focus{
+    background:#EBECF0;
+    color:#172B4D;
+}
+
+.ql-toolbar.ql-snow button.ql-active{
+    background:#DEEBFF;
+    color:#0052CC;
+}
+
+.ql-toolbar.ql-snow .ql-stroke{
+    stroke:#42526E;
+}
+
+.ql-toolbar.ql-snow .ql-fill{
+    fill:#42526E;
+}
+
+.ql-toolbar.ql-snow button:hover .ql-stroke,
+.ql-toolbar.ql-snow button.ql-active .ql-stroke{
+    stroke:#0052CC;
+}
+
+.ql-toolbar.ql-snow button:hover .ql-fill,
+.ql-toolbar.ql-snow button.ql-active .ql-fill{
+    fill:#0052CC;
+}
+
+/* Heading / paragraph style dropdown ("Paragraph ▾") */
+
+.ql-toolbar.ql-snow .ql-picker.ql-header{
+    width:130px;
+    margin-right:8px;
+    padding-right:8px;
+    border-right:1px solid #DFE1E6;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.ql-toolbar.ql-snow .ql-picker.ql-header .ql-picker-label{
+    display:flex;
+    align-items:center;
+    height:26px;
+    padding:2px 6px;
+    border:none;
+    border-radius:4px;
+    color:#42526E;
+    font-size:13px;
+    font-weight:500;
+}
+
+.ql-toolbar.ql-snow .ql-picker.ql-header .ql-picker-label:hover,
+.ql-toolbar.ql-snow .ql-picker.ql-header.ql-expanded .ql-picker-label{
+    background:#EBECF0;
+}
+
+.ql-toolbar.ql-snow .ql-picker.ql-header .ql-picker-options{
+    border:1px solid #DFE1E6;
+    border-radius:6px;
+    box-shadow:0 4px 12px rgba(9,30,66,.15);
+    padding:4px;
+}
+
+.ql-toolbar.ql-snow .ql-picker.ql-header .ql-picker-item{
+    border-radius:4px;
+    padding:6px 8px;
+}
+
+.ql-toolbar.ql-snow .ql-picker.ql-header .ql-picker-item:hover{
+    background:#EBECF0;
+    color:#0052CC;
+}
+
 /* ==========================================================
    Inline Documentation Editor
 ========================================================== */
 
 .inline-editor-workspace {
     width: 100%;
-    max-width: 1000px;
-    margin: 30px auto;
+    max-width: 840px;
+    margin: 40px auto;
     background: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 #inline-editor-toolbar {
@@ -1641,8 +1775,7 @@ button[data-action="publish"]:hover{
     top: 0;
     z-index: 20;
     background: #ffffff;
-    border: 1px solid #d9dfe8;
-    border-bottom: none;
+    border: none;
 }
 
 #inline-editor-toolbar .ql-toolbar {
@@ -1652,47 +1785,112 @@ button[data-action="publish"]:hover{
 #inline-editor {
     min-height: 500px;
     background: #ffffff;
-    border: 1px solid #d9dfe8;
-    border-radius: 0 0 6px 6px;
-    padding: 20px;
-    font-size: 16px;
-    line-height: 1.7;
+    border: none;
+    padding: 0;
 }
 
 #inline-editor .ql-editor {
     min-height: 460px;
-    padding: 20px;
+    padding: 48px 56px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* Document metadata row (avatar, author, read time, actions) */
+
+.inline-editor-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 56px 0;
+    font-size: 13px;
+    color: #6B778C;
+}
+
+.inline-editor-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #DFE1E6;
+    color: #42526E;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.inline-editor-author {
+    color: #172B4D;
+    font-weight: 500;
+}
+
+.inline-editor-meta-dot {
+    color: #B3BAC5;
+}
+
+.inline-editor-meta-spacer {
+    flex: 1;
+}
+
+.inline-editor-meta-icon {
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.inline-editor-meta-icon:hover {
+    background: #EBECF0;
 }
 
 .inline-editor-status {
     display: flex;
     align-items: center;
     gap: 20px;
-    margin-top: 12px;
-    padding: 10px 14px;
-    background: #f5f7fa;
-    border: 1px solid #e1e5eb;
-    border-radius: 6px;
+    margin-top: 24px;
+    padding: 14px 56px;
+    background: transparent;
+    border: none;
+    border-top: 1px solid #DFE1E6;
     font-size: 13px;
+    color: #6B778C;
 }
 
 .inline-editor-actions {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
-    margin-top: 15px;
+    padding: 0 56px 32px;
+    margin-top: 0;
 }
 
 .inline-editor-actions button {
-    border: none;
-    border-radius: 5px;
-    padding: 9px 15px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 8px 14px;
     cursor: pointer;
     font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    background: #F4F5F7;
+    color: #172B4D;
+    transition: background .15s ease;
 }
 
 .inline-editor-actions button:hover {
-    opacity: 0.9;
+    background: #EBECF0;
+    opacity: 1;
+}
+
+#inline-publish {
+    background: #0052CC;
+    color: #ffffff;
+}
+
+#inline-publish:hover {
+    background: #0747A6;
 }
 
 .cancel-btn {

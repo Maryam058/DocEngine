@@ -9,7 +9,7 @@ const CONFIG = {
         "https://doc-engine-nu.vercel.app/api/publish",
 
     PRODUCTION_URL:
-        "https://doc-engine-8jayk1bml-doc-engine.vercel.app",
+         "https://doc-engine-nu.vercel.app",
 
     STORAGE: {
         DOCUMENTS: "docengine_documents",

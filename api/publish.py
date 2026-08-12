@@ -221,7 +221,6 @@ class MarkdownConverter(HTMLParser):
             href = ""
 
             if self.link_stack:
-
                 href = self.link_stack.pop()
 
             self.output.append(
@@ -456,14 +455,6 @@ def get_document_path(page):
 
     # ------------------------------------------------------
     # Release Notes
-    #
-    # IMPORTANT:
-    #
-    # Website:
-    # /DocEngine/release-notes/
-    #
-    # Actual file:
-    # docs/release-notes/latest-release-notes.md
     # ------------------------------------------------------
 
     normalized_page = page_path.rstrip("/")
@@ -496,14 +487,6 @@ def get_document_path(page):
 
     # ------------------------------------------------------
     # Convert URL path to Markdown path
-    #
-    # Example:
-    #
-    # UserGuide/Register a patient
-    #
-    # becomes:
-    #
-    # docs/UserGuide/Register a patient.md
     # ------------------------------------------------------
 
     return (
@@ -633,7 +616,6 @@ def publish_document(
 
         "branch":
             GITHUB_BRANCH
-
     }
 
     # ------------------------------------------------------
@@ -676,7 +658,6 @@ def publish_document(
             .get(
                 "sha"
             )
-
     }
 
 

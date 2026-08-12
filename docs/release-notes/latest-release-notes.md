@@ -1,11 +1,5 @@
-# Latest Release Notes Sprint New Version Test
-
-## Overview[¶](#overview)
+## Overview
 
 This release includes usability-focused enhancements to reporting and referral workflows to make day-to-day operations more efficient. The following improvements are listed below:
 
-## Improvements Latest Notes
-
-
-
-              12345
+## Improvements

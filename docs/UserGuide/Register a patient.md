@@ -1,12 +1,12 @@
-## Register a Patient
-
-Here we are registering a patient ... publish test new!! github test testing API
+# Register a Patient
 
 Create a complete patient profile for care coordination by following the registration process below.
 
-## Steps to Follow[¶](#steps-to-follow)
+Using Vercel API  to test
 
-new steps
+live testing..........
+
+## Steps to Follow[¶](#steps-to-follow)
 
 ## Verify the Registration[¶](#verify-the-registration)
 

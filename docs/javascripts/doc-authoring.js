@@ -235,7 +235,6 @@ function saveInstantPublishedContent(page, content) {
 
 }
 
-
 function renderInstantPublishedContent() {
 
     try {
@@ -272,8 +271,24 @@ function renderInstantPublishedContent() {
             return false;
         }
 
+        /* Preserve existing Edit Page button */
+        const editButton =
+            contentRoot.querySelector(
+                ".edit-page-button"
+            );
+
+        /* Render latest published content */
         contentRoot.innerHTML =
             data.content;
+
+        /* Restore Edit Page button */
+        if (editButton) {
+
+            contentRoot.appendChild(
+                editButton
+            );
+
+        }
 
         console.log(
             "Instant published content restored after refresh."
@@ -291,9 +306,7 @@ function renderInstantPublishedContent() {
         return false;
 
     }
-
 }
-
 
 /* ==========================================================
    Draft Manager
@@ -1333,7 +1346,7 @@ const WorkflowManager = {
                     "Your changes are now visible."
                 );
                 window.location.reload();
-                
+
                 return true;
 
 

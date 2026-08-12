@@ -1,30 +1,42 @@
-/* Full-width layout only on Home page */
+/* ==========================================================
+   HOME PAGE - FULL WIDTH
+   ========================================================== */
 
-.homepage .md-main__inner{
-    max-width:100% !important;
-    margin:0 !important;
+.homepage .md-main__inner {
+    max-width: 100% !important;
+    margin: 0 !important;
 }
 
-.homepage .md-content{
-    margin:0 !important;
+.homepage .md-content {
+    margin: 0 !important;
 }
 
-.homepage .md-content__inner{
-    max-width:100% !important;
-    margin:0 !important;
-    padding:0 !important;
+.homepage .md-content__inner {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-/* Hide breadcrumb */
-.md-path{
-    display:none !important;
+
+/* ==========================================================
+   HIDE BREADCRUMB
+   ========================================================== */
+
+.md-path {
+    display: none !important;
 }
+
+
+/* ==========================================================
+   HOME HERO
+   ========================================================== */
+
 .homepage .hero {
     position: relative;
-    
-    width:90vw;
-    margin-left:calc(50% - 50vw);
-    margin-right:calc(50% - 50vw);
+
+    width: 90vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
 
     display: flex;
     flex-direction: column;
@@ -33,189 +45,210 @@
 
     text-align: center;
 
-    background: linear-gradient(135deg,#1f6fe5,#25b8ea);
+    background: linear-gradient(135deg, #1f6fe5, #25b8ea);
     color: white;
 
     padding: 80px 20px;
     box-sizing: border-box;
 }
 
-.homepage .hero h1{
-    font-size:72px;
-    margin-bottom:20px;
+.homepage .hero h1 {
+    font-size: 72px;
+    margin-bottom: 20px;
 }
 
-.homepage .hero h2{
-    font-size:38px;
-    margin-bottom:25px;
+.homepage .hero h2 {
+    font-size: 38px;
+    margin-bottom: 25px;
 }
 
-.homepage .hero p{
-    max-width:800px;
-    font-size:22px;
-    line-height:1.7;
+.homepage .hero p {
+    max-width: 800px;
+    font-size: 22px;
+    line-height: 1.7;
 }
 
-.homepage .hero-button{
-    margin-top:35px;
-    background:#fff;
-    color:#1976d2;
-    padding:14px 36px;
-    border-radius:6px;
-    text-decoration:none;
-    font-weight:bold;
+.homepage .hero-button {
+    margin-top: 35px;
+    background: #fff;
+    color: #1976d2;
+    padding: 14px 36px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
 }
 
-/* ==========================
-   Home Section
-========================== */
 
-.home-section{
-    max-width:1200px;
-    margin:80px auto;
-    padding:0 20px;
-    text-align:center;
+/* ==========================================================
+   HOME SECTION
+   ========================================================== */
+
+.home-section {
+    max-width: 1200px;
+    margin: 80px auto;
+    padding: 0 20px;
+    text-align: center;
 }
 
-.section-text{
-    color:#666;
-    margin-bottom:50px;
-    font-size:18px;
+.section-text {
+    color: #666;
+    margin-bottom: 50px;
+    font-size: 18px;
 }
 
-/* ==========================
-   Cards
-========================== */
 
-.cards{
-    display:flex;
-    justify-content:center;
-    align-items:stretch;
-    gap:30px;
-    flex-wrap:wrap;
-    margin-top:40px;
-}
-.card{
-    width:260px;
-    background:#f0f0f3;
-    padding:30px;
-    border-radius:12px;
-    box-shadow:0 5px 18px rgba(0,0,0,.12);
-    transition:.3s;
+/* ==========================================================
+   CARDS
+   ========================================================== */
 
-    display:flex;
-    flex-direction:column;
+.cards {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 40px;
 }
 
-.card:hover{
-    transform:translateY(-8px);
+.card {
+    width: 260px;
+    background: #f0f0f3;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, .12);
+    transition: .3s;
+
+    display: flex;
+    flex-direction: column;
 }
 
-.card p{
-    flex:1;
-    color:#23337c;
-    line-height:1.6;
-}
-.card-button{
-    display:inline-block;
-    align-self:center;      
-    margin-top:20px;
-    padding:12px 24px;
-    background:#1976d2;
-    color:#fff !important;
-    text-decoration:none;
-    border-radius:6px;
-    font-weight:600;
-    text-align:center;
-}
-/* Hero Box */
-
-.hero-box{
-    background:linear-gradient(135deg,#1976d2,#42a5f5);
-    color:#fff;
-    padding:50px;
-    border-radius:14px;
-    margin:30px 0 50px;
-    text-align:center;
+.card:hover {
+    transform: translateY(-8px);
 }
 
-.hero-box h1{
-    color:#fff;
-    margin:0 0 15px;
-    font-size:42px;
+.card p {
+    flex: 1;
+    color: #23337c;
+    line-height: 1.6;
 }
 
-.hero-box p{
-    color:#fff;
-    font-size:18px;
+.card-button {
+    display: inline-block;
+    align-self: center;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: #1976d2;
+    color: #fff !important;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    text-align: center;
 }
 
-/* Step Cards */
 
-.step-card{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:40px;
+/* ==========================================================
+   HERO BOX
+   ========================================================== */
 
-    background:#fff;
-
-    padding:30px;
-
-    margin:30px 0;
-
-    border-radius:12px;
-
-    box-shadow:0 8px 20px rgba(0,0,0,.08);
+.hero-box {
+    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    color: #fff;
+    padding: 50px;
+    border-radius: 14px;
+    margin: 30px 0 50px;
+    text-align: center;
 }
 
-.step-text{
-    flex:1;
+.hero-box h1 {
+    color: #fff;
+    margin: 0 0 15px;
+    font-size: 42px;
 }
 
-.step-image{
-    flex:1;
-    text-align:center;
+.hero-box p {
+    color: #fff;
+    font-size: 18px;
 }
 
-.step-image img{
-    width:100%;
-    max-width:500px;
-    border-radius:10px;
-    box-shadow:0 8px 20px rgba(0,0,0,.15);
+
+/* ==========================================================
+   STEP CARDS
+   ========================================================== */
+
+.step-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+
+    background: #fff;
+
+    padding: 30px;
+
+    margin: 30px 0;
+
+    border-radius: 12px;
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .08);
 }
 
-/* Information Cards */
-
-.info-card{
-    background:#f5f7fb;
-    padding:20px;
-    border-left:5px solid #1976d2;
-    border-radius:8px;
-    margin:20px 0;
+.step-text {
+    flex: 1;
 }
 
-.info-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-    gap:20px;
+.step-image {
+    flex: 1;
+    text-align: center;
 }
 
-.info-grid div{
-    background:#f8f9fc;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0 5px 15px rgba(0,0,0,.08);
+.step-image img {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .15);
 }
 
-@media(max-width:768px){
 
-.step-card{
-    flex-direction:column;
+/* ==========================================================
+   INFORMATION CARDS
+   ========================================================== */
+
+.info-card {
+    background: #f5f7fb;
+    padding: 20px;
+    border-left: 5px solid #1976d2;
+    border-radius: 8px;
+    margin: 20px 0;
 }
 
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
 }
-/* ===== Left Navigation ===== */
+
+.info-grid div {
+    background: #f8f9fc;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .08);
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 768px) {
+    .step-card {
+        flex-direction: column;
+    }
+}
+
+
+/* ==========================================================
+   LEFT NAVIGATION
+   ========================================================== */
 
 .md-sidebar--primary .md-nav__title {
     font-size: 18px;
@@ -233,7 +266,11 @@
     color: #1976d2 !important;
     font-weight: 700;
 }
-/* Hide Table of Contents */
+
+
+/* ==========================================================
+   HIDE TABLE OF CONTENTS
+   ========================================================== */
 
 .md-sidebar--secondary {
     display: none !important;
@@ -242,14 +279,20 @@
 .md-main__inner {
     grid-template-columns: 280px 1fr !important;
 }
-/* Home page full width */
+
+
+/* ==========================================================
+   HOME PAGE FULL WIDTH
+   ========================================================== */
 
 .md-main__inner.md-grid {
     max-width: 100% !important;
 }
-/* ======================================================
-   AI Draft / Human Review Editor
-   ====================================================== */
+
+
+/* ==========================================================
+   AI DRAFT / HUMAN REVIEW EDITOR
+   ========================================================== */
 
 .review-editable-page {
     border: 2px dashed #1976d2;
@@ -262,7 +305,7 @@
 
 .review-editable-page:focus {
     border-color: #0d47a1;
-    box-shadow: 0 0 0 4px rgba(25,118,210,.15);
+    box-shadow: 0 0 0 4px rgba(25, 118, 210, .15);
 }
 
 .review-editable-page h1,
@@ -292,6 +335,11 @@
     border-color: #1976d2;
 }
 
+
+/* ==========================================================
+   REVIEW BANNER
+   ========================================================== */
+
 .review-banner {
     padding: 15px;
     margin-bottom: 20px;
@@ -300,11 +348,9 @@
     border: 1px solid #1976d2;
 }
 
-
 .review-workspace {
     margin-top: 30px;
 }
-
 
 .review-panel {
     margin-top: 25px;
@@ -314,48 +360,44 @@
     border: 1px solid #ddd;
 }
 
-.review-actions{
-
-margin:20px 0;
-
+.review-actions {
+    margin: 20px 0;
 }
 
-.review-actions button{
-
-padding:10px 18px;
-
-margin-right:10px;
-
-cursor:pointer;
-
+.review-actions button {
+    padding: 10px 18px;
+    margin-right: 10px;
+    cursor: pointer;
 }
+
+
+/* ==========================================================
+   EDIT DOCUMENT BUTTON
+   ========================================================== */
+
 .edit-document-btn {
-
-display: inline-block;
-
-padding: 8px 16px;
-
-margin: 10px 0;
-
-background: #bcc0d6;
-
-color: rgb(14, 13, 13);
-
-border-radius: 6px;
-
-text-decoration: none;
-
-font-weight: 600;
-
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 10px 0;
+    background: #bcc0d6;
+    color: rgb(14, 13, 13);
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
 }
-
 
 .edit-document-btn:hover {
-
-opacity: 0.85;
-
+    opacity: 0.85;
 }
+
+
+/* ==========================================================
+   DOCUMENT ACTIONS
+   ========================================================== */
+
 .doc-actions {
+    display: flex;
+    justify-content: flex-end;
     margin-bottom: 20px;
 }
 
@@ -369,253 +411,182 @@ opacity: 0.85;
     font-size: 14px;
 }
 
-
 .doc-actions button:hover {
     background: #1d4ed8;
 }
 
-.doc-actions{
-    display:flex;
-    justify-content:flex-end;
-    margin-bottom:20px;
+
+/* ==========================================================
+   EDIT PAGE BUTTON
+   ALWAYS RIGHT ALIGNED
+   ========================================================== */
+
+.edit-btn {
+    display: block !important;
+
+    width: fit-content !important;
+
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    margin-bottom: 18px !important;
+
+    padding: 7px 14px;
+
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+
+    color: #ffffff !important;
+    background: #1976d2 !important;
+
+    border: 1px solid #1976d2 !important;
+    border-radius: 6px;
+
+    cursor: pointer;
+    text-decoration: none;
+
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    box-sizing: border-box;
 }
 
-.edit-btn{
-    background:#1976d2;
-    color:white;
-    border:none;
-    padding:10px 18px;
-    border-radius:6px;
-    cursor:pointer;
-    font-size:14px;
+.edit-btn:hover,
+.edit-btn:focus,
+.edit-btn:active {
+    background: #1976d2 !important;
+    color: #ffffff !important;
+    border-color: #1976d2 !important;
+
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    transform: none !important;
 }
 
-.edit-btn:hover{
-    background:#1565c0;
-}
+
+/* ==========================================================
+   EDITING MODE
+   ========================================================== */
+
 .editing-mode {
     border: 2px solid #2196f3;
     padding: 20px;
     background: #fff;
 }
+
 #page-editor {
-
-    background:white;
-
+    background: white;
 }
 
 
-.editing-mode {
+/* ==========================================================
+   EDITOR TOOLBAR
+   ========================================================== */
 
-    border:2px solid #2196f3;
-
-    padding:20px;
-
-}
 #editor-toolbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
 
     position: sticky;
     top: 0;
 
-    display: flex;
-    gap: 8px;
-
-    padding: 10px;
+    padding: 10px 15px;
 
     margin-bottom: 20px;
 
-    background: white;
+    background: #ffffff;
 
-    border-bottom: 1px solid #ddd;
+    border: 1px solid #ddd;
+    border-radius: 8px;
 
-    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
+    box-sizing: border-box;
+
+    z-index: 999;
 }
 
-
 #editor-toolbar button {
+    min-width: 40px;
+    height: 35px;
 
-    padding: 6px 14px;
+    padding: 6px 12px;
+
+    background: #ffffff;
 
     border: 1px solid #ccc;
-
-    background: #f8f8f8;
-
-    border-radius: 4px;
+    border-radius: 5px;
 
     cursor: pointer;
 
-    font-weight: bold;
-
+    font-size: 16px;
+    font-weight: 600;
 }
-
 
 #editor-toolbar button:hover {
-
-    background: #e8f0fe;
-
-}
-
-#editor-toolbar button {
-    margin-right:8px;
-    padding:5px 10px;
-    cursor:pointer;
-}
-/* Confluence style editor toolbar */
-
-#editor-toolbar {
-
-    width:100%;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:flex-start;
-
-    position:sticky;
-
-    top:0;
-
-    background:#ffffff;
-
-    padding:12px 15px;
-
-    border:1px solid #ddd;
-
-    border-radius:8px;
-
-    margin-bottom:20px;
-
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
-
-    z-index:999;
-
+    background: #e3f2fd;
 }
 
 
-#editor-toolbar button {
+/* ==========================================================
+   SAVE PAGE DRAFT
+   ========================================================== */
 
-    min-width:40px;
-
-    height:35px;
-
-    font-size:16px;
-
-}
-#editor-toolbar {
-    display: flex !important;
-    width: 100% !important;
-    box-sizing: border-box;
-    justify-content: flex-start;
-    margin-bottom: 20px;
-}
-#editor-toolbar {
-
-    width:100%;
-    display:flex;
-    gap:10px;
-
-    padding:10px;
-
-    margin-bottom:20px;
-
-    background:white;
-
-    border:1px solid #ddd;
-
-    border-radius:8px;
-
-}
-
-
-#editor-toolbar button {
-
-    padding:6px 14px;
-
-    cursor:pointer;
-
-}
-#editor-toolbar button{
-
-    background:#ffffff;
-
-    border:1px solid #ccc;
-
-    padding:6px 12px;
-
-    border-radius:5px;
-
-    font-weight:600;
-
-}
-
-
-#editor-toolbar button:hover{
-
-    background:#e3f2fd;
-
-}
-#save-page-draft{
-
-    background:#16a34a !important;
-
-    color:white;
-
-    border:none !important;
-
-}
 #save-page-draft {
-    user-select:none;
-    cursor:pointer;
+    background: #1976d2;
+    color: white;
+
+    border: none;
+
+    padding: 10px 18px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    margin-bottom: 15px;
+
+    user-select: none;
 }
-#save-page-draft {
-
-    background:#1976d2;
-
-    color:white;
-
-    border:none;
-
-    padding:10px 18px;
-
-    border-radius:6px;
-
-    cursor:pointer;
-
-    font-size:14px;
-
-    font-weight:600;
-
-    margin-bottom:15px;
-
-}
-
 
 #save-page-draft:hover {
-
-    background:#1565c0;
-
+    background: #1565c0;
 }
+
+
 /* ==========================================================
-   FINAL EDITOR FRAME OVERRIDE
+   FINAL EDITOR FRAME
    ========================================================== */
 
 .editor-page {
     width: 100%;
     max-width: 1200px;
+
     margin: 40px auto !important;
+
     padding: 0 24px !important;
+
     box-sizing: border-box;
 }
 
 .editor-frame {
     width: 100%;
+
     background: #fff;
+
     border: 1px solid #d9e2ec !important;
+
     border-radius: 12px !important;
+
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10) !important;
+
     overflow: hidden;
+
     box-sizing: border-box;
 }
 
@@ -623,61 +594,90 @@ opacity: 0.85;
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     gap: 20px;
+
     padding: 22px 28px !important;
+
     background: #f8fafc;
+
     border-bottom: 1px solid #e5e7eb;
 }
 
 .editor-container {
     width: 100%;
+
     margin: 0 !important;
     padding: 0 !important;
+
     border: 0 !important;
+
     background: #fff;
 }
 
 #editor {
     min-height: 500px !important;
+
     padding: 30px 36px !important;
+
     border: 0 !important;
+
     box-sizing: border-box;
 }
 
 .editor-footer {
     padding: 14px 24px !important;
+
     background: #f8fafc;
+
     border-top: 1px solid #e5e7eb;
     border-bottom: 1px solid #e5e7eb;
 }
 
 .editor-actions {
     margin: 0 !important;
+
     padding: 18px 24px !important;
+
     background: #fff;
+
     border: 0 !important;
+
     display: flex;
+
     justify-content: flex-end;
+
     gap: 10px;
 }
+
+
 /* ==========================================================
    INLINE EDITOR FRAME
    ========================================================== */
 
 .inline-editor-workspace.editor-frame {
     width: 100%;
+
     max-width: 900px;
+
     margin: 30px auto !important;
+
     padding: 0 !important;
+
     box-sizing: border-box;
 
     background: #fff;
+
     border: 1px solid #d9e2ec !important;
+
     border-radius: 12px !important;
+
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10) !important;
 
     overflow: hidden;
 }
+
+
 /* ==========================================================
    INLINE EDITOR - REMOVE SIDE SPACING
    ========================================================== */
@@ -689,126 +689,143 @@ opacity: 0.85;
 
 .inline-editor-workspace.editor-frame {
     width: 100% !important;
+
     max-width: none !important;
+
     margin: 20px 0 !important;
+
     box-sizing: border-box;
 }
+
+
 /* ==========================================================
-   INLINE EDITOR CONTENT - REMOVE INNER LEFT/RIGHT SPACE
+   INLINE EDITOR CONTENT
    ========================================================== */
 
 .inline-editor-workspace .ql-editor {
     width: 100% !important;
+
     max-width: none !important;
+
     margin: 0 !important;
+
     padding-left: 24px !important;
     padding-right: 24px !important;
+
     box-sizing: border-box;
 }
 
-/* Keep document content aligned to the editor edges */
+
+/* ==========================================================
+   INLINE EDITOR CONTENT ALIGNMENT
+   ========================================================== */
+
 .inline-editor-workspace .ql-editor > * {
     max-width: none !important;
+
     margin-left: 0 !important;
     margin-right: 0 !important;
 }
 
-/* Headings */
+
+/* ==========================================================
+   INLINE EDITOR HEADINGS
+   ========================================================== */
+
 .inline-editor-workspace .ql-editor h1,
 .inline-editor-workspace .ql-editor h2,
 .inline-editor-workspace .ql-editor h3 {
     max-width: none !important;
+
     margin-left: 0 !important;
     margin-right: 0 !important;
 }
 
-/* Paragraphs */
+
+/* ==========================================================
+   INLINE EDITOR PARAGRAPHS
+   ========================================================== */
+
 .inline-editor-workspace .ql-editor p {
     max-width: none !important;
+
     margin-left: 0 !important;
     margin-right: 0 !important;
 }
+
+
 /* ==========================================================
-   Edit Page Button
-========================================================== */
+   EDIT PAGE BUTTON
+   PUBLISHED / GENERATED VERSION
+   ALWAYS RIGHT ALIGNED
+   ========================================================== */
 
 .edit-page-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: block !important;
 
-    margin: 0 0 18px 0;
+    width: fit-content !important;
+
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    margin-bottom: 18px !important;
+
     padding: 7px 14px;
 
     font-size: 14px;
     font-weight: 500;
     line-height: 1.2;
 
-    color: #333;
-    background: #fff;
+    color: #ffffff !important;
+    background: #1976d2 !important;
 
-    border: 1px solid #d0d0d0;
-    border-radius: 4px;
+    border: 1px solid #1976d2 !important;
+    border-radius: 6px;
 
     cursor: pointer;
     text-decoration: none;
 
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 
-    transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+    box-sizing: border-box;
 }
 
-.edit-page-button:hover {
-    background: #f5f5f5;
-    border-color: #aaa;
+.edit-page-button:hover,
+.edit-page-button:focus,
+.edit-page-button:active {
+    background: #1976d2 !important;
+    color: #ffffff !important;
 
-    box-shadow:
-        0 2px 5px rgba(0, 0, 0, 0.12);
+    border-color: #1976d2 !important;
+
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+    transform: none !important;
 }
+
+
 /* ==========================================================
-   Edit Page Button - Right Aligned
-========================================================== */
+   GENERIC EDITOR BUTTON
+   KEEP SAME ON HOVER
+   ========================================================== */
 
-.edit-page-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    width: fit-content;
-    margin-left: auto;
-    margin-right: 0;
-    margin-bottom: 18px;
-
-    padding: 7px 14px;
-
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 1.2;
-
-    color: #ffffff;
-    background: #3c3ada;
-
-    border: 1px solid #d0d0d0;
-    border-radius: 4px;
-
-    cursor: pointer;
-    text-decoration: none;
-
-    box-shadow: 0 1px 3px rgba(247, 245, 245, 0.08);
-}
 .editor-btn {
     background: #ffffff;
+
     color: #333333;
+
     border: 1px solid #d1d5db;
 }
 
-.editor-btn:hover {
+.editor-btn:hover,
+.editor-btn:focus,
+.editor-btn:active {
     background: #ffffff;
+
     color: #333333;
+
     border: 1px solid #d1d5db;
+
     box-shadow: none;
+
     transform: none;
 }

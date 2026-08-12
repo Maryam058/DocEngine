@@ -543,116 +543,6 @@ const VersionManager = {
     }
 
 };
-/* ==========================================================
-   Load Latest Published Content
-========================================================== */
-
-async function loadLatestPublishedContent(page) {
-
-    try {
-
-        const separator =
-            CONFIG.PUBLISH_API.includes("?")
-                ? "&"
-                : "?";
-
-        const response = await fetch(
-
-            CONFIG.PUBLISH_API +
-            separator +
-            "page=" +
-            encodeURIComponent(page) +
-            "&_t=" +
-            Date.now(),
-
-            {
-                method: "GET",
-
-                cache: "no-store",
-
-                headers: {
-                    "Cache-Control": "no-cache",
-                    "Pragma": "no-cache"
-                }
-            }
-
-        );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `Published content request failed: ${response.status}`
-            );
-
-        }
-
-
-        const result =
-            await response.json();
-
-
-        if (
-            !result.success ||
-            result.content === undefined
-        ) {
-
-            console.warn(
-                "No published content returned."
-            );
-
-            return false;
-
-        }
-
-
-        const contentRoot =
-            document.querySelector(
-                ".md-content__inner"
-            );
-
-
-        if (!contentRoot) {
-
-            console.warn(
-                "Documentation content area not found."
-            );
-
-            return false;
-
-        }
-
-
-        /*
-         * Replace the currently displayed
-         * documentation content immediately.
-         */
-
-        contentRoot.innerHTML =
-            result.content;
-
-
-        console.log(
-            "Latest published content loaded instantly."
-        );
-
-
-        return true;
-
-
-    } catch (error) {
-
-        console.error(
-            "Instant published content error:",
-            error
-        );
-
-        return false;
-
-    }
-
-}
-
 
 /* ==========================================================
    Wait For Published Documentation
@@ -1256,6 +1146,37 @@ const WorkflowManager = {
 
 
                 /* ==================================================
+                   Show Published Content Immediately
+
+                   The just-published HTML is already in memory,
+                   so the live documentation page can be updated
+                   right now instead of waiting for GitHub/Vercel.
+                ================================================== */
+
+                if (AppState.inlineMode) {
+
+                    const contentRoot =
+                        document.querySelector(
+                            ".md-content__inner"
+                        );
+
+                    if (contentRoot) {
+
+                        contentRoot.innerHTML =
+                            content;
+
+                    }
+
+                    AppState.editor =
+                        null;
+
+                    AppState.inlineMode =
+                        false;
+
+                }
+
+
+                /* ==================================================
                    Background Deployment Verification
                    
                    IMPORTANT:
@@ -1317,9 +1238,7 @@ const WorkflowManager = {
                 alert(
 
                     "✅ Published successfully!\n\n" +
-
-                    "The documentation is being deployed to the live site."
-
+                    "Your changes are now visible."
                 );
 
 

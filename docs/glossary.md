@@ -1,5 +1,5 @@
-# Terminology Glossary[¶](#terminology-glossary)
+# Terminology Glossary
 
 This glossary defines common terms used in software documentation and technical writing for DocEngine.
 
-Term Glossary
+Term Glossary Test

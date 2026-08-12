@@ -290,7 +290,7 @@ function ensureEditPageButton(contentRoot) {
 
         document
             .querySelectorAll(
-                ".edit-page-button"
+                ".edit-page-button, .edit-btn"
             )
             .forEach(button => {
 
@@ -311,79 +311,56 @@ function ensureEditPageButton(contentRoot) {
 
 
     /* ======================================================
-       Find ALL Edit Page Buttons
+       Find Existing Edit Buttons
     ====================================================== */
 
-    const allEditButtons =
-        document.querySelectorAll(
-            ".edit-page-button"
+    const existingButtons =
+        contentRoot.querySelectorAll(
+            ".edit-page-button, .edit-btn"
         );
 
 
-    /*
-     * If multiple buttons exist,
-     * keep only ONE.
-     */
-
-    let editButton =
-        contentRoot.querySelector(
-            ".edit-page-button"
-        );
+    let editButton = null;
 
 
     /*
-     * If there is no button inside the
-     * content area, check whether one already
-     * exists elsewhere on the page.
+     * Prefer the existing original button.
+     * This preserves the current site styling/behavior.
      */
 
-    if (!editButton && allEditButtons.length > 0) {
+    if (existingButtons.length > 0) {
 
         editButton =
-            allEditButtons[0];
+            existingButtons[0];
 
     }
 
 
     /* ======================================================
-       Remove Duplicate Buttons
+       Remove Duplicates
     ====================================================== */
 
-    document
-        .querySelectorAll(
-            ".edit-page-button"
-        )
-        .forEach(button => {
+    existingButtons.forEach(
+        (button, index) => {
 
-            if (button !== editButton) {
+            if (index > 0) {
 
                 button.remove();
 
             }
 
-        });
+        }
+    );
 
 
     /* ======================================================
-       Create Button If Missing
+       Create Button Only If None Exists
     ====================================================== */
 
     if (!editButton) {
 
         editButton =
             createEditPageButton();
-
-    }
-
-
-    /* ======================================================
-       Make Sure Button Is Inside Content
-    ====================================================== */
-
-    if (
-        editButton.parentElement !==
-        contentRoot
-    ) {
 
         contentRoot.prepend(
             editButton
@@ -392,12 +369,21 @@ function ensureEditPageButton(contentRoot) {
     }
 
 
-    /*
-     * Make sure the button is visible.
-     */
+    /* ======================================================
+       Make Existing Button Work
+    ====================================================== */
 
     editButton.style.display =
         "";
+
+
+    /*
+     * Keep the existing edit-btn styling,
+     * but make sure clicking it opens the editor.
+     */
+
+    editButton.onclick =
+        openEditor;
 
 
     return editButton;
@@ -2471,9 +2457,9 @@ const InlineEditor = {
 
 
         AppState.originalEditButton =
-            contentRoot.querySelector(
-                ".edit-page-button"
-            );
+        contentRoot.querySelector(
+        ".edit-page-button, .edit-btn"
+    );
 
 
         /*
@@ -2566,18 +2552,14 @@ const InlineEditor = {
         ================================================== */
 
         tempContent
-            .querySelectorAll(
-                ".edit-page-button"
-            )
-            .forEach(
-
-                element => {
-
-                    element.remove();
-
-                }
-
-            );
+        .querySelectorAll(
+            ".edit-page-button, .edit-btn"
+        )
+        .forEach(
+            element => {
+                element.remove();
+            }
+        );
 
 
         /* ==================================================

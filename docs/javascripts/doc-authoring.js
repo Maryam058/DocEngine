@@ -357,16 +357,20 @@ function ensureEditPageButton(contentRoot) {
        Create Button Only If None Exists
     ====================================================== */
 
-    if (!editButton) {
+if (!editButton) {
 
-        editButton =
-            createEditPageButton();
+    editButton =
+        createEditPageButton();
 
-        contentRoot.prepend(
-            editButton
-        );
+}
 
-    }
+
+/*
+ * Keep Edit Page button on the right side.
+ */
+
+editButton.style.marginLeft = "auto";
+editButton.style.display = "block";
 
 
     /* ======================================================

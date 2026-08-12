@@ -1,4 +1,4 @@
-# Latest Release Notes - New
+# Latest Release Notes - New Notes
 
 ## Overview
 

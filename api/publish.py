@@ -3,6 +3,7 @@ from html.parser import HTMLParser
 from urllib.parse import unquote, quote
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError
+
 import base64
 import html
 import json
@@ -36,12 +37,14 @@ class MarkdownConverter(HTMLParser):
 
     def __init__(self):
         super().__init__()
+
         self.output = []
         self.list_stack = []
         self.link_stack = []
         self.in_pre = False
 
     def handle_starttag(self, tag, attrs):
+
         attrs = dict(attrs)
 
         if tag == "h1":
@@ -82,93 +85,151 @@ class MarkdownConverter(HTMLParser):
             self.in_pre = True
 
         elif tag == "code":
+
             if not self.in_pre:
                 self.output.append("`")
 
         elif tag == "ol":
+
             self.list_stack.append({
                 "type": "ordered",
                 "number": 1
             })
 
         elif tag == "ul":
+
             self.list_stack.append({
                 "type": "unordered",
                 "number": 1
             })
 
         elif tag == "li":
+
             if self.list_stack:
+
                 current = self.list_stack[-1]
 
                 if current["type"] == "ordered":
+
                     prefix = f"{current['number']}. "
+
                     current["number"] += 1
+
                 else:
+
                     prefix = "- "
 
-                self.output.append("\n" + prefix)
+                self.output.append(
+                    "\n" + prefix
+                )
 
         elif tag == "a":
-            href = attrs.get("href", "")
-            self.link_stack.append(href)
+
+            href = attrs.get(
+                "href",
+                ""
+            )
+
+            self.link_stack.append(
+                href
+            )
+
             self.output.append("[")
 
         elif tag == "img":
-            src = attrs.get("src", "")
-            alt = attrs.get("alt", "")
+
+            src = attrs.get(
+                "src",
+                ""
+            )
+
+            alt = attrs.get(
+                "alt",
+                ""
+            )
 
             if src:
+
                 self.output.append(
                     f"![{alt}]({src})"
                 )
 
     def handle_endtag(self, tag):
 
-        if tag in ("h1", "h2", "h3", "h4"):
+        if tag in (
+            "h1",
+            "h2",
+            "h3",
+            "h4"
+        ):
+
             self.output.append("\n")
 
         elif tag == "p":
+
             self.output.append("\n")
 
-        elif tag in ("strong", "b"):
+        elif tag in (
+            "strong",
+            "b"
+        ):
+
             self.output.append("**")
 
-        elif tag in ("em", "i"):
+        elif tag in (
+            "em",
+            "i"
+        ):
+
             self.output.append("*")
 
         elif tag == "u":
+
             self.output.append("</u>")
 
         elif tag == "s":
+
             self.output.append("~~")
 
         elif tag == "blockquote":
+
             self.output.append("\n")
 
         elif tag == "pre":
+
             self.output.append("\n```\n")
+
             self.in_pre = False
 
         elif tag == "code":
+
             if not self.in_pre:
                 self.output.append("`")
 
-        elif tag in ("ol", "ul"):
+        elif tag in (
+            "ol",
+            "ul"
+        ):
+
             if self.list_stack:
                 self.list_stack.pop()
 
             self.output.append("\n")
 
         elif tag == "a":
+
             href = ""
 
             if self.link_stack:
+
                 href = self.link_stack.pop()
 
-            self.output.append(f"]({href})")
+            self.output.append(
+                f"]({href})"
+            )
 
         elif tag == "li":
+
             self.output.append("\n")
 
     def handle_data(self, data):
@@ -177,7 +238,9 @@ class MarkdownConverter(HTMLParser):
             return
 
         if self.in_pre:
+
             self.output.append(data)
+
             return
 
         self.output.append(
@@ -186,7 +249,9 @@ class MarkdownConverter(HTMLParser):
 
     def get_markdown(self):
 
-        text = "".join(self.output)
+        text = "".join(
+            self.output
+        )
 
         text = re.sub(
             r"\n{3,}",
@@ -208,6 +273,7 @@ def html_to_markdown(content):
     converter = MarkdownConverter()
 
     converter.feed(content)
+
     converter.close()
 
     return converter.get_markdown()
@@ -227,8 +293,12 @@ def is_allowed_origin(origin):
 
     # Allow Vercel preview deployments
     if (
-        origin.startswith("https://doc-engine-")
-        and origin.endswith(".vercel.app")
+        origin.startswith(
+            "https://doc-engine-"
+        )
+        and origin.endswith(
+            ".vercel.app"
+        )
     ):
         return True
 
@@ -239,19 +309,20 @@ def is_allowed_origin(origin):
 # GitHub API
 # ==========================================================
 
-def github_request(method, path, payload=None):
+def github_request(
+    method,
+    path,
+    payload=None
+):
 
     if not GITHUB_TOKEN:
+
         raise RuntimeError(
             "DOCENGINE_GITHUB_TOKEN is not configured."
         )
 
     # ------------------------------------------------------
-    # IMPORTANT:
-    # URL-encode every GitHub path segment.
-    #
-    # This prevents filenames containing spaces from causing:
-    # "URL can't contain control characters"
+    # URL-encode every GitHub path segment
     # ------------------------------------------------------
 
     encoded_path = "/".join(
@@ -270,10 +341,18 @@ def github_request(method, path, payload=None):
     )
 
     headers = {
-        "Authorization": f"Bearer {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-        "User-Agent": "DocEngine-Publisher",
+
+        "Authorization":
+            f"Bearer {GITHUB_TOKEN}",
+
+        "Accept":
+            "application/vnd.github+json",
+
+        "X-GitHub-Api-Version":
+            "2022-11-28",
+
+        "User-Agent":
+            "DocEngine-Publisher",
     }
 
     body = None
@@ -282,11 +361,13 @@ def github_request(method, path, payload=None):
 
         body = json.dumps(
             payload
-        ).encode("utf-8")
-
-        headers["Content-Type"] = (
-            "application/json"
+        ).encode(
+            "utf-8"
         )
+
+        headers[
+            "Content-Type"
+        ] = "application/json"
 
     request = Request(
         url,
@@ -305,7 +386,9 @@ def github_request(method, path, payload=None):
             response_body = (
                 response
                 .read()
-                .decode("utf-8")
+                .decode(
+                    "utf-8"
+                )
             )
 
             return json.loads(
@@ -317,7 +400,9 @@ def github_request(method, path, payload=None):
         error_body = (
             error
             .read()
-            .decode("utf-8")
+            .decode(
+                "utf-8"
+            )
         )
 
         raise RuntimeError(
@@ -349,7 +434,6 @@ def get_document_path(page):
             len("DocEngine/"):
         ]
 
-
     # ------------------------------------------------------
     # Remove docs prefix if already present
     # ------------------------------------------------------
@@ -362,30 +446,53 @@ def get_document_path(page):
             len("docs/"):
         ]
 
-
     # ------------------------------------------------------
     # Homepage
     # ------------------------------------------------------
 
     if not page_path:
+
         return "docs/index.md"
 
+    # ------------------------------------------------------
+    # Release Notes
+    #
+    # IMPORTANT:
+    #
+    # Website:
+    # /DocEngine/release-notes/
+    #
+    # Actual file:
+    # docs/release-notes/latest-release-notes.md
+    # ------------------------------------------------------
+
+    normalized_page = page_path.rstrip("/")
+
+    if normalized_page == "release-notes":
+
+        return (
+            "docs/release-notes/"
+            "latest-release-notes.md"
+        )
 
     # ------------------------------------------------------
     # Already a Markdown file
     # ------------------------------------------------------
 
-    if page_path.endswith(".md"):
+    if page_path.endswith(
+        ".md"
+    ):
 
-        return "docs/" + page_path
-
+        return (
+            "docs/"
+            + page_path
+        )
 
     # ------------------------------------------------------
     # Remove trailing slash
     # ------------------------------------------------------
 
     page_path = page_path.rstrip("/")
-
 
     # ------------------------------------------------------
     # Convert URL path to Markdown path
@@ -437,7 +544,6 @@ def find_github_file(page):
             directory_index
         )
 
-
     # ------------------------------------------------------
     # Check GitHub
     # ------------------------------------------------------
@@ -455,9 +561,11 @@ def find_github_file(page):
 
         except RuntimeError as error:
 
-            if "404" not in str(error):
-                raise
+            if "404" not in str(
+                error
+            ):
 
+                raise
 
     return candidate, None
 
@@ -481,7 +589,6 @@ def publish_document(
         )
     )
 
-
     # ------------------------------------------------------
     # Resolve correct docs/ path
     # ------------------------------------------------------
@@ -492,7 +599,6 @@ def publish_document(
         )
     )
 
-
     # ------------------------------------------------------
     # Encode Markdown
     # ------------------------------------------------------
@@ -501,11 +607,14 @@ def publish_document(
         base64
         .b64encode(
             markdown_content
-            .encode("utf-8")
+            .encode(
+                "utf-8"
+            )
         )
-        .decode("utf-8")
+        .decode(
+            "utf-8"
+        )
     )
-
 
     # ------------------------------------------------------
     # GitHub payload
@@ -514,8 +623,10 @@ def publish_document(
     payload = {
 
         "message":
-            f"Publish documentation: "
-            f"{file_path}",
+            (
+                "Publish documentation: "
+                f"{file_path}"
+            ),
 
         "content":
             encoded_content,
@@ -524,7 +635,6 @@ def publish_document(
             GITHUB_BRANCH
 
     }
-
 
     # ------------------------------------------------------
     # Existing file requires SHA
@@ -536,7 +646,6 @@ def publish_document(
             existing["sha"]
         )
 
-
     # ------------------------------------------------------
     # Update / create GitHub file
     # ------------------------------------------------------
@@ -547,10 +656,10 @@ def publish_document(
         payload
     )
 
-
     return {
 
-        "success": True,
+        "success":
+            True,
 
         "message":
             "Published successfully.",
@@ -590,7 +699,9 @@ class handler(
             ""
         )
 
-        if is_allowed_origin(origin):
+        if is_allowed_origin(
+            origin
+        ):
 
             self.send_header(
                 "Access-Control-Allow-Origin",
@@ -617,7 +728,6 @@ class handler(
             "Origin"
         )
 
-
     # ======================================================
     # JSON Response
     # ======================================================
@@ -630,7 +740,9 @@ class handler(
 
         response = json.dumps(
             data
-        ).encode("utf-8")
+        ).encode(
+            "utf-8"
+        )
 
         self.send_response(
             status_code
@@ -648,7 +760,6 @@ class handler(
         self.wfile.write(
             response
         )
-
 
     # ======================================================
     # GET
@@ -675,7 +786,6 @@ class handler(
 
         )
 
-
     # ======================================================
     # OPTIONS
     # ======================================================
@@ -689,7 +799,9 @@ class handler(
 
         if (
             origin
-            and not is_allowed_origin(origin)
+            and not is_allowed_origin(
+                origin
+            )
         ):
 
             self.send_response(
@@ -705,7 +817,6 @@ class handler(
 
             return
 
-
         self.send_response(
             204
         )
@@ -713,7 +824,6 @@ class handler(
         self.send_cors_headers()
 
         self.end_headers()
-
 
     # ======================================================
     # POST
@@ -730,18 +840,15 @@ class handler(
                 )
             )
 
-
             body = self.rfile.read(
                 content_length
             )
-
 
             data = json.loads(
                 body.decode(
                     "utf-8"
                 )
             )
-
 
             page = data.get(
                 "page"
@@ -750,7 +857,6 @@ class handler(
             content = data.get(
                 "content"
             )
-
 
             if (
                 not page
@@ -767,7 +873,10 @@ class handler(
                             False,
 
                         "message":
-                            "Page and content are required."
+                            (
+                                "Page and content "
+                                "are required."
+                            )
 
                     }
 
@@ -775,18 +884,15 @@ class handler(
 
                 return
 
-
             result = publish_document(
                 page,
                 content
             )
 
-
             self.send_json(
                 200,
                 result
             )
-
 
         except Exception as error:
 
@@ -794,7 +900,6 @@ class handler(
                 "Publish error:",
                 error
             )
-
 
             self.send_json(
 

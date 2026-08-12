@@ -1,6 +1,6 @@
-# Release Notes: February 2026 Sprint v2.3.4.7
+# Release Notes: February 2026 Sprint v2.3.4.7[¶](#release-notes-february-2026-sprint-v2347)
 
-## Introduction
+Overview
 
 This release introduces a series of enhancements focused on improving medication visibility, prescribing accuracy, and workflow efficiency across indici.
 
@@ -10,108 +10,89 @@ Updates include improved long-term medication display, streamlined medication ed
 
 Enhancements have also been made to AI usage reporting to improve transparency and cost tracking.
 
-## Long-Term Medication Display Update
+## Long-Term Medication Display Update[¶](#long-term-medication-display-update)
 
 The Long-Term Medication section in the Consult top bar has been updated to improve readability and reduce visual clutter.
 
-### What's Changed
+### What's Changed[¶](#whats-changed)
 
-- Quantity and Duration (Q/D) are now displayed for long-term medications.
-- Medication dates are hidden by default to keep the view clean.
-- A new toggle icon allows users to show or hide dates as needed.
-
-![Long-Term Medications panel showing Quantity and Duration values with hidden date view](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-01.png)
+![Long-Term Medications panel showing Quantity and Duration values with hidden date view](../../assets/Release%20Notes_Sprint%20v2.3.4.7-feb26/image-01.png)
 
 These changes improve clarity when reviewing long-term medications, particularly where prescriptions may cover longer intended treatment periods.
 
-![Long-Term Medications panel with the date visibility toggle highlighted](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-02.png)
+![Long-Term Medications panel with the date visibility toggle highlighted](../../assets/Release%20Notes_Sprint%20v2.3.4.7-feb26/image-02.png)
 
-## Print Prescription Enhancement
+## Print Prescription Enhancement[¶](#print-prescription-enhancement)
 
 Prescription printing in indici has been updated to use a new standard format, changing from the previous PDF layout to an XHTML format, in line with Health NZ (HNZ) compliance requirements.
 
-### What This Means for Your Practice
+### What This Means for Your Practice[¶](#what-this-means-for-your-practice)
 
-- Printed prescriptions may look slightly different.
-- The prescribing process and information remain the same.
-- This is a national standard format and cannot be customised or made practice-specific.
+### Why This Change Was Made[¶](#why-this-change-was-made)
 
-### Why This Change Was Made
+![Prescription print preview in the updated standardised format](../../assets/Release%20Notes_Sprint%20v2.3.4.7-feb26/image-03.png)
 
-- To meet current Health NZ compliance standards used by pharmacies.
-- To ensure consistent and reliable prescription printing across all practices.
-
-![Prescription print preview in the updated standardised format](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-03.png)
-
-## Confidential Medication Setting
+## Confidential Medication Setting[¶](#confidential-medication-setting)
 
 New options have been added to allow medications to be marked as confidential, providing greater control over how sensitive medication information is shared and accessed.
 
-### Confidentiality Levels
+### Confidentiality Levels[¶](#confidentiality-levels)
 
-#### Restricted
+#### Restricted[¶](#restricted)
 
 Medication information is shared with the Medicine Data Repository (MDR) but is not generally visible. Access is limited to authorised users and approved MDR protocols.
 
-#### Very Restricted
+#### Very Restricted[¶](#very-restricted)
 
 Medication information is completely hidden and cannot be accessed or viewed in the MDR under any circumstances.
 
 When the Confidential checkbox is selected, the confidentiality level can be chosen from a dropdown (default: Restricted).
 
-![Medication form with Confidential enabled and confidentiality level set to Restricted](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-04.png)
+![Medication form with Confidential enabled and confidentiality level set to Restricted](../../assets/Release%20Notes_Sprint%20v2.3.4.7-feb26/image-04.png)
 
-## Medication Grid - Quick Edit Enhancement
+## Medication Grid - Quick Edit Enhancement[¶](#medication-grid-quick-edit-enhancement)
 
 The Medication Grid (Today's Medication Activity list) has been enhanced to support quicker updates to active medications.
 
-### What's New
-
-- A new Quick Edit icon is available for current medications.
-- Users can update Quantity and Duration directly from the Today's list.
-- Changes are saved immediately after selecting Update.
+### What's New[¶](#whats-new)
 
 Quantity and Duration updates remain subject to existing prescribing rules, medicine eligibility, and prescriber clinical judgement.
 
-![Today's Medication Activity quick edit dialog for updating Duration and Quantity](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-05.png)
+![Today's Medication Activity quick edit dialog for updating Duration and Quantity](../../assets/Release%20Notes_Sprint%20v2.3.4.7-feb26/image-05.png)
 
-## Displaying Prescribed and Dispensed Medicine Names
+## Displaying Prescribed and Dispensed Medicine Names[¶](#displaying-prescribed-and-dispensed-medicine-names)
 
 The ePS Medication History view has been enhanced with a new toggle to improve visibility of dispensing information.
 
-### What's Changed
+### What's Changed[¶](#whats-changed_1)
 
-- Prescribed medicine names are shown by default.
-- A new toggle icon allows users to view dispensed medicine names.
-- Users can switch between prescribed and dispensed medicine details on demand.
+![ePS Medication History showing prescribed and dispensed medicine name toggle controls](../../assets/Release%20Notes_Sprint%20v2.3.4.7-feb26/image-06.png)
 
-![ePS Medication History showing prescribed and dispensed medicine name toggle controls](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-06.png)
-
-## Medication Management - Delete and Stop Functionality
+## Medication Management - Delete and Stop Functionality[¶](#medication-management-delete-and-stop-functionality)
 
 The behaviour of the Delete and Stop actions has been clarified to ensure safer medication management.
 
-### Updated Behaviour
+### Updated Behaviour[¶](#updated-behaviour)
 
-#### Medications with Remaining Repeats
+#### Medications with Remaining Repeats[¶](#medications-with-remaining-repeats)
 
 When stopped or deleted, the medication becomes inactive and cannot be dispensed in the future.
 
-#### Currently Active Medications
+#### Currently Active Medications[¶](#currently-active-medications)
 
 When deleted or stopped, the medication is marked as cancelled.
 
 This is particularly important for prescriptions with extended repeat periods, ensuring discontinued medicines cannot be dispensed unintentionally.
 
-![Medication activity list with Stop action highlighted for long-term medication management](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-07.png)
+![Medication activity list with Stop action highlighted for long-term medication management](../../assets/Release%20Notes_Sprint%20v2.3.4.7-feb26/image-07.png)
 
-![Medication activity list with Delete action highlighted for active medications](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-08.png)
+![Medication activity list with Delete action highlighted for active medications](../../assets/Release%20Notes_Sprint%20v2.3.4.7-feb26/image-08.png)
 
-## AI Credit Usage Report Enhancements
+## AI Credit Usage Report Enhancements[¶](#ai-credit-usage-report-enhancements)
 
 The AI Credit Usage Report has been enhanced to provide greater visibility and improved filtering capabilities.
 
-### AI Usage
+### AI Usage[¶](#ai-usage)
 
 A Type search filter has been added, allowing users to filter the AI Usage Report by AI Consultation - SOAP Notes or Letters & Documents.
 
@@ -119,20 +100,14 @@ By default, the Type filter is set to All, displaying both SOAP Notes and Letter
 
 Additionally, a Type column has been added to the report grid, clearly indicating whether each AI usage record is associated with SOAP Notes or Letters & Documents.
 
-![AI Credit Usage Report with Type filter and Type column highlighted](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-09.png)
+![AI Credit Usage Report with Type filter and Type column highlighted](../../assets/Release%20Notes_Sprint%20v2.3.4.7-feb26/image-09.png)
 
-### AI Query Builder
+### AI Query Builder[¶](#ai-query-builder)
 
 A new AI Query Builder tab has been introduced to provide detailed insights into AI query activity.
 
 This report includes the following information:
 
-- Date and time of the query
-- Query title
-- Query description
-- User name
-- AI usage cost
-
 This enhancement improves transparency and helps administrators better track AI usage and associated costs.
 
-![AI Query Builder tab showing query metadata columns and usage cost](../assets/Release Notes_Sprint v2.3.4.7-feb26/image-10.png)
+![AI Query Builder tab showing query metadata columns and usage cost](../../assets/Release%20Notes_Sprint%20v2.3.4.7-feb26/image-10.png)

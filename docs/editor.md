@@ -2,73 +2,77 @@
 
 <div class="editor-page">
 
-    <!-- Editor Header -->
-    <div class="editor-header">
+    <div class="editor-frame">
 
-        <div class="editor-title">
-            <h2>Document Editor</h2>
-            <p>Edit and review your documentation content.</p>
+        <!-- Editor Header -->
+        <div class="editor-header">
+
+            <div class="editor-title">
+                <h2>Document Editor</h2>
+                <p>Edit and review your documentation content.</p>
+            </div>
+
+            <div class="editor-status">
+
+                <span class="status-label">
+                    Status:
+                </span>
+
+                <span id="workflow-status" class="status-badge">
+                    Draft
+                </span>
+
+                <span id="version-label" class="version-label">
+                    v1
+                </span>
+
+            </div>
+
         </div>
 
-        <div class="editor-status">
 
-            <span class="status-label">
-                Status:
-            </span>
+        <!-- Quill Editor -->
+        <div class="editor-container">
 
-            <span id="workflow-status" class="status-badge">
-                Draft
-            </span>
+            <div id="editor"></div>
 
-            <span id="version-label" class="version-label">
-                v1
+        </div>
+
+
+        <!-- Save Information -->
+        <div class="editor-footer">
+
+            <span id="save-status">
+                Ready to edit
             </span>
 
         </div>
 
-    </div>
 
+        <!-- Workflow Actions -->
+        <div class="editor-actions">
 
-    <!-- Quill Editor -->
-    <div class="editor-container">
+            <button id="btn-save" class="editor-btn save-btn">
+                💾 Save Draft
+            </button>
 
-        <div id="editor"></div>
+            <button id="btn-review" class="editor-btn review-btn">
+                📋 Submit for Review
+            </button>
 
-    </div>
+            <button id="btn-approve" class="editor-btn approve-btn">
+                ✅ Approve
+            </button>
 
+            <button id="btn-reject" class="editor-btn reject-btn">
+                ❌ Reject
+            </button>
 
-    <!-- Save Information -->
-    <div class="editor-footer">
+            <button id="btn-publish" class="editor-btn publish-btn">
+                🚀 Publish
+            </button>
 
-        <span id="save-status">
-            Ready to edit
-        </span>
-
-    </div>
-
-
-    <!-- Workflow Actions -->
-    <div class="editor-actions">
-
-        <button id="btn-save" class="editor-btn save-btn">
-            💾 Save Draft
-        </button>
-
-        <button id="btn-review" class="editor-btn review-btn">
-            📋 Submit for Review
-        </button>
-
-        <button id="btn-approve" class="editor-btn approve-btn">
-            ✅ Approve
-        </button>
-
-        <button id="btn-reject" class="editor-btn reject-btn">
-            ❌ Reject
-        </button>
-
-        <button id="btn-publish" class="editor-btn publish-btn">
-            🚀 Publish
-        </button>
+        </div>
 
     </div>
 

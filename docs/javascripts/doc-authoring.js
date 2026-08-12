@@ -2116,7 +2116,7 @@ const InlineEditor = {
 
 
         workspace.className =
-            "inline-editor-workspace";
+            "inline-editor-workspace editor-frame";
 
 
         /* ==================================================

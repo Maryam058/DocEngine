@@ -1000,48 +1000,34 @@ const UIManager = {
          * Update inline workflow buttons.
          */
 
-        const approveButton =
-            document.querySelector(
+            const approveButton =
+                document.querySelector(
                 "#inline-approve"
             );
 
-        const publishButton =
-            document.querySelector(
+            const publishButton =
+                document.querySelector(
                 "#inline-publish"
             );
 
-        const saveButton =
-            document.querySelector(
+            const saveButton =
+                document.querySelector(
                 "#inline-save"
             );
 
+            if (approveButton) {
+                approveButton.disabled = false;
+                approveButton.removeAttribute("disabled");
+            }
+            if (publishButton) {
+                publishButton.disabled = false;
+                publishButton.removeAttribute("disabled");
+            }
 
-        if (approveButton) {
-
-            approveButton.disabled =
-                AppState.currentStatus !==
-                CONFIG.WORKFLOW.DRAFT;
-
-        }
-
-
-        if (publishButton) {
-
-            publishButton.disabled =
-                AppState.currentStatus !==
-                CONFIG.WORKFLOW.APPROVED;
-
-        }
-
-
-        if (saveButton) {
-
-            saveButton.disabled =
-                AppState.currentStatus ===
-                CONFIG.WORKFLOW.PUBLISHED;
-
-        }
-
+            if (saveButton) {
+                saveButton.disabled = false;
+                saveButton.removeAttribute("disabled");
+            }
     }
 
 };

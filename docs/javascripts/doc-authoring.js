@@ -8,6 +8,9 @@ const CONFIG = {
     PUBLISH_API:
         "https://doc-engine-nu.vercel.app/api/publish",
 
+    PRODUCTION_URL:
+        "https://doc-engine-8jayk1bml-doc-engine.vercel.app",
+
     STORAGE: {
         DOCUMENTS: "docengine_documents",
         HISTORY: "docengine_history",
@@ -351,6 +354,202 @@ const VersionManager = {
 };
 
 /* ==========================================================
+   Wait For Published Documentation
+   ========================================================== */
+
+async function waitForPublishedPage(page, content) {
+
+    const MAX_ATTEMPTS = 40;
+    const CHECK_INTERVAL = 3000;
+
+    /*
+     * Convert editor HTML into plain text.
+     * This gives us a unique piece of content
+     * to check on the live documentation page.
+     */
+
+    const temp = document.createElement("div");
+
+    temp.innerHTML = content || "";
+
+    const expectedText =
+        (temp.textContent || temp.innerText || "")
+            .replace(/\s+/g, " ")
+            .trim();
+
+    /*
+     * If there is no text, we cannot verify
+     * the published page reliably.
+     */
+
+    if (!expectedText) {
+        console.warn(
+            "No text available for publish verification."
+        );
+
+        return true;
+    }
+
+    /*
+     * Use a reasonably unique section of the
+     * published content.
+     */
+
+    const verificationText =
+        expectedText.substring(0, 100);
+
+    /*
+     * Current documentation path.
+     */
+
+    let pagePath = page || window.location.pathname;
+
+    if (!pagePath.startsWith("/")) {
+        pagePath = "/" + pagePath;
+    }
+
+    /*
+     * Remove query/hash from the path.
+     */
+
+    pagePath =
+        pagePath.split("?")[0]
+            .split("#")[0];
+
+    const liveURL =
+        CONFIG.PRODUCTION_URL.replace(/\/$/, "") +
+        pagePath;
+
+    updateSaveStatus(
+        "Waiting for live site update..."
+    );
+
+    console.log(
+        "Checking published page:",
+        liveURL
+    );
+
+    /*
+     * Poll the live site until the newly
+     * published content appears.
+     */
+
+    for (
+        let attempt = 1;
+        attempt <= MAX_ATTEMPTS;
+        attempt++
+    ) {
+
+        try {
+
+            const cacheBuster =
+                `_docengine_publish=${Date.now()}`;
+
+            const separator =
+                liveURL.includes("?")
+                    ? "&"
+                    : "?";
+
+            const response =
+                await fetch(
+                    liveURL +
+                    separator +
+                    cacheBuster,
+                    {
+                        method: "GET",
+
+                        cache: "no-store",
+
+                        headers: {
+                            "Cache-Control":
+                                "no-cache"
+                        }
+                    }
+                );
+
+            if (response.ok) {
+
+                const html =
+                    await response.text();
+
+                const liveDocument =
+                    new DOMParser()
+                        .parseFromString(
+                            html,
+                            "text/html"
+                        );
+
+                const liveText =
+                    (
+                        liveDocument.body
+                            ?.textContent || ""
+                    )
+                        .replace(/\s+/g, " ")
+                        .trim();
+
+                /*
+                 * New content is now visible
+                 * on the live site.
+                 */
+
+                if (
+                    liveText.includes(
+                        verificationText
+                    )
+                ) {
+
+                    console.log(
+                        "Published content detected on live site."
+                    );
+
+                    updateSaveStatus(
+                        "Live site updated ✓"
+                    );
+
+                    return true;
+                }
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "Live site check failed:",
+                error
+            );
+        }
+
+        /*
+         * Still deploying.
+         */
+
+        updateSaveStatus(
+            `Publishing... ${attempt}/${MAX_ATTEMPTS}`
+        );
+
+        await new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    CHECK_INTERVAL
+                )
+        );
+    }
+
+    /*
+     * Deployment took longer than expected.
+     */
+
+    console.warn(
+        "Live site was not verified within timeout."
+    );
+
+    updateSaveStatus(
+        "Deployment is taking longer than expected."
+    );
+
+    return false;
+}
+/* ==========================================================
    Workflow Manager
    ========================================================== */
 
@@ -526,6 +725,16 @@ const WorkflowManager = {
                 /* ==========================================
                    PUBLISH SUCCESS
                    ========================================== */
+                   /*Wait until Vercel deployment has completed
+                    * and the new content is actually visible
+                    * on the live documentation page.
+                    */
+
+                const liveUpdated =
+                    await waitForPublishedPage(
+                        page,
+                        content
+                        );
 
                 AppState.currentStatus =
                     CONFIG.WORKFLOW.PUBLISHED;
@@ -546,18 +755,41 @@ const WorkflowManager = {
 
                 DraftManager.save();
 
-                updateSaveStatus(
-                    "Published successfully"
-                );
+                if (liveUpdated) {
 
-                UIManager.refresh();
+            updateSaveStatus(
+                "Published and live ✓"
+            );
 
-                alert(
-                    "✅ Published successfully!"
-                );
+            UIManager.refresh();
 
-                return true;
+            alert(
+                "✅ Published successfully!\n\n" +
+                "The live documentation has been updated."
+            );
 
+            /*
+            * Automatically refresh the documentation page
+            * after the new content is confirmed live.
+            */
+
+            window.location.reload();
+
+        } else {
+
+            updateSaveStatus(
+                "Published — deployment still processing"
+            );
+
+            UIManager.refresh();
+
+            alert(
+                "✅ Published successfully!\n\n" +
+                "The deployment is taking longer than expected."
+            );
+        }
+
+        return true;
             } catch (error) {
 
                 console.error(

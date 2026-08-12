@@ -1,3 +1,5 @@
-# Terminology Glossary
+# Terminology Glossary[¶](#terminology-glossary)
 
-This glossary defines common terms used in software documentation and technical writing for DocEngine. 123
+This glossary defines common terms used in software documentation and technical writing for DocEngine.
+
+Term

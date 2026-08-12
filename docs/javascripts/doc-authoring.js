@@ -16,13 +16,13 @@ const CONFIG = {
         DOCUMENTS: "docengine_documents",
         HISTORY: "docengine_history",
         VERSIONS: "docengine_versions",
-        INSTANT_PUBLISHED: "docengine_instant_published",
+        INSTANT_PUBLISHED: "docengine_instant_published"
     },
 
     WORKFLOW: {
         DRAFT: "draft",
         APPROVED: "approved",
-        PUBLISHED: "published",
+        PUBLISHED: "published"
     }
 
 };
@@ -81,6 +81,7 @@ const Storage = {
             );
 
             return defaultValue;
+
         }
 
     },
@@ -200,6 +201,7 @@ function updateSaveStatus(message) {
 
     ];
 
+
     elements.forEach(element => {
 
         if (element) {
@@ -213,18 +215,6 @@ function updateSaveStatus(message) {
 
 }
 
-
-/* ==========================================================
-   Edit Page Button Helper
-========================================================== */
-
-/*
- * Creates the Edit Page button when the published
- * content has replaced the original MkDocs content.
- *
- * This prevents the Edit Page button from disappearing
- * after instant published content is rendered.
- */
 
 /* ==========================================================
    Page Check
@@ -242,6 +232,11 @@ function isHomePage() {
     );
 
 }
+
+
+/* ==========================================================
+   Create Edit Page Button
+========================================================== */
 
 function createEditPageButton() {
 
@@ -263,7 +258,9 @@ function createEditPageButton() {
 
     button.addEventListener(
         "click",
-        function () {
+        function (event) {
+
+            event.preventDefault();
 
             openEditor();
 
@@ -283,7 +280,8 @@ function createEditPageButton() {
 function ensureEditPageButton(contentRoot) {
 
     /*
-     * Home page must NEVER have an Edit Page button.
+     * Home page must NEVER have
+     * an Edit Page button.
      */
 
     if (isHomePage()) {
@@ -303,6 +301,10 @@ function ensureEditPageButton(contentRoot) {
     }
 
 
+    /*
+     * Content area must exist.
+     */
+
     if (!contentRoot) {
 
         return null;
@@ -310,35 +312,25 @@ function ensureEditPageButton(contentRoot) {
     }
 
 
-    /* ======================================================
-       Find Existing Edit Buttons
-    ====================================================== */
+    /*
+     * Find existing button.
+     */
+
+    let editButton =
+        contentRoot.querySelector(
+            ".edit-page-button, .edit-btn"
+        );
+
+
+    /*
+     * Remove duplicate buttons.
+     */
 
     const existingButtons =
         contentRoot.querySelectorAll(
             ".edit-page-button, .edit-btn"
         );
 
-
-    let editButton = null;
-
-
-    /*
-     * Prefer the existing original button.
-     * This preserves the current site styling/behavior.
-     */
-
-    if (existingButtons.length > 0) {
-
-        editButton =
-            existingButtons[0];
-
-    }
-
-
-    /* ======================================================
-       Remove Duplicates
-    ====================================================== */
 
     existingButtons.forEach(
         (button, index) => {
@@ -353,41 +345,57 @@ function ensureEditPageButton(contentRoot) {
     );
 
 
-    /* ======================================================
-       Create Button Only If None Exists
-    ====================================================== */
+    /*
+     * Create button if it
+     * does not already exist.
+     */
 
-if (!editButton) {
+    if (!editButton) {
 
-    editButton =
-        createEditPageButton();
-
-}
-
-
-/*
- * Keep Edit Page button on the right side.
- */
-
-editButton.style.marginLeft = "auto";
-editButton.style.display = "block";
+        editButton =
+            createEditPageButton();
 
 
-    /* ======================================================
-       Make Existing Button Work
-    ====================================================== */
+        /*
+         * Put button at the top
+         * of documentation content.
+         */
 
-    editButton.style.display =
-        "";
+        contentRoot.prepend(
+            editButton
+        );
+
+    }
 
 
     /*
-     * Keep the existing edit-btn styling,
-     * but make sure clicking it opens the editor.
+     * Keep button visible
+     * and right aligned.
+     */
+
+    editButton.style.display =
+        "flex";
+
+    editButton.style.marginLeft =
+        "auto";
+
+    editButton.style.marginRight =
+        "0";
+
+
+    /*
+     * Make sure clicking the
+     * button always opens editor.
      */
 
     editButton.onclick =
-        openEditor;
+        function (event) {
+
+            event.preventDefault();
+
+            openEditor();
+
+        };
 
 
     return editButton;
@@ -396,15 +404,20 @@ editButton.style.display = "block";
 
 
 /* ==========================================================
-   Instant Published Content
+   Instant Published Content Storage
 ========================================================== */
 
-function saveInstantPublishedContent(page, content) {
+function saveInstantPublishedContent(
+    page,
+    content
+) {
 
     try {
 
         localStorage.setItem(
+
             CONFIG.STORAGE.INSTANT_PUBLISHED,
+
             JSON.stringify({
 
                 page:
@@ -417,6 +430,7 @@ function saveInstantPublishedContent(page, content) {
                     Date.now()
 
             })
+
         );
 
     } catch (error) {
@@ -431,6 +445,10 @@ function saveInstantPublishedContent(page, content) {
 }
 
 
+/* ==========================================================
+   Render Instant Published Content
+========================================================== */
+
 function renderInstantPublishedContent() {
 
     try {
@@ -441,12 +459,12 @@ function renderInstantPublishedContent() {
             );
 
 
-        if (!stored) {
+        /*
+         * Nothing stored.
+         * Just make sure Edit button exists.
+         */
 
-            /*
-             * Even if there is no instant content,
-             * make sure the normal Edit Page button exists.
-             */
+        if (!stored) {
 
             const contentRoot =
                 document.querySelector(
@@ -476,17 +494,16 @@ function renderInstantPublishedContent() {
             window.location.pathname;
 
 
+        /*
+         * Stored content belongs
+         * to another page.
+         */
+
         if (
             !data ||
             data.page !== currentPage ||
             !data.content
         ) {
-
-            /*
-             * Stored published content belongs
-             * to another page. Still ensure the
-             * Edit Page button exists.
-             */
 
             const contentRoot =
                 document.querySelector(
@@ -521,41 +538,46 @@ function renderInstantPublishedContent() {
         }
 
 
-        /* ==================================================
-           Preserve Existing Edit Page Button
-        ================================================== */
+        /*
+         * Preserve current Edit button
+         * before replacing content.
+         */
 
-        const existingEditButton =
+        let editButton =
             contentRoot.querySelector(
-                ".edit-page-button"
+                ".edit-page-button, .edit-btn"
             );
 
 
-        /* ==================================================
-           Render Latest Published Content
-        ================================================== */
+        /*
+         * Render instant published content.
+         */
 
         contentRoot.innerHTML =
             data.content;
 
 
-        /* ==================================================
-           Restore / Create Edit Page Button
-        ================================================== */
+        /*
+         * Restore existing button.
+         */
 
-        if (existingEditButton) {
+        if (editButton) {
 
             contentRoot.prepend(
-                existingEditButton
-            );
-
-        } else {
-
-            ensureEditPageButton(
-                contentRoot
+                editButton
             );
 
         }
+
+
+        /*
+         * If button was not available,
+         * create a new one.
+         */
+
+        ensureEditPageButton(
+            contentRoot
+        );
 
 
         console.log(
@@ -565,7 +587,6 @@ function renderInstantPublishedContent() {
 
         return true;
 
-
     } catch (error) {
 
         console.error(
@@ -573,11 +594,6 @@ function renderInstantPublishedContent() {
             error
         );
 
-
-        /*
-         * Even if instant rendering fails,
-         * try to keep the Edit Page button available.
-         */
 
         const contentRoot =
             document.querySelector(
@@ -612,7 +628,9 @@ const DraftManager = {
     getContent() {
 
         if (!AppState.editor) {
+
             return "";
+
         }
 
         return AppState.editor.root.innerHTML;
@@ -627,7 +645,9 @@ const DraftManager = {
     setContent(html) {
 
         if (!AppState.editor) {
+
             return;
+
         }
 
         AppState.editor.root.innerHTML =
@@ -645,38 +665,52 @@ const DraftManager = {
         const page =
             AppState.currentDocument;
 
+
         if (!page) {
+
             return null;
+
         }
+
 
         const doc =
             DocumentStore.get(page);
 
+
         if (!doc) {
+
             return null;
+
         }
+
 
         this.setContent(
             doc.content
         );
 
+
         AppState.currentStatus =
             doc.status ||
             CONFIG.WORKFLOW.DRAFT;
 
+
         AppState.currentVersion =
             doc.version || 1;
+
 
         AppState.statusText =
             this.getStatusText(
                 AppState.currentStatus
             );
 
+
         AppState.lastSaved =
             doc.updatedAt || null;
 
+
         AppState.draftChanged =
             false;
+
 
         return doc;
 
@@ -692,15 +726,17 @@ const DraftManager = {
         const page =
             AppState.currentDocument;
 
+
         if (!page) {
 
             console.warn(
                 "No current document selected."
             );
 
-            return;
+            return false;
 
         }
+
 
         if (!AppState.editor) {
 
@@ -708,12 +744,14 @@ const DraftManager = {
                 "Editor is not initialized."
             );
 
-            return;
+            return false;
 
         }
 
+
         const now =
             Time.now();
+
 
         DocumentStore.save(
 
@@ -737,16 +775,22 @@ const DraftManager = {
 
         );
 
+
         AppState.lastSaved =
             now;
 
+
         AppState.draftChanged =
             false;
+
 
         updateSaveStatus(
             "Saved " +
             Time.format()
         );
+
+
+        return true;
 
     },
 
@@ -763,9 +807,11 @@ const DraftManager = {
 
                 return "Approved";
 
+
             case CONFIG.WORKFLOW.PUBLISHED:
 
                 return "Published";
+
 
             default:
 
@@ -787,31 +833,42 @@ let autoSave = null;
 
 function startAutoSave() {
 
-    clearInterval(autoSave);
-
-    autoSave = setInterval(
-
-        () => {
-
-            if (
-
-                AppState.draftChanged &&
-
-                AppState.editor &&
-
-                AppState.currentDocument
-
-            ) {
-
-                DraftManager.save();
-
-            }
-
-        },
-
-        CONFIG.AUTOSAVE_DELAY
-
+    clearInterval(
+        autoSave
     );
+
+
+    autoSave =
+        setInterval(
+
+            () => {
+
+                /*
+                 * Autosave only saves the document.
+                 *
+                 * It does NOT create history entries.
+                 * It does NOT create versions.
+                 */
+
+                if (
+
+                    AppState.draftChanged &&
+
+                    AppState.editor &&
+
+                    AppState.currentDocument
+
+                ) {
+
+                    DraftManager.save();
+
+                }
+
+            },
+
+            CONFIG.AUTOSAVE_DELAY
+
+        );
 
 }
 
@@ -821,6 +878,10 @@ function startAutoSave() {
 ========================================================== */
 
 const HistoryManager = {
+
+    /* ======================================================
+       Get History
+    ====================================================== */
 
     getAll() {
 
@@ -835,10 +896,15 @@ const HistoryManager = {
     },
 
 
+    /* ======================================================
+       Add History Entry
+    ====================================================== */
+
     add(action, message) {
 
         const history =
             this.getAll();
+
 
         history.unshift({
 
@@ -856,11 +922,17 @@ const HistoryManager = {
 
         });
 
+
+        /*
+         * Keep maximum 100 entries.
+         */
+
         if (history.length > 100) {
 
             history.length = 100;
 
         }
+
 
         Storage.save(
 
@@ -881,6 +953,10 @@ const HistoryManager = {
 
 const VersionManager = {
 
+    /* ======================================================
+       Get Versions
+    ====================================================== */
+
     getAll() {
 
         return Storage.load(
@@ -894,10 +970,15 @@ const VersionManager = {
     },
 
 
+    /* ======================================================
+       Create Version Snapshot
+    ====================================================== */
+
     create(action) {
 
         const versions =
             this.getAll();
+
 
         versions.unshift({
 
@@ -918,11 +999,17 @@ const VersionManager = {
 
         });
 
+
+        /*
+         * Keep maximum 50 versions.
+         */
+
         if (versions.length > 50) {
 
             versions.length = 50;
 
         }
+
 
         Storage.save(
 
@@ -935,315 +1022,277 @@ const VersionManager = {
     }
 
 };
+
+
 /* ==========================================================
-   Wait For Published Documentation
+   Draft Change Events
 ========================================================== */
 
-/*
- * Checks whether the newly published content
- * is actually visible on the live Vercel site.
- *
- * This runs in the background so the user
- * does NOT have to wait for deployment.
- */
+function registerDraftEvents() {
 
-async function waitForPublishedPage(page, content) {
+    if (!AppState.editor) {
 
-    const MAX_ATTEMPTS = 60;
-
-    const CHECK_INTERVAL = 2000;
-
-
-    /* ======================================================
-       Extract Expected Text
-    ====================================================== */
-
-    const temp =
-        document.createElement("div");
-
-
-    temp.innerHTML =
-        content || "";
-
-
-    const expectedText =
-        (
-            temp.textContent ||
-            temp.innerText ||
-            ""
-        )
-            .replace(/\s+/g, " ")
-            .trim();
-
-
-    /*
-     * If there is no text to verify,
-     * consider the deployment check complete.
-     */
-
-    if (!expectedText) {
-
-        return true;
+        return;
 
     }
 
 
     /*
-     * Only use the first 100 characters
-     * for deployment verification.
+     * Prevent duplicate event listeners.
      */
 
-    const verificationText =
-        expectedText.substring(0, 100);
-
-
-    /* ======================================================
-       Build Live Page URL
-    ====================================================== */
-
-    let pagePath =
-        page ||
-        window.location.pathname;
-
-
-    if (!pagePath.startsWith("/")) {
-
-        pagePath =
-            "/" + pagePath;
-
-    }
-
-
-    /*
-     * Remove query parameters and hash.
-     */
-
-    pagePath =
-        pagePath
-            .split("?")[0]
-            .split("#")[0];
-
-
-    const liveURL =
-        CONFIG.PRODUCTION_URL.replace(/\/$/, "") +
-        pagePath;
-
-
-    console.log(
-        "Background deployment check:",
-        liveURL
-    );
-
-
-    /* ======================================================
-       Deployment Verification Loop
-    ====================================================== */
-
-    for (
-
-        let attempt = 1;
-
-        attempt <= MAX_ATTEMPTS;
-
-        attempt++
-
+    if (
+        AppState.editor.__draftListenerRegistered
     ) {
 
-        try {
+        return;
 
-            console.log(
-                `Deployment verification attempt ${attempt}/${MAX_ATTEMPTS}`
+    }
+
+
+    AppState.editor.__draftListenerRegistered =
+        true;
+
+
+    AppState.editor.on(
+
+        "text-change",
+
+        function () {
+
+            AppState.draftChanged =
+                true;
+
+
+            updateSaveStatus(
+                "Unsaved Changes"
+            );
+
+        }
+
+    );
+
+}
+/* ==========================================================
+   Load Latest Published Content
+========================================================== */
+
+async function loadLatestPublishedContent(page) {
+
+    try {
+
+        const contentRoot =
+            document.querySelector(
+                ".md-content__inner"
             );
 
 
-            /*
-             * Cache buster prevents browser/CDN
-             * from returning an old page.
-             */
+        if (!contentRoot) {
 
-            const cacheBuster =
-                `_docengine_publish=${Date.now()}`;
+            console.warn(
+                "Documentation content area not found."
+            );
 
+            return false;
 
-            const separator =
-                liveURL.includes("?")
-                    ? "&"
-                    : "?";
+        }
 
 
-            const response =
-                await fetch(
+        /* ==================================================
+           Build Publish API URL
+        ================================================== */
 
-                    liveURL +
-                    separator +
-                    cacheBuster,
-
-                    {
-
-                        method: "GET",
-
-                        cache: "no-store",
-
-                        headers: {
-
-                            "Cache-Control":
-                                "no-cache",
-
-                            "Pragma":
-                                "no-cache"
-
-                        }
-
-                    }
-
-                );
+        const cacheBuster =
+            `_docengine_live=${Date.now()}`;
 
 
-            /* ==================================================
-               Check HTTP Response
-            ================================================== */
-
-            if (response.ok) {
-
-                const html =
-                    await response.text();
+        const separator =
+            CONFIG.PUBLISH_API.includes("?")
+                ? "&"
+                : "?";
 
 
-                /*
-                 * Parse the live HTML.
-                 */
-
-                const liveDocument =
-                    new DOMParser()
-                        .parseFromString(
-                            html,
-                            "text/html"
-                        );
+        const apiURL =
+            CONFIG.PUBLISH_API +
+            separator +
+            cacheBuster;
 
 
-                /*
-                 * Extract visible text.
-                 */
-
-                const liveText =
-                    (
-                        liveDocument
-                            .body
-                            ?.textContent ||
-                        ""
-                    )
-                        .replace(/\s+/g, " ")
-                        .trim();
+        console.log(
+            "Loading latest published content:",
+            page
+        );
 
 
-                /* ==================================================
-                   Confirm New Content
-                ================================================== */
+        /* ==================================================
+           Request Latest Published Content
+        ================================================== */
 
-                if (
-                    liveText.includes(
-                        verificationText
-                    )
-                ) {
+        const response =
+            await fetch(
 
-                    console.log(
-                        "Deployment confirmed."
-                    );
+                apiURL,
 
+                {
 
-                    /*
-                     * Make sure the Edit Page button
-                     * exists on the current documentation
-                     * page after deployment confirmation.
-                     */
+                    method: "GET",
 
-                    const contentRoot =
-                        document.querySelector(
-                            ".md-content__inner"
-                        );
+                    cache: "no-store",
 
+                    headers: {
 
-                    if (contentRoot) {
+                        "Cache-Control":
+                            "no-cache",
 
-                        ensureEditPageButton(
-                            contentRoot
-                        );
+                        "Pragma":
+                            "no-cache"
 
                     }
-
-
-                    return true;
 
                 }
 
-            }
+            );
 
 
-        } catch (error) {
+        /* ==================================================
+           Read API Response
+        ================================================== */
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "Latest published content response:",
+            response.status,
+            data
+        );
+
+
+        if (
+            !response.ok ||
+            !data.success ||
+            !data.content
+        ) {
 
             console.warn(
-                "Deployment verification error:",
-                error
+                "Latest published content could not be loaded."
+            );
+
+            return false;
+
+        }
+
+
+        /* ==================================================
+           Preserve Edit Page Button
+        ================================================== */
+
+        let editButton =
+            contentRoot.querySelector(
+                ".edit-page-button, .edit-btn"
+            );
+
+
+        /*
+         * If the button is not currently available,
+         * use the original saved button.
+         */
+
+        if (!editButton) {
+
+            editButton =
+                AppState.originalEditButton;
+
+        }
+
+
+        /* ==================================================
+           Render Latest Published Content
+        ================================================== */
+
+        contentRoot.innerHTML =
+            data.content;
+
+
+        /* ==================================================
+           Restore Edit Page Button
+        ================================================== */
+
+        if (editButton) {
+
+            contentRoot.prepend(
+                editButton
             );
 
         }
 
 
-        /* ======================================================
-           Wait Before Next Attempt
-        ====================================================== */
-
-        await new Promise(
-
-            resolve =>
-
-                setTimeout(
-                    resolve,
-                    CHECK_INTERVAL
-                )
-
-        );
-
-    }
-
-
-    /* ==========================================================
-       Verification Timeout
-    ========================================================== */
-
-    console.warn(
-        "Live site was not verified within timeout."
-    );
-
-
-    updateSaveStatus(
-        "Deployment is taking longer than expected."
-    );
-
-
-    /*
-     * Even if Vercel is still deploying,
-     * make sure the Edit Page button remains available.
-     */
-
-    const contentRoot =
-        document.querySelector(
-            ".md-content__inner"
-        );
-
-
-    if (contentRoot) {
+        /*
+         * Final safety check.
+         *
+         * If button was not available,
+         * create it automatically.
+         */
 
         ensureEditPageButton(
             contentRoot
         );
 
+
+        /* ==================================================
+           Save Instant Published Content
+        ================================================== */
+
+        saveInstantPublishedContent(
+            page,
+            data.content
+        );
+
+
+        console.log(
+            "Latest published content rendered successfully."
+        );
+
+
+        return true;
+
+
+    } catch (error) {
+
+        console.error(
+            "Could not load latest published content:",
+            error
+        );
+
+
+        /*
+         * Even if API rendering fails,
+         * keep Edit Page button available.
+         */
+
+        const contentRoot =
+            document.querySelector(
+                ".md-content__inner"
+            );
+
+
+        if (contentRoot) {
+
+            ensureEditPageButton(
+                contentRoot
+            );
+
+        }
+
+
+        return false;
+
     }
 
-
-    return false;
-
 }
+
+
 /* ==========================================================
    Workflow Manager
 ========================================================== */
@@ -1295,6 +1344,7 @@ const WorkflowManager = {
             AppState.currentStatus =
                 CONFIG.WORKFLOW.APPROVED;
 
+
             AppState.statusText =
                 "Approved";
 
@@ -1322,15 +1372,15 @@ const WorkflowManager = {
 
 
             /*
-             * Increase version after creating
-             * the approved version snapshot.
+             * Increase version after
+             * approved snapshot.
              */
 
             AppState.currentVersion++;
 
 
             /* ----------------------------------------------
-               Save Current Document
+               Save Document
             ---------------------------------------------- */
 
             DraftManager.save();
@@ -1366,7 +1416,6 @@ const WorkflowManager = {
             status ===
             CONFIG.WORKFLOW.PUBLISHED
         ) {
-
 
             /* ==================================================
                Publishing Requires Approval
@@ -1518,6 +1567,10 @@ const WorkflowManager = {
                 );
 
 
+                /* ==================================================
+                   Save Instant Content
+                ================================================== */
+
                 saveInstantPublishedContent(
                     page,
                     content
@@ -1530,6 +1583,7 @@ const WorkflowManager = {
 
                 AppState.currentStatus =
                     CONFIG.WORKFLOW.PUBLISHED;
+
 
                 AppState.statusText =
                     "Published";
@@ -1558,8 +1612,8 @@ const WorkflowManager = {
 
 
                 /*
-                 * Increase version after creating
-                 * the published snapshot.
+                 * Increase version after
+                 * published snapshot.
                  */
 
                 AppState.currentVersion++;
@@ -1580,12 +1634,14 @@ const WorkflowManager = {
 
 
                 updateSaveStatus(
-                    "Published ✓ Deploying..."
+                    "Published ✓ Loading latest content..."
                 );
 
 
                 /* ==================================================
-                   Show Published Content Immediately
+                   INLINE MODE
+                   
+                   Render latest content immediately.
                 ================================================== */
 
                 if (AppState.inlineMode) {
@@ -1598,20 +1654,15 @@ const WorkflowManager = {
 
                     if (contentRoot) {
 
-                        /* ==========================================
-                           Preserve Existing Edit Page Button
-                        ========================================== */
+                        /*
+                         * Preserve Edit Page button.
+                         */
 
                         let editButton =
                             contentRoot.querySelector(
-                                ".edit-page-button"
+                                ".edit-page-button, .edit-btn"
                             );
 
-
-                        /*
-                         * If the button is not currently
-                         * available, use the saved original one.
-                         */
 
                         if (!editButton) {
 
@@ -1621,17 +1672,18 @@ const WorkflowManager = {
                         }
 
 
-                        /* ==========================================
-                           Render Newly Published Content
-                        ========================================== */
+                        /*
+                         * Show the content that
+                         * was just published.
+                         */
 
                         contentRoot.innerHTML =
                             content;
 
 
-                        /* ==========================================
-                           Restore OR Create Edit Page Button
-                        ========================================== */
+                        /*
+                         * Restore button.
+                         */
 
                         if (editButton) {
 
@@ -1639,26 +1691,27 @@ const WorkflowManager = {
                                 editButton
                             );
 
-                        } else {
-
-                            ensureEditPageButton(
-                                contentRoot
-                            );
-
                         }
+
+
+                        ensureEditPageButton(
+                            contentRoot
+                        );
 
                     }
 
 
-                    /* ==============================================
-                       Exit Inline Editor Mode
-                    ============================================== */
+                    /*
+                     * Exit inline editor mode.
+                     */
 
                     AppState.editor =
                         null;
 
+
                     AppState.inlineMode =
                         false;
+
 
                     AppState.originalEditButton =
                         null;
@@ -1667,96 +1720,62 @@ const WorkflowManager = {
 
 
                 /* ==================================================
-                   Background Deployment Verification
-
+                   Load Latest Published Content
+                   
                    IMPORTANT:
-                   Do NOT await this function.
+                   This replaces the old
+                   waitForPublishedPage() logic.
                 ================================================== */
 
-                waitForPublishedPage(
-                    page,
-                    content
-                ).then(
-
-                    liveUpdated => {
-
-                        if (liveUpdated) {
-
-                            console.log(
-                                "Live deployment confirmed."
-                            );
+                const liveUpdated =
+                    await loadLatestPublishedContent(
+                        page
+                    );
 
 
-                            updateSaveStatus(
-                                "Published ✓ Live"
-                            );
+                /* ==================================================
+                   Update Publish Status
+                ================================================== */
+
+                if (liveUpdated) {
+
+                    updateSaveStatus(
+                        "Published ✓ Live"
+                    );
+
+                } else {
+
+                    updateSaveStatus(
+                        "Published ✓"
+                    );
+
+                }
 
 
-                            /*
-                             * Ensure Edit Page button
-                             * after live deployment check.
-                             */
+                /* ==================================================
+                   Final Edit Page Button Safety Check
+                ================================================== */
 
-                            const contentRoot =
-                                document.querySelector(
-                                    ".md-content__inner"
-                                );
-
-
-                            if (contentRoot) {
-
-                                ensureEditPageButton(
-                                    contentRoot
-                                );
-
-                            }
+                const contentRoot =
+                    document.querySelector(
+                        ".md-content__inner"
+                    );
 
 
-                            UIManager.refresh();
+                if (contentRoot) {
 
-                        } else {
+                    ensureEditPageButton(
+                        contentRoot
+                    );
 
-                            console.warn(
-                                "Deployment is still processing."
-                            );
-
-
-                            updateSaveStatus(
-                                "Published — deployment still processing"
-                            );
+                }
 
 
-                            /*
-                             * Keep Edit Page button
-                             * available even if deployment
-                             * takes longer.
-                             */
-
-                            const contentRoot =
-                                document.querySelector(
-                                    ".md-content__inner"
-                                );
-
-
-                            if (contentRoot) {
-
-                                ensureEditPageButton(
-                                    contentRoot
-                                );
-
-                            }
-
-                        }
-
-                    }
-
-                );
+                UIManager.refresh();
 
 
                 /* ==================================================
                    Publishing Completed
-
-                   DO NOT immediately reload here.
                 ================================================== */
 
                 alert(
@@ -1771,7 +1790,6 @@ const WorkflowManager = {
 
 
             } catch (error) {
-
 
                 /* ==================================================
                    Publish Error
@@ -1791,7 +1809,6 @@ const WorkflowManager = {
                 alert(
 
                     "❌ Publish failed:\n\n" +
-
                     error.message
 
                 );
@@ -1827,6 +1844,10 @@ const UIManager = {
 
     refresh() {
 
+        /* ==================================================
+           Status Elements
+        ================================================== */
+
         const statusElements = [
 
             document.querySelector(
@@ -1839,6 +1860,10 @@ const UIManager = {
 
         ];
 
+
+        /* ==================================================
+           Version Elements
+        ================================================== */
 
         const versionElements = [
 
@@ -1853,6 +1878,10 @@ const UIManager = {
         ];
 
 
+        /* ==================================================
+           Update Status
+        ================================================== */
+
         statusElements.forEach(element => {
 
             if (element) {
@@ -1865,6 +1894,10 @@ const UIManager = {
         });
 
 
+        /* ==================================================
+           Update Version
+        ================================================== */
+
         versionElements.forEach(element => {
 
             if (element) {
@@ -1876,6 +1909,10 @@ const UIManager = {
 
         });
 
+
+        /* ==================================================
+           Update Save Status
+        ================================================== */
 
         if (
 
@@ -1902,6 +1939,10 @@ const UIManager = {
 
         }
 
+
+        /* ==================================================
+           Inline Buttons
+        ================================================== */
 
         const approveButton =
             document.querySelector(
@@ -1945,11 +1986,9 @@ const UIManager = {
         }
 
 
-        /*
-         * Always make sure the Edit Page
-         * button exists when we are back
-         * on the normal documentation page.
-         */
+        /* ==================================================
+           Restore Edit Page Button
+        ================================================== */
 
         if (!AppState.inlineMode) {
 
@@ -1989,29 +2028,52 @@ const App = {
 
     init() {
 
+        /*
+         * Current document is based
+         * on current URL.
+         */
+
         AppState.currentDocument =
-            localStorage.getItem("currentDoc") ||
+            localStorage.getItem(
+                "currentDoc"
+            ) ||
             window.location.pathname;
 
+
+        /* ==================================================
+           Cache DOM
+        ================================================== */
 
         this.cacheDOM();
 
 
-        /*
-         * Render instant published content first.
-         *
-         * This function also restores/creates
-         * the Edit Page button.
-         */
+        /* ==================================================
+           Render Instant Published Content
+           
+           This must happen before
+           editor initialization.
+        ================================================== */
 
         renderInstantPublishedContent();
 
 
+        /* ==================================================
+           Initialize Standalone Editor
+        ================================================== */
+
         this.initStandaloneEditor();
 
 
+        /* ==================================================
+           Bind Events
+        ================================================== */
+
         this.bindEvents();
 
+
+        /* ==================================================
+           Register Draft Events
+        ================================================== */
 
         if (AppState.editor) {
 
@@ -2020,17 +2082,23 @@ const App = {
         }
 
 
+        /* ==================================================
+           Start Autosave
+        ================================================== */
+
         startAutoSave();
 
+
+        /* ==================================================
+           Refresh UI
+        ================================================== */
 
         UIManager.refresh();
 
 
-        /*
-         * Final safety check:
-         * after the page is fully initialized,
-         * make sure Edit Page button exists.
-         */
+        /* ==================================================
+           Final Edit Button Safety Check
+        ================================================== */
 
         const contentRoot =
             document.querySelector(
@@ -2039,8 +2107,11 @@ const App = {
 
 
         if (
+
             contentRoot &&
+
             !AppState.inlineMode
+
         ) {
 
             ensureEditPageButton(
@@ -2214,6 +2285,10 @@ const App = {
 
     bindEvents() {
 
+        /* ==================================================
+           Save
+        ================================================== */
+
         this.ui.save?.addEventListener(
 
             "click",
@@ -2228,6 +2303,10 @@ const App = {
 
         );
 
+
+        /* ==================================================
+           Approve
+        ================================================== */
 
         this.ui.approve?.addEventListener(
 
@@ -2246,6 +2325,10 @@ const App = {
         );
 
 
+        /* ==================================================
+           Publish
+        ================================================== */
+
         this.ui.publish?.addEventListener(
 
             "click",
@@ -2263,6 +2346,10 @@ const App = {
         );
 
 
+        /* ==================================================
+           Ctrl + S / Cmd + S
+        ================================================== */
+
         document.addEventListener(
 
             "keydown",
@@ -2274,6 +2361,7 @@ const App = {
                     (
 
                         event.ctrlKey ||
+
                         event.metaKey
 
                     ) &&
@@ -2300,53 +2388,6 @@ const App = {
     }
 
 };
-/* ==========================================================
-   Draft Change Events
-========================================================== */
-
-function registerDraftEvents() {
-
-    if (!AppState.editor) {
-
-        return;
-
-    }
-
-
-    if (
-        AppState.editor.__draftListenerRegistered
-    ) {
-
-        return;
-
-    }
-
-
-    AppState.editor.__draftListenerRegistered =
-        true;
-
-
-    AppState.editor.on(
-
-        "text-change",
-
-        function () {
-
-            AppState.draftChanged =
-                true;
-
-
-            updateSaveStatus(
-                "Unsaved Changes"
-            );
-
-        }
-
-    );
-
-}
-
-
 /* ==========================================================
    Open Inline Editor
 ========================================================== */
@@ -2395,6 +2436,7 @@ window.openEditor =
 ========================================================== */
 
 const InlineEditor = {
+
 
     /* ======================================================
        Start Inline Editing
@@ -2453,22 +2495,26 @@ const InlineEditor = {
 
 
         /* ==================================================
-           Save Original Rendered Content
+           Save Original Content
         ================================================== */
 
         const originalContent =
             contentRoot.innerHTML;
 
 
+        /* ==================================================
+           Save Original Edit Button
+        ================================================== */
+
         AppState.originalEditButton =
-        contentRoot.querySelector(
-        ".edit-page-button, .edit-btn"
-    );
+            contentRoot.querySelector(
+                ".edit-page-button, .edit-btn"
+            );
 
 
         /*
-         * If the Edit Page button somehow does not
-         * exist, create one before entering edit mode.
+         * If button does not exist,
+         * create one before entering editor.
          */
 
         if (!AppState.originalEditButton) {
@@ -2492,7 +2538,7 @@ const InlineEditor = {
 
 
         /* ==================================================
-           Restore Saved Document State
+           Restore Saved State
         ================================================== */
 
         if (savedDocument) {
@@ -2552,18 +2598,20 @@ const InlineEditor = {
 
 
         /* ==================================================
-           Remove Edit Buttons
+           Remove Edit Buttons From Editor Content
         ================================================== */
 
         tempContent
-        .querySelectorAll(
-            ".edit-page-button, .edit-btn"
-        )
-        .forEach(
-            element => {
-                element.remove();
-            }
-        );
+            .querySelectorAll(
+                ".edit-page-button, .edit-btn"
+            )
+            .forEach(
+                element => {
+
+                    element.remove();
+
+                }
+            );
 
 
         /* ==================================================
@@ -2595,20 +2643,6 @@ const InlineEditor = {
 
 
         /* ==================================================
-           Quill Editor Container
-        ================================================== */
-
-        const editorContainer =
-            document.createElement(
-                "div"
-            );
-
-
-        editorContainer.id =
-            "inline-editor";
-
-
-        /* ==================================================
            Metadata Row
         ================================================== */
 
@@ -2625,7 +2659,8 @@ const InlineEditor = {
         const authorName =
             localStorage.getItem(
                 "docengine_author"
-            ) || "You";
+            ) ||
+            "You";
 
 
         const wordCount =
@@ -2807,6 +2842,20 @@ const InlineEditor = {
         );
 
 
+        /*
+         * Editor container.
+         */
+
+        const editorContainer =
+            document.createElement(
+                "div"
+            );
+
+
+        editorContainer.id =
+            "inline-editor";
+
+
         workspace.appendChild(
             editorContainer
         );
@@ -2852,11 +2901,6 @@ const InlineEditor = {
             contentRoot.innerHTML =
                 originalContent;
 
-
-            /*
-             * Restore Edit Page button if
-             * Quill initialization fails.
-             */
 
             ensureEditPageButton(
                 contentRoot
@@ -3002,14 +3046,14 @@ const InlineEditor = {
 
 
         /* ==================================================
-           Register Change Events
+           Register Draft Events
         ================================================== */
 
         registerDraftEvents();
 
 
         /* ==================================================
-           Inline Editor Active
+           Inline Mode Active
         ================================================== */
 
         AppState.inlineMode =
@@ -3206,8 +3250,8 @@ const InlineEditor = {
 
 
         /*
-         * Reload restores the normal
-         * MkDocs documentation page.
+         * Reload restores the
+         * normal documentation page.
          */
 
         window.location.reload();

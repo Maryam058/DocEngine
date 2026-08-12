@@ -1,4 +1,4 @@
-# Latest Release Notes Sprint v2.0
+# Latest Release Notes Sprint New Version
 
 ## Overview
 

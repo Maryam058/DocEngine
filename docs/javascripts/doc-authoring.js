@@ -15,17 +15,17 @@ const CONFIG = {
     STORAGE: {
         DOCUMENTS: "docengine_documents",
         HISTORY: "docengine_history",
-        VERSIONS: "docengine_versions"
+        VERSIONS: "docengine_versions",
+        INSTANT_PUBLISHED: "docengine_instant_published",
     },
 
     WORKFLOW: {
         DRAFT: "draft",
         APPROVED: "approved",
-        PUBLISHED: "published"
+        PUBLISHED: "published",
     }
 
-};
-
+}; 
 
 /* ==========================================================
    Application State
@@ -204,6 +204,93 @@ function updateSaveStatus(message) {
         }
 
     });
+
+}
+
+/* ==========================================================
+   Instant Published Content
+========================================================== */
+
+function saveInstantPublishedContent(page, content) {
+
+    try {
+
+        localStorage.setItem(
+            CONFIG.STORAGE.INSTANT_PUBLISHED,
+            JSON.stringify({
+                page: page,
+                content: content,
+                publishedAt: Date.now()
+            })
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Could not save instant published content:",
+            error
+        );
+
+    }
+
+}
+
+
+function renderInstantPublishedContent() {
+
+    try {
+
+        const stored =
+            localStorage.getItem(
+                CONFIG.STORAGE.INSTANT_PUBLISHED
+            );
+
+        if (!stored) {
+            return false;
+        }
+
+        const data =
+            JSON.parse(stored);
+
+        const currentPage =
+            window.location.pathname;
+
+        if (
+            !data ||
+            data.page !== currentPage ||
+            !data.content
+        ) {
+            return false;
+        }
+
+        const contentRoot =
+            document.querySelector(
+                ".md-content__inner"
+            );
+
+        if (!contentRoot) {
+            return false;
+        }
+
+        contentRoot.innerHTML =
+            data.content;
+
+        console.log(
+            "Instant published content restored after refresh."
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Instant published content render error:",
+            error
+        );
+
+        return false;
+
+    }
 
 }
 
@@ -1084,6 +1171,11 @@ const WorkflowManager = {
                     "Publish API completed successfully."
                 );
 
+                saveInstantPublishedContent(
+                    page,
+                    content
+                );
+
 
                 /* ==================================================
                    Update Application State
@@ -1240,8 +1332,8 @@ const WorkflowManager = {
                     "✅ Published successfully!\n\n" +
                     "Your changes are now visible."
                 );
-
-
+                window.location.reload();
+                
                 return true;
 
 
@@ -1385,6 +1477,8 @@ const App = {
             window.location.pathname;
 
         this.cacheDOM();
+
+        renderInstantPublishedContent();
 
         this.initStandaloneEditor();
 

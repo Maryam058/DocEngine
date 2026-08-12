@@ -226,6 +226,23 @@ function updateSaveStatus(message) {
  * after instant published content is rendered.
  */
 
+/* ==========================================================
+   Page Check
+========================================================== */
+
+function isHomePage() {
+
+    const path =
+        window.location.pathname
+            .replace(/\/+$/, "");
+
+    return (
+        path === "" ||
+        path === "/index.html"
+    );
+
+}
+
 function createEditPageButton() {
 
     const button =
@@ -265,14 +282,47 @@ function createEditPageButton() {
 
 function ensureEditPageButton(contentRoot) {
 
-    if (!contentRoot) {
+    /*
+     * Home page must NEVER have an Edit Page button.
+     */
+
+    if (isHomePage()) {
+
+        document
+            .querySelectorAll(
+                ".edit-page-button"
+            )
+            .forEach(button => {
+
+                button.remove();
+
+            });
+
         return null;
+
     }
 
 
+    if (!contentRoot) {
+
+        return null;
+
+    }
+
+
+    /* ======================================================
+       Find ALL Edit Page Buttons
+    ====================================================== */
+
+    const allEditButtons =
+        document.querySelectorAll(
+            ".edit-page-button"
+        );
+
+
     /*
-     * If the button already exists,
-     * keep using the existing button.
+     * If multiple buttons exist,
+     * keep only ONE.
      */
 
     let editButton =
@@ -281,43 +331,73 @@ function ensureEditPageButton(contentRoot) {
         );
 
 
-    if (editButton) {
+    /*
+     * If there is no button inside the
+     * content area, check whether one already
+     * exists elsewhere on the page.
+     */
 
-        /*
-         * Make sure the button is visible.
-         */
+    if (!editButton && allEditButtons.length > 0) {
 
-        editButton.style.display =
-            "";
+        editButton =
+            allEditButtons[0];
+
+    }
 
 
-        return editButton;
+    /* ======================================================
+       Remove Duplicate Buttons
+    ====================================================== */
+
+    document
+        .querySelectorAll(
+            ".edit-page-button"
+        )
+        .forEach(button => {
+
+            if (button !== editButton) {
+
+                button.remove();
+
+            }
+
+        });
+
+
+    /* ======================================================
+       Create Button If Missing
+    ====================================================== */
+
+    if (!editButton) {
+
+        editButton =
+            createEditPageButton();
+
+    }
+
+
+    /* ======================================================
+       Make Sure Button Is Inside Content
+    ====================================================== */
+
+    if (
+        editButton.parentElement !==
+        contentRoot
+    ) {
+
+        contentRoot.prepend(
+            editButton
+        );
 
     }
 
 
     /*
-     * Button does not exist.
-     * Create a fresh one.
+     * Make sure the button is visible.
      */
 
-    editButton =
-        createEditPageButton();
-
-
-    /*
-     * Put the button at the beginning
-     * of the documentation content.
-     */
-
-    contentRoot.prepend(
-        editButton
-    );
-
-
-    console.log(
-        "Edit Page button restored."
-    );
+    editButton.style.display =
+        "";
 
 
     return editButton;

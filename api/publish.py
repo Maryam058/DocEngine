@@ -22,7 +22,9 @@ GITHUB_TOKEN = os.environ.get("DOCENGINE_GITHUB_TOKEN")
 
 ALLOWED_ORIGINS = {
     "https://maryam058.github.io",
-    "https://doc-engine.vercel.app",
+    "https://doc-engine-nu.vercel.app",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
 }
 
 

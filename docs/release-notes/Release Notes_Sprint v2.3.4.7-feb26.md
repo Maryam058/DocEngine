@@ -1,16 +1,12 @@
-# Release Notes: February 2026 Sprint v2.3.4.7[¶](#release-notes-february-2026-sprint-v2347)
+# Release Notes: February 2026 Sprint v2.3.4.7
 
-Overview
+## Introduction
 
-This release introduces a series of enhancements focused on improving medication visibility, prescribing accuracy, and workflow efficiency across indici.
-
-Several of these improvements support clearer management of long-term medications and repeat prescriptions, helping practices prepare for upcoming prescription duration changes.
-
-Updates include improved long-term medication display, streamlined medication editing, updated prescription printing aligned with current NZePS standards, strengthened confidentiality controls, and clearer handling of stopped or cancelled medications.
+This release introduces a series of enhancements focused on improving medication visibility, prescribing accuracy, and workflow efficiency across indici. Several of these improvements support clearer management of long-term medications and repeat prescriptions, helping practices prepare for upcoming prescription duration changes. Updates include improved long-term medication display, streamlined medication editing, updated prescription printing aligned with current NZePS standards, strengthened confidentiality controls, and clearer handling of stopped or cancelled medications.
 
 Enhancements have also been made to AI usage reporting to improve transparency and cost tracking.
 
-## Long-Term Medication Display Update[¶](#long-term-medication-display-update)
+## Long-Term Medication Display Update
 
 The Long-Term Medication section in the Consult top bar has been updated to improve readability and reduce visual clutter.
 

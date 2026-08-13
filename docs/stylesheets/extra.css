@@ -959,3 +959,167 @@
     opacity: 0.9;
 
 }
+/* ==========================================================
+   INLINE EDITOR WORKFLOW BUTTONS
+   ========================================================== */
+
+.inline-editor-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+
+    padding: 16px 20px;
+
+    background: #ffffff;
+
+    border-top: 1px solid #e5e7eb;
+
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   COMMON BUTTON STYLE
+   ========================================================== */
+
+.inline-editor-actions button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 38px;
+
+    padding: 9px 16px;
+
+    border-radius: 6px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    line-height: 1.2;
+
+    cursor: pointer;
+
+    border: 1px solid transparent;
+
+    box-sizing: border-box;
+
+    transition: none !important;
+}
+
+
+/* ==========================================================
+   SAVE DRAFT
+   ========================================================== */
+
+#inline-save {
+    background: #1976d2;
+    color: #ffffff;
+
+    border-color: #1976d2;
+}
+
+#inline-save:hover,
+#inline-save:focus,
+#inline-save:active {
+    background: #1976d2;
+    color: #ffffff;
+
+    border-color: #1976d2;
+
+    box-shadow: none;
+
+    transform: none;
+}
+
+
+/* ==========================================================
+   APPROVE
+   ========================================================== */
+
+#inline-approve {
+    background: #1976d2;
+    color: #ffffff;
+
+    border-color: #1976d2;
+}
+
+#inline-approve:hover,
+#inline-approve:focus,
+#inline-approve:active {
+    background: #1976d2;
+    color: #ffffff;
+
+    border-color: #1976d2;
+
+    box-shadow: none;
+
+    transform: none;
+}
+
+
+/* ==========================================================
+   PUBLISH
+   ========================================================== */
+
+#inline-publish {
+    background: #1976d2;
+    color: #ffffff;
+
+    border-color: #1976d2;
+}
+
+#inline-publish:hover,
+#inline-publish:focus,
+#inline-publish:active {
+    background: #1976d2;
+    color: #ffffff;
+
+    border-color: #1976d2;
+
+    box-shadow: none;
+
+    transform: none;
+}
+
+
+/* ==========================================================
+   CANCEL
+   ========================================================== */
+
+#inline-cancel {
+    background: #1976d2;
+    color: #ffffff;
+
+    border-color: #1976d2;
+}
+
+#inline-cancel:hover,
+#inline-cancel:focus,
+#inline-cancel:active {
+    background: #1976d2;
+    color: #ffffff;
+
+    border-color: #1976d2;
+
+    box-shadow: none;
+
+    transform: none;
+}
+
+
+/* ==========================================================
+   BUTTON DISABLED STATE
+   ========================================================== */
+
+.inline-editor-actions button:disabled {
+    opacity: 0.55;
+
+    cursor: not-allowed;
+
+    box-shadow: none;
+
+    transform: none;
+}

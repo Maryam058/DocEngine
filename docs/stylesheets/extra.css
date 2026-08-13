@@ -1109,17 +1109,226 @@
     transform: none;
 }
 
-
 /* ==========================================================
-   BUTTON DISABLED STATE
+   DOCENGINE WORKFLOW ACTIONS
+   TOP RIGHT - KEEP EXISTING FUNCTIONALITY
    ========================================================== */
 
-.inline-editor-actions button:disabled {
-    opacity: 0.55;
+.editor-frame {
+    position: relative !important;
+}
 
-    cursor: not-allowed;
+.editor-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
 
-    box-shadow: none;
+    width: 100% !important;
+    box-sizing: border-box !important;
 
-    transform: none;
+    margin: 0 !important;
+    padding: 12px 24px !important;
+
+    background: #ffffff !important;
+    border: 0 !important;
+
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+
+    z-index: 20 !important;
+}
+
+/* Keep the editor header clear of the action buttons */
+.editor-header {
+    padding-top: 70px !important;
+}
+
+/* Keep the buttons compact and aligned */
+.editor-actions .editor-btn,
+.editor-actions #cancel-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    min-height: 38px !important;
+    padding: 9px 16px !important;
+
+    margin: 0 !important;
+
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+/* Preserve the existing neutral button appearance */
+.editor-actions .editor-btn,
+.editor-actions #cancel-btn {
+    background: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Keep hover/focus/active visually unchanged */
+.editor-actions .editor-btn:hover,
+.editor-actions .editor-btn:focus,
+.editor-actions .editor-btn:active,
+.editor-actions #cancel-btn:hover,
+.editor-actions #cancel-btn:focus,
+.editor-actions #cancel-btn:active {
+    background: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Mobile: allow the buttons to wrap instead of overlapping */
+@media (max-width: 768px) {
+    .editor-actions {
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+
+        flex-wrap: wrap !important;
+        justify-content: flex-end !important;
+
+        padding: 12px 16px !important;
+    }
+
+    .editor-header {
+        padding-top: 22px !important;
+    }
+}
+/* ==========================================================
+   INLINE EDITOR ACTIONS - TOP RIGHT
+   ========================================================== */
+
+.inline-editor-actions {
+    position: absolute !important;
+    top: 18px !important;
+    right: 24px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    z-index: 9999 !important;
+}
+
+.inline-editor-actions button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    min-height: 38px !important;
+    padding: 8px 14px !important;
+
+    margin: 0 !important;
+
+    cursor: pointer !important;
+}
+/* ==========================================================
+   EDITOR FRAME - FIXED WORKSPACE
+   ========================================================== */
+
+.editor-frame {
+    height: calc(100vh - 120px) !important;
+    min-height: 600px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    overflow: hidden !important;
+}
+
+
+/* ==========================================================
+   EDITOR HEADER - FIXED
+   ========================================================== */
+
+.editor-header {
+    flex: 0 0 auto !important;
+}
+
+
+/* ==========================================================
+   WORKFLOW BUTTONS - FIXED
+   ========================================================== */
+
+.inline-editor-actions {
+    flex: 0 0 auto !important;
+}
+
+/* ==========================================================
+   QUILL EDITOR AREA
+   ========================================================== */
+
+.editor-container {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+
+    overflow: hidden !important;
+}
+
+
+/* ==========================================================
+   QUILL ROOT
+   ========================================================== */
+
+#editor {
+    height: 100% !important;
+    min-height: 0 !important;
+
+    overflow: hidden !important;
+}
+
+
+/* ==========================================================
+   QUILL CONTAINER
+   ========================================================== */
+
+#editor .ql-container {
+    height: 100% !important;
+    min-height: 0 !important;
+
+    overflow: hidden !important;
+}
+
+
+/* ==========================================================
+   EDITABLE CONTENT
+   ONLY THIS AREA SCROLLS
+   ========================================================== */
+
+#editor .ql-editor {
+    height: 100% !important;
+    min-height: 0 !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    box-sizing: border-box !important;
+
+    padding: 24px 28px !important;
+}
+
+/* ==========================================================
+   SAVE STATUS - FIXED AT BOTTOM
+   ========================================================== */
+
+.editor-footer {
+    flex: 0 0 auto !important;
 }

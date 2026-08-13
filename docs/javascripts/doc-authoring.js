@@ -2501,7 +2501,12 @@ const App = {
             publish:
                 document.querySelector(
                     "#btn-publish"
-                )
+                ),
+
+            cancel:
+                document.querySelector(
+                    "#cancel-btn"
+                ),
 
         };
 
@@ -3052,21 +3057,6 @@ const InlineEditor = {
             </span>
 
             <span class="inline-editor-meta-spacer"></span>
-
-            <span
-                class="inline-editor-meta-icon"
-                title="Listen"
-            >
-                🔊
-            </span>
-
-            <span
-                class="inline-editor-meta-icon"
-                title="Reactions"
-            >
-                🙂
-            </span>
-
         `;
 
 

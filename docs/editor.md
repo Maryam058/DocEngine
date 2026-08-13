@@ -31,6 +31,28 @@
         </div>
 
 
+        <!-- Workflow Actions - TOP RIGHT -->
+        <div class="editor-actions">
+
+            <button id="btn-save" class="editor-btn save-btn">
+                💾 Save Draft
+            </button>
+
+            <button id="btn-approve" class="editor-btn approve-btn">
+                ✅ Approve
+            </button>
+
+            <button id="btn-publish" class="editor-btn publish-btn">
+                🚀 Publish
+            </button>
+
+            <button id="cancel-btn" class="editor-btn">
+                ✖ Cancel
+            </button>
+
+        </div>
+
+
         <!-- Quill Editor -->
         <div class="editor-container">
 
@@ -45,32 +67,6 @@
             <span id="save-status">
                 Ready to edit
             </span>
-
-        </div>
-
-
-        <!-- Workflow Actions -->
-        <div class="editor-actions">
-
-            <button id="btn-save" class="editor-btn save-btn">
-                💾 Save Draft
-            </button>
-
-            <button id="btn-review" class="editor-btn review-btn">
-                📋 Submit for Review
-            </button>
-
-            <button id="btn-approve" class="editor-btn approve-btn">
-                ✅ Approve
-            </button>
-
-            <button id="btn-reject" class="editor-btn reject-btn">
-                ❌ Reject
-            </button>
-
-            <button id="btn-publish" class="editor-btn publish-btn">
-                🚀 Publish
-            </button>
 
         </div>
 

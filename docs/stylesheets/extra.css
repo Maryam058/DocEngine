@@ -829,3 +829,133 @@
 
     transform: none;
 }
+/* ==========================================================
+   DocEngine Workflow Modal
+========================================================== */
+
+.docengine-modal-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    z-index: 99999;
+
+    padding: 20px;
+
+}
+
+
+.docengine-modal {
+
+    width: min(460px, 100%);
+
+    background: #ffffff;
+
+    border-radius: 14px;
+
+    padding: 28px;
+
+    text-align: center;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.20);
+
+}
+
+
+.docengine-modal-icon {
+
+    font-size: 38px;
+
+    margin-bottom: 12px;
+
+}
+
+
+.docengine-modal-title {
+
+    font-size: 21px;
+
+    font-weight: 700;
+
+    color: #1f2937;
+
+    margin-bottom: 10px;
+
+}
+
+
+.docengine-modal-message {
+
+    font-size: 15px;
+
+    line-height: 1.6;
+
+    color: #6b7280;
+
+    margin-bottom: 24px;
+
+}
+
+
+.docengine-modal-actions {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 10px;
+
+}
+
+
+.docengine-modal-actions button {
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 10px 20px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+}
+
+
+.docengine-modal-confirm {
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+}
+
+
+.docengine-modal-cancel {
+
+    background: #e5e7eb;
+
+    color: #374151;
+
+}
+
+
+.docengine-modal-confirm:hover,
+.docengine-modal-cancel:hover {
+
+    opacity: 0.9;
+
+}

@@ -1292,6 +1292,243 @@ async function loadLatestPublishedContent(page) {
 
 }
 
+/* ==========================================================
+   Workflow Modal
+========================================================== */
+
+function showWorkflowModal(options = {}) {
+
+    const {
+        title = "DocEngine",
+        message = "",
+        type = "info",
+        confirmText = "OK",
+        cancelText = null,
+        onConfirm = null
+    } = options;
+
+
+    /* ======================================================
+       Remove Existing Modal
+    ====================================================== */
+
+    const existingModal =
+        document.querySelector(
+            "#docengine-workflow-modal"
+        );
+
+
+    if (existingModal) {
+
+        existingModal.remove();
+
+    }
+
+
+    /* ======================================================
+       Modal Overlay
+    ====================================================== */
+
+    const overlay =
+        document.createElement("div");
+
+
+    overlay.id =
+        "docengine-workflow-modal";
+
+
+    overlay.className =
+        "docengine-modal-overlay";
+
+
+    /* ======================================================
+       Modal Box
+    ====================================================== */
+
+    const modal =
+        document.createElement("div");
+
+
+    modal.className =
+        "docengine-modal";
+
+
+    /* ======================================================
+       Icon
+    ====================================================== */
+
+    let icon = "ℹ️";
+
+
+    if (type === "success") {
+
+        icon = "✅";
+
+    }
+
+    else if (type === "warning") {
+
+        icon = "⚠️";
+
+    }
+
+    else if (type === "error") {
+
+        icon = "❌";
+
+    }
+
+
+    /* ======================================================
+       Modal Content
+    ====================================================== */
+
+    modal.innerHTML = `
+
+        <div class="docengine-modal-icon">
+            ${icon}
+        </div>
+
+        <div class="docengine-modal-title">
+            ${title}
+        </div>
+
+        <div class="docengine-modal-message">
+            ${message}
+        </div>
+
+        <div class="docengine-modal-actions">
+
+            ${
+                cancelText
+                    ? `
+                        <button
+                            type="button"
+                            class="docengine-modal-cancel"
+                            id="docengine-modal-cancel"
+                        >
+                            ${cancelText}
+                        </button>
+                    `
+                    : ""
+            }
+
+            <button
+                type="button"
+                class="docengine-modal-confirm"
+                id="docengine-modal-confirm"
+            >
+                ${confirmText}
+            </button>
+
+        </div>
+
+    `;
+
+
+    /* ======================================================
+       Add Modal To Page
+    ====================================================== */
+
+    overlay.appendChild(
+        modal
+    );
+
+
+    document.body.appendChild(
+        overlay
+    );
+
+
+    /* ======================================================
+       Confirm Button
+    ====================================================== */
+
+    const confirmButton =
+        document.querySelector(
+            "#docengine-modal-confirm"
+        );
+
+
+    confirmButton?.addEventListener(
+
+        "click",
+
+        async function () {
+
+            overlay.remove();
+
+
+            if (typeof onConfirm === "function") {
+
+                try {
+
+                    await onConfirm();
+
+                }
+
+                catch (error) {
+
+                    console.error(
+                        "Workflow confirmation error:",
+                        error
+                    );
+
+                }
+
+            }
+
+        }
+
+    );
+
+
+    /* ======================================================
+       Cancel Button
+    ====================================================== */
+
+    const cancelButton =
+        document.querySelector(
+            "#docengine-modal-cancel"
+        );
+
+
+    cancelButton?.addEventListener(
+
+        "click",
+
+        function () {
+
+            overlay.remove();
+
+        }
+
+    );
+
+
+    /* ======================================================
+       Close On Background Click
+    ====================================================== */
+
+    overlay.addEventListener(
+
+        "click",
+
+        function (event) {
+
+            if (
+                event.target === overlay
+            ) {
+
+                overlay.remove();
+
+            }
+
+        }
+
+    );
+
+}
 
 /* ==========================================================
    Workflow Manager
@@ -1398,9 +1635,25 @@ const WorkflowManager = {
             );
 
 
-            alert(
-                "✅ Document approved successfully!"
-            );
+            /* ----------------------------------------------
+               Professional Success Modal
+            ---------------------------------------------- */
+
+            showWorkflowModal({
+
+                title:
+                    "Document Approved",
+
+                message:
+                    "The document has been approved successfully and is ready to be published.",
+
+                type:
+                    "success",
+
+                confirmText:
+                    "OK"
+
+            });
 
 
             return true;
@@ -1426,397 +1679,68 @@ const WorkflowManager = {
                 CONFIG.WORKFLOW.APPROVED
             ) {
 
-                alert(
-                    "Please approve the document before publishing."
-                );
+                showWorkflowModal({
+
+                    title:
+                        "Approval Required",
+
+                    message:
+                        "Please approve the document before publishing it.",
+
+                    type:
+                        "warning",
+
+                    confirmText:
+                        "OK"
+
+                });
+
 
                 return false;
 
             }
 
 
-            try {
+            /* ==================================================
+               Publish Confirmation Modal
+            ================================================== */
 
-                /* ==================================================
-                   Publishing Started
-                ================================================== */
+            showWorkflowModal({
 
-                updateSaveStatus(
-                    "Publishing..."
-                );
+                title:
+                    "Publish Document",
 
+                message:
+                    "This will make the current approved version live on your documentation site.",
 
-                const page =
-                    AppState.currentDocument;
+                type:
+                    "info",
 
+                confirmText:
+                    "Publish",
 
-                const content =
-                    DraftManager.getContent();
+                cancelText:
+                    "Cancel",
 
+                onConfirm:
+                    async () => {
 
-                console.log(
-                    "Publishing document:",
-                    page
-                );
-
-
-                /* ==================================================
-                   Call Vercel Publish API
-                ================================================== */
-
-                const response =
-                    await fetch(
-
-                        CONFIG.PUBLISH_API,
-
-                        {
-
-                            method: "POST",
-
-                            headers: {
-
-                                "Content-Type":
-                                    "application/json"
-
-                            },
-
-                            body:
-                                JSON.stringify({
-
-                                    page:
-                                        page,
-
-                                    content:
-                                        content
-
-                                })
-
-                        }
-
-                    );
-
-
-                /* ==================================================
-                   Read API Response
-                ================================================== */
-
-                let result;
-
-
-                try {
-
-                    result =
-                        await response.json();
-
-                } catch (jsonError) {
-
-                    throw new Error(
-                        "Publish server returned an invalid response."
-                    );
-
-                }
-
-
-                console.log(
-                    "Publish response:",
-                    response.status,
-                    result
-                );
-
-
-                /* ==================================================
-                   HTTP Error
-                ================================================== */
-
-                if (!response.ok) {
-
-                    throw new Error(
-
-                        result.message ||
-
-                        `Publish API returned ${response.status}`
-
-                    );
-
-                }
-
-
-                /* ==================================================
-                   API-Level Error
-                ================================================== */
-
-                if (!result.success) {
-
-                    throw new Error(
-
-                        result.message ||
-
-                        "Publishing failed."
-
-                    );
-
-                }
-
-
-                /* ==================================================
-                   PUBLISH SUCCESS
-                ================================================== */
-
-                console.log(
-                    "Publish API completed successfully."
-                );
-
-
-                /* ==================================================
-                   Save Instant Content
-                ================================================== */
-
-                saveInstantPublishedContent(
-                    page,
-                    content
-                );
-
-
-                /* ==================================================
-                   Update Application State
-                ================================================== */
-
-                AppState.currentStatus =
-                    CONFIG.WORKFLOW.PUBLISHED;
-
-
-                AppState.statusText =
-                    "Published";
-
-
-                /* ==================================================
-                   History
-                ================================================== */
-
-                HistoryManager.add(
-
-                    "publish",
-
-                    "Document Published"
-
-                );
-
-
-                /* ==================================================
-                   Version
-                ================================================== */
-
-                VersionManager.create(
-                    "publish"
-                );
-
-
-                /*
-                 * Increase version after
-                 * published snapshot.
-                 */
-
-                AppState.currentVersion++;
-
-
-                /* ==================================================
-                   Save Published State
-                ================================================== */
-
-                DraftManager.save();
-
-
-                /* ==================================================
-                   Refresh UI
-                ================================================== */
-
-                UIManager.refresh();
-
-
-                updateSaveStatus(
-                    "Published ✓ Loading latest content..."
-                );
-
-
-                /* ==================================================
-                   INLINE MODE
-                   
-                   Render latest content immediately.
-                ================================================== */
-
-                if (AppState.inlineMode) {
-
-                    const contentRoot =
-                        document.querySelector(
-                            ".md-content__inner"
-                        );
-
-
-                    if (contentRoot) {
-
-                        /*
-                         * Preserve Edit Page button.
-                         */
-
-                        let editButton =
-                            contentRoot.querySelector(
-                                ".edit-page-button, .edit-btn"
-                            );
-
-
-                        if (!editButton) {
-
-                            editButton =
-                                AppState.originalEditButton;
-
-                        }
-
-
-                        /*
-                         * Show the content that
-                         * was just published.
-                         */
-
-                        contentRoot.innerHTML =
-                            content;
-
-
-                        /*
-                         * Restore button.
-                         */
-
-                        if (editButton) {
-
-                            contentRoot.prepend(
-                                editButton
-                            );
-
-                        }
-
-
-                        ensureEditPageButton(
-                            contentRoot
-                        );
+                        await this.publishDocument();
 
                     }
 
-
-                    /*
-                     * Exit inline editor mode.
-                     */
-
-                    AppState.editor =
-                        null;
+            });
 
 
-                    AppState.inlineMode =
-                        false;
+            /*
+             * Do not continue into the actual
+             * publishing process yet.
+             *
+             * The modal confirmation will
+             * call publishDocument().
+             */
 
-
-                    AppState.originalEditButton =
-                        null;
-
-                }
-
-
-                /* ==================================================
-                   Load Latest Published Content
-                   
-                   IMPORTANT:
-                   This replaces the old
-                   waitForPublishedPage() logic.
-                ================================================== */
-
-                const liveUpdated =
-                    await loadLatestPublishedContent(
-                        page
-                    );
-
-
-                /* ==================================================
-                   Update Publish Status
-                ================================================== */
-
-                if (liveUpdated) {
-
-                    updateSaveStatus(
-                        "Published ✓ Live"
-                    );
-
-                } else {
-
-                    updateSaveStatus(
-                        "Published ✓"
-                    );
-
-                }
-
-
-                /* ==================================================
-                   Final Edit Page Button Safety Check
-                ================================================== */
-
-                const contentRoot =
-                    document.querySelector(
-                        ".md-content__inner"
-                    );
-
-
-                if (contentRoot) {
-
-                    ensureEditPageButton(
-                        contentRoot
-                    );
-
-                }
-
-
-                UIManager.refresh();
-
-
-                /* ==================================================
-                   Publishing Completed
-                ================================================== */
-
-                alert(
-
-                    "✅ Published successfully!\n\n" +
-                    "Your changes are now visible."
-
-                );
-
-
-                return true;
-
-
-            } catch (error) {
-
-                /* ==================================================
-                   Publish Error
-                ================================================== */
-
-                console.error(
-                    "Publish error:",
-                    error
-                );
-
-
-                updateSaveStatus(
-                    "Publish failed"
-                );
-
-
-                alert(
-
-                    "❌ Publish failed:\n\n" +
-                    error.message
-
-                );
-
-
-                return false;
-
-            }
+            return false;
 
         }
 
@@ -1833,9 +1757,432 @@ const WorkflowManager = {
 
         return false;
 
+    },
+
+
+    /* ======================================================
+       Actual Publish Operation
+    ====================================================== */
+
+    async publishDocument() {
+
+        try {
+
+            /* ==================================================
+               Publishing Started
+            ================================================== */
+
+            updateSaveStatus(
+                "Publishing..."
+            );
+
+
+            const page =
+                AppState.currentDocument;
+
+
+            const content =
+                DraftManager.getContent();
+
+
+            console.log(
+                "Publishing document:",
+                page
+            );
+
+
+            /* ==================================================
+               Call Vercel Publish API
+            ================================================== */
+
+            const response =
+                await fetch(
+
+                    CONFIG.PUBLISH_API,
+
+                    {
+
+                        method:
+                            "POST",
+
+                        headers: {
+
+                            "Content-Type":
+                                "application/json"
+
+                        },
+
+                        body:
+                            JSON.stringify({
+
+                                page:
+                                    page,
+
+                                content:
+                                    content
+
+                            })
+
+                    }
+
+                );
+
+
+            /* ==================================================
+               Read API Response
+            ================================================== */
+
+            let result;
+
+
+            try {
+
+                result =
+                    await response.json();
+
+            } catch (jsonError) {
+
+                throw new Error(
+                    "Publish server returned an invalid response."
+                );
+
+            }
+
+
+            console.log(
+                "Publish response:",
+                response.status,
+                result
+            );
+
+
+            /* ==================================================
+               HTTP Error
+            ================================================== */
+
+            if (!response.ok) {
+
+                throw new Error(
+
+                    result.message ||
+
+                    `Publish API returned ${response.status}`
+
+                );
+
+            }
+
+
+            /* ==================================================
+               API-Level Error
+            ================================================== */
+
+            if (!result.success) {
+
+                throw new Error(
+
+                    result.message ||
+
+                    "Publishing failed."
+
+                );
+
+            }
+
+
+            /* ==================================================
+               PUBLISH SUCCESS
+            ================================================== */
+
+            console.log(
+                "Publish API completed successfully."
+            );
+
+
+            /* ==================================================
+               Save Instant Content
+            ================================================== */
+
+            saveInstantPublishedContent(
+
+                page,
+
+                content
+
+            );
+
+
+            /* ==================================================
+               Update Application State
+            ================================================== */
+
+            AppState.currentStatus =
+                CONFIG.WORKFLOW.PUBLISHED;
+
+
+            AppState.statusText =
+                "Published";
+
+
+            /* ==================================================
+               History
+            ================================================== */
+
+            HistoryManager.add(
+
+                "publish",
+
+                "Document Published"
+
+            );
+
+
+            /* ==================================================
+               Version
+            ================================================== */
+
+            VersionManager.create(
+                "publish"
+            );
+
+
+            /*
+             * Increase version after
+             * published snapshot.
+             */
+
+            AppState.currentVersion++;
+
+
+            /* ==================================================
+               Save Published State
+            ================================================== */
+
+            DraftManager.save();
+
+
+            /* ==================================================
+               Refresh UI
+            ================================================== */
+
+            UIManager.refresh();
+
+
+            updateSaveStatus(
+                "Published ✓ Loading latest content..."
+            );
+
+
+            /* ==================================================
+               INLINE MODE
+               
+               Render latest content immediately.
+            ================================================== */
+
+            if (AppState.inlineMode) {
+
+                const contentRoot =
+                    document.querySelector(
+                        ".md-content__inner"
+                    );
+
+
+                if (contentRoot) {
+
+                    /*
+                     * Preserve Edit Page button.
+                     */
+
+                    let editButton =
+                        contentRoot.querySelector(
+                            ".edit-page-button, .edit-btn"
+                        );
+
+
+                    if (!editButton) {
+
+                        editButton =
+                            AppState.originalEditButton;
+
+                    }
+
+
+                    /*
+                     * Show the content that
+                     * was just published.
+                     */
+
+                    contentRoot.innerHTML =
+                        content;
+
+
+                    /*
+                     * Restore button.
+                     */
+
+                    if (editButton) {
+
+                        contentRoot.prepend(
+                            editButton
+                        );
+
+                    }
+
+
+                    ensureEditPageButton(
+                        contentRoot
+                    );
+
+                }
+
+
+                /*
+                 * Exit inline editor mode.
+                 */
+
+                AppState.editor =
+                    null;
+
+
+                AppState.inlineMode =
+                    false;
+
+
+                AppState.originalEditButton =
+                    null;
+
+            }
+
+
+            /* ==================================================
+               Load Latest Published Content
+               
+               This replaces the old
+               waitForPublishedPage() logic.
+            ================================================== */
+
+            const liveUpdated =
+                await loadLatestPublishedContent(
+                    page
+                );
+
+
+            /* ==================================================
+               Update Publish Status
+            ================================================== */
+
+            if (liveUpdated) {
+
+                updateSaveStatus(
+                    "Published ✓ Live"
+                );
+
+            } else {
+
+                updateSaveStatus(
+                    "Published ✓"
+                );
+
+            }
+
+
+            /* ==================================================
+               Final Edit Page Button Safety Check
+            ================================================== */
+
+            const contentRoot =
+                document.querySelector(
+                    ".md-content__inner"
+                );
+
+
+            if (contentRoot) {
+
+                ensureEditPageButton(
+                    contentRoot
+                );
+
+            }
+
+
+            UIManager.refresh();
+
+
+            /* ==================================================
+               Publishing Completed
+            ================================================== */
+
+            showWorkflowModal({
+
+                title:
+                    "Published Successfully",
+
+                message:
+                    liveUpdated
+
+                        ? "Your changes have been published successfully and are now live."
+
+                        : "Your changes were published successfully. The live page may take a moment to update.",
+
+                type:
+                    "success",
+
+                confirmText:
+                    "Done"
+
+            });
+
+
+            return true;
+
+
+        } catch (error) {
+
+            /* ==================================================
+               Publish Error
+            ================================================== */
+
+            console.error(
+                "Publish error:",
+                error
+            );
+
+
+            updateSaveStatus(
+                "Publish failed"
+            );
+
+
+            /* ==================================================
+               Professional Error Modal
+            ================================================== */
+
+            showWorkflowModal({
+
+                title:
+                    "Publish Failed",
+
+                message:
+                    error.message ||
+                    "Something went wrong while publishing the document.",
+
+                type:
+                    "error",
+
+                confirmText:
+                    "OK"
+
+            });
+
+
+            return false;
+
+        }
+
     }
 
 };
+
 /* ==========================================================
    UI Manager
 ========================================================== */

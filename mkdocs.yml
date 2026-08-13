@@ -20,7 +20,7 @@ nav:
       - Medical Warnings: UserGuide/Medical_Warnings.md
 
   - Release Notes:
-      - Latest Release Notes: release-notes/latest-release-notes.md
+      - Release Notes: release-notes-draft.md
       - Sprint v2.3.4.7 (Feb 2026): release-notes/Release Notes_Sprint v2.3.4.7-feb26.md
 
   - Glossary: glossary.md

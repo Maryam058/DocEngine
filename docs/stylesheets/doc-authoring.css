@@ -1884,14 +1884,11 @@ button[data-action="publish"]:hover{
     opacity: 1;
 }
 
-#inline-publish {
-    background: #0052CC;
-    color: #ffffff;
-}
-
-#inline-publish:hover {
-    background: #0747A6;
-}
+/* #inline-publish intentionally not overridden here (Phase 1
+   decision): it now matches #inline-save/#inline-approve/
+   #inline-cancel's canonical brand blue, defined once in
+   extra.css via var(--de-brand), instead of the Atlassian blue
+   this file used to apply on top of it. */
 
 .cancel-btn {
     background: #6b7280;

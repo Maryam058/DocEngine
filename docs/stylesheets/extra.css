@@ -1,4 +1,45 @@
 /* ==========================================================
+   DESIGN TOKENS
+   Phase 1 foundation — values below are mapped 1:1 to what
+   was already live before this pass. No visual change from
+   this block alone; future redesign steps edit these instead
+   of hunting through duplicate rule blocks.
+   ========================================================== */
+
+:root {
+    /* Brand */
+    --de-brand: #1976d2;
+    --de-brand-dark: #0d47a1;
+    --de-brand-hover: #1565c0;
+
+    /* Neutrals */
+    --de-surface: #ffffff;
+    --de-surface-subtle: #f8fafc;
+    --de-border: #e5e7eb;
+    --de-border-strong: #d9e2ec;
+    --de-text-secondary: #333333;
+    --de-border-secondary: #d1d5db;
+
+    /* Radius */
+    --de-radius-sm: 6px;
+    --de-radius-lg: 12px;
+    --de-radius-xl: 14px;
+
+    /* Shadow */
+    --de-shadow-frame: 0 4px 20px rgba(0, 0, 0, 0.10);
+    --de-shadow-btn: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --de-shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.20);
+
+    /* Modal */
+    --de-modal-title: #1f2937;
+    --de-modal-message: #6b7280;
+    --de-modal-cancel-bg: #e5e7eb;
+    --de-modal-cancel-text: #374151;
+    --de-modal-confirm-bg: #2563eb;
+}
+
+
+/* ==========================================================
    HOME PAGE - FULL WIDTH
    ========================================================== */
 
@@ -437,15 +478,15 @@
     line-height: 1.2;
 
     color: #ffffff !important;
-    background: #1976d2 !important;
+    background: var(--de-brand) !important;
 
-    border: 1px solid #1976d2 !important;
-    border-radius: 6px;
+    border: 1px solid var(--de-brand) !important;
+    border-radius: var(--de-radius-sm);
 
     cursor: pointer;
     text-decoration: none;
 
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--de-shadow-btn);
 
     box-sizing: border-box;
 }
@@ -453,11 +494,11 @@
 .edit-btn:hover,
 .edit-btn:focus,
 .edit-btn:active {
-    background: #1976d2 !important;
+    background: var(--de-brand) !important;
     color: #ffffff !important;
-    border-color: #1976d2 !important;
+    border-color: var(--de-brand) !important;
 
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--de-shadow-btn);
 
     transform: none !important;
 }
@@ -575,22 +616,36 @@
 }
 
 .editor-frame {
+    /* Consolidated: merges the base frame rules below with the later
+       "position/fixed-height workspace" overrides that used to live
+       in two separate blocks further down this file (same selector,
+       same computed result as before this pass). */
     width: 100%;
 
-    background: #fff;
-
-    border: 1px solid #d9e2ec !important;
-
-    border-radius: 12px !important;
-
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10) !important;
-
-    overflow: hidden;
+    background: var(--de-surface);
 
     box-sizing: border-box;
+
+    border: 1px solid var(--de-border-strong) !important;
+    border-radius: var(--de-radius-lg) !important;
+    box-shadow: var(--de-shadow-frame) !important;
+
+    position: relative !important;
+
+    height: calc(100vh - 120px) !important;
+    min-height: 600px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    overflow: hidden !important;
 }
 
 .editor-header {
+    /* Consolidated: base layout + the later "clear the absolutely
+       positioned action buttons" padding-top override + the later
+       "fixed header, doesn't scroll" flex override. Same computed
+       result as before this pass. */
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -598,13 +653,19 @@
     gap: 20px;
 
     padding: 22px 28px !important;
+    padding-top: 70px !important;
 
-    background: #f8fafc;
+    background: var(--de-surface-subtle);
 
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--de-border);
+
+    flex: 0 0 auto !important;
 }
 
 .editor-container {
+    /* Consolidated: base rules + the later "fills remaining height,
+       Quill area scrolls internally" override. Same computed result
+       as before this pass. */
     width: 100%;
 
     margin: 0 !important;
@@ -612,42 +673,67 @@
 
     border: 0 !important;
 
-    background: #fff;
+    background: var(--de-surface);
+
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+
+    overflow: hidden !important;
 }
 
 #editor {
-    min-height: 500px !important;
+    /* Consolidated: base rules + the later "Quill root fills its
+       container" override. Same computed result as before this pass. */
+    height: 100% !important;
+    min-height: 0 !important;
 
     padding: 30px 36px !important;
 
     border: 0 !important;
 
     box-sizing: border-box;
+
+    overflow: hidden !important;
 }
 
 .editor-footer {
+    /* Consolidated: base rules + the later "fixed at bottom, doesn't
+       scroll" flex override. Same computed result as before this pass. */
     padding: 14px 24px !important;
 
-    background: #f8fafc;
+    background: var(--de-surface-subtle);
 
-    border-top: 1px solid #e5e7eb;
-    border-bottom: 1px solid #e5e7eb;
+    border-top: 1px solid var(--de-border);
+    border-bottom: 1px solid var(--de-border);
+
+    flex: 0 0 auto !important;
 }
 
 .editor-actions {
+    /* Consolidated: the base rules below were entirely superseded by
+       a later "top-right, absolutely positioned" override block; this
+       is that override's full computed result (same as before this
+       pass), now the single definition. */
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+
+    width: 100% !important;
+    box-sizing: border-box !important;
+
     margin: 0 !important;
+    padding: 12px 24px !important;
 
-    padding: 18px 24px !important;
-
-    background: #fff;
-
+    background: var(--de-surface) !important;
     border: 0 !important;
 
-    display: flex;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
 
-    justify-content: flex-end;
-
-    gap: 10px;
+    z-index: 20 !important;
 }
 
 
@@ -656,23 +742,27 @@
    ========================================================== */
 
 .inline-editor-workspace.editor-frame {
-    width: 100%;
+    /* Consolidated: merges the base frame rules with the later
+       "remove side spacing, full-bleed" override that used to live
+       in a separate block below — same computed result as before
+       this pass. */
+    width: 100% !important;
 
-    max-width: 900px;
+    max-width: none !important;
 
-    margin: 30px auto !important;
+    margin: 20px 0 !important;
 
     padding: 0 !important;
 
     box-sizing: border-box;
 
-    background: #fff;
+    background: var(--de-surface);
 
-    border: 1px solid #d9e2ec !important;
+    border: 1px solid var(--de-border-strong) !important;
 
-    border-radius: 12px !important;
+    border-radius: var(--de-radius-lg) !important;
 
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.10) !important;
+    box-shadow: var(--de-shadow-frame) !important;
 
     overflow: hidden;
 }
@@ -685,16 +775,6 @@
 .md-content__inner:has(.inline-editor-workspace) {
     margin: 0 !important;
     padding: 0 !important;
-}
-
-.inline-editor-workspace.editor-frame {
-    width: 100% !important;
-
-    max-width: none !important;
-
-    margin: 20px 0 !important;
-
-    box-sizing: border-box;
 }
 
 
@@ -776,15 +856,15 @@
     line-height: 1.2;
 
     color: #ffffff !important;
-    background: #1976d2 !important;
+    background: var(--de-brand) !important;
 
-    border: 1px solid #1976d2 !important;
-    border-radius: 6px;
+    border: 1px solid var(--de-brand) !important;
+    border-radius: var(--de-radius-sm);
 
     cursor: pointer;
     text-decoration: none;
 
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--de-shadow-btn);
 
     box-sizing: border-box;
 }
@@ -792,12 +872,12 @@
 .edit-page-button:hover,
 .edit-page-button:focus,
 .edit-page-button:active {
-    background: #1976d2 !important;
+    background: var(--de-brand) !important;
     color: #ffffff !important;
 
-    border-color: #1976d2 !important;
+    border-color: var(--de-brand) !important;
 
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--de-shadow-btn);
 
     transform: none !important;
 }
@@ -809,21 +889,21 @@
    ========================================================== */
 
 .editor-btn {
-    background: #ffffff;
+    background: var(--de-surface);
 
-    color: #333333;
+    color: var(--de-text-secondary);
 
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--de-border-secondary);
 }
 
 .editor-btn:hover,
 .editor-btn:focus,
 .editor-btn:active {
-    background: #ffffff;
+    background: var(--de-surface);
 
-    color: #333333;
+    color: var(--de-text-secondary);
 
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--de-border-secondary);
 
     box-shadow: none;
 
@@ -858,16 +938,16 @@
 
     width: min(460px, 100%);
 
-    background: #ffffff;
+    background: var(--de-surface);
 
-    border-radius: 14px;
+    border-radius: var(--de-radius-xl);
 
     padding: 28px;
 
     text-align: center;
 
     box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.20);
+        var(--de-shadow-modal);
 
 }
 
@@ -887,7 +967,7 @@
 
     font-weight: 700;
 
-    color: #1f2937;
+    color: var(--de-modal-title);
 
     margin-bottom: 10px;
 
@@ -900,7 +980,7 @@
 
     line-height: 1.6;
 
-    color: #6b7280;
+    color: var(--de-modal-message);
 
     margin-bottom: 24px;
 
@@ -937,7 +1017,7 @@
 
 .docengine-modal-confirm {
 
-    background: #2563eb;
+    background: var(--de-modal-confirm-bg);
 
     color: #ffffff;
 
@@ -946,9 +1026,9 @@
 
 .docengine-modal-cancel {
 
-    background: #e5e7eb;
+    background: var(--de-modal-cancel-bg);
 
-    color: #374151;
+    color: var(--de-modal-cancel-text);
 
 }
 
@@ -964,17 +1044,28 @@
    ========================================================== */
 
 .inline-editor-actions {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 10px;
+    /* Consolidated: merges the base panel rules with the later
+       "absolute, top-right, fixed" overrides that used to live in
+       two separate blocks further down this file — same computed
+       result as before this pass. */
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 10px !important;
 
-    padding: 16px 20px;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: auto !important;
 
-    background: #ffffff;
+    position: absolute !important;
+    top: 18px !important;
+    right: 24px !important;
+    z-index: 9999 !important;
 
-    border-top: 1px solid #e5e7eb;
+    flex: 0 0 auto !important;
 
+    background: var(--de-surface);
+    border-top: 1px solid var(--de-border);
     box-sizing: border-box;
 }
 
@@ -984,23 +1075,29 @@
    ========================================================== */
 
 .inline-editor-actions button {
-    display: inline-flex;
+    /* Consolidated: merges the base button rules with the later
+       "compact top-right sizing" override that used to live in a
+       separate block further down this file — same computed
+       result as before this pass. */
+    display: inline-flex !important;
 
-    align-items: center;
-    justify-content: center;
+    align-items: center !important;
+    justify-content: center !important;
 
-    min-height: 38px;
+    min-height: 38px !important;
 
-    padding: 9px 16px;
+    padding: 8px 14px !important;
 
-    border-radius: 6px;
+    margin: 0 !important;
+
+    cursor: pointer !important;
+
+    border-radius: var(--de-radius-sm);
 
     font-size: 14px;
     font-weight: 600;
 
     line-height: 1.2;
-
-    cursor: pointer;
 
     border: 1px solid transparent;
 
@@ -1015,19 +1112,19 @@
    ========================================================== */
 
 #inline-save {
-    background: #1976d2;
+    background: var(--de-brand);
     color: #ffffff;
 
-    border-color: #1976d2;
+    border-color: var(--de-brand);
 }
 
 #inline-save:hover,
 #inline-save:focus,
 #inline-save:active {
-    background: #1976d2;
+    background: var(--de-brand);
     color: #ffffff;
 
-    border-color: #1976d2;
+    border-color: var(--de-brand);
 
     box-shadow: none;
 
@@ -1040,19 +1137,19 @@
    ========================================================== */
 
 #inline-approve {
-    background: #1976d2;
+    background: var(--de-brand);
     color: #ffffff;
 
-    border-color: #1976d2;
+    border-color: var(--de-brand);
 }
 
 #inline-approve:hover,
 #inline-approve:focus,
 #inline-approve:active {
-    background: #1976d2;
+    background: var(--de-brand);
     color: #ffffff;
 
-    border-color: #1976d2;
+    border-color: var(--de-brand);
 
     box-shadow: none;
 
@@ -1065,19 +1162,19 @@
    ========================================================== */
 
 #inline-publish {
-    background: #1976d2;
+    background: var(--de-brand);
     color: #ffffff;
 
-    border-color: #1976d2;
+    border-color: var(--de-brand);
 }
 
 #inline-publish:hover,
 #inline-publish:focus,
 #inline-publish:active {
-    background: #1976d2;
+    background: var(--de-brand);
     color: #ffffff;
 
-    border-color: #1976d2;
+    border-color: var(--de-brand);
 
     box-shadow: none;
 
@@ -1090,19 +1187,19 @@
    ========================================================== */
 
 #inline-cancel {
-    background: #1976d2;
+    background: var(--de-brand);
     color: #ffffff;
 
-    border-color: #1976d2;
+    border-color: var(--de-brand);
 }
 
 #inline-cancel:hover,
 #inline-cancel:focus,
 #inline-cancel:active {
-    background: #1976d2;
+    background: var(--de-brand);
     color: #ffffff;
 
-    border-color: #1976d2;
+    border-color: var(--de-brand);
 
     box-shadow: none;
 
@@ -1114,37 +1211,10 @@
    TOP RIGHT - KEEP EXISTING FUNCTIONALITY
    ========================================================== */
 
-.editor-frame {
-    position: relative !important;
-}
-
-.editor-actions {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap: 10px !important;
-
-    width: 100% !important;
-    box-sizing: border-box !important;
-
-    margin: 0 !important;
-    padding: 12px 24px !important;
-
-    background: #ffffff !important;
-    border: 0 !important;
-
-    position: absolute !important;
-    top: 0 !important;
-    right: 0 !important;
-
-    z-index: 20 !important;
-}
-
-/* Keep the editor header clear of the action buttons */
-.editor-header {
-    padding-top: 70px !important;
-}
+/* .editor-frame position + .editor-actions layout + .editor-header
+   padding-top were consolidated into their single definitions
+   earlier in this file (search "Consolidated") — no rule dropped,
+   just no longer duplicated here. */
 
 /* Keep the buttons compact and aligned */
 .editor-actions .editor-btn,
@@ -1207,94 +1277,19 @@
         padding-top: 22px !important;
     }
 }
-/* ==========================================================
-   INLINE EDITOR ACTIONS - TOP RIGHT
-   ========================================================== */
+/* .inline-editor-actions's top-right/absolute positioning and its
+   button sizing, plus the later flex:0 0 auto override, were
+   consolidated into the single definitions earlier in this file —
+   no rule dropped, just no longer duplicated here. */
 
-.inline-editor-actions {
-    position: absolute !important;
-    top: 18px !important;
-    right: 24px !important;
+/* .editor-frame's fixed-height/flex rules and .editor-header's
+   flex:0 0 auto were consolidated into their single definitions
+   earlier in this file — no rule dropped, just no longer
+   duplicated here. */
 
-    display: flex !important;
-    align-items: center !important;
-    justify-content: flex-end !important;
-    gap: 10px !important;
-
-    width: auto !important;
-    margin: 0 !important;
-    padding: 0 !important;
-
-    z-index: 9999 !important;
-}
-
-.inline-editor-actions button {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    min-height: 38px !important;
-    padding: 8px 14px !important;
-
-    margin: 0 !important;
-
-    cursor: pointer !important;
-}
-/* ==========================================================
-   EDITOR FRAME - FIXED WORKSPACE
-   ========================================================== */
-
-.editor-frame {
-    height: calc(100vh - 120px) !important;
-    min-height: 600px !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-
-    overflow: hidden !important;
-}
-
-
-/* ==========================================================
-   EDITOR HEADER - FIXED
-   ========================================================== */
-
-.editor-header {
-    flex: 0 0 auto !important;
-}
-
-
-/* ==========================================================
-   WORKFLOW BUTTONS - FIXED
-   ========================================================== */
-
-.inline-editor-actions {
-    flex: 0 0 auto !important;
-}
-
-/* ==========================================================
-   QUILL EDITOR AREA
-   ========================================================== */
-
-.editor-container {
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-
-    overflow: hidden !important;
-}
-
-
-/* ==========================================================
-   QUILL ROOT
-   ========================================================== */
-
-#editor {
-    height: 100% !important;
-    min-height: 0 !important;
-
-    overflow: hidden !important;
-}
-
+/* .editor-container's flex-fill rules and #editor's fill-height
+   rules were consolidated into their single definitions earlier
+   in this file — no rule dropped, just no longer duplicated here. */
 
 /* ==========================================================
    QUILL CONTAINER
@@ -1325,10 +1320,6 @@
     padding: 24px 28px !important;
 }
 
-/* ==========================================================
-   SAVE STATUS - FIXED AT BOTTOM
-   ========================================================== */
-
-.editor-footer {
-    flex: 0 0 auto !important;
-}
+/* .editor-footer's flex:0 0 auto was consolidated into its single
+   definition earlier in this file — no rule dropped, just no
+   longer duplicated here. */

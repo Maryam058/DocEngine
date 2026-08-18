@@ -38,14 +38,20 @@
 }
 
 .md-tabs__link {
-    color: var(--de-text-secondary, #333);
-    opacity: 0.85;
+    color: var(--de-heading-navy) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
-.md-tabs__link--active,
+.md-tabs__link--active {
+    color: var(--de-accent-purple) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
 .md-tabs__link:hover {
-    color: var(--de-accent-purple);
-    opacity: 1;
+    color: var(--de-accent-purple) !important;
+    opacity: 1 !important;
 }
 
 /* ==========================================================

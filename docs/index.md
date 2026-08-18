@@ -13,13 +13,6 @@
     <div class="hero-search" onclick="document.querySelector('[data-md-toggle=search]').checked = true; document.querySelector('.md-search__input').focus();">
         <span class="hero-search-icon">🔍</span>
         <span class="hero-search-placeholder">Search documentation...</span>
-        <span class="hero-search-kbd">Ctrl K</span>
-    </div>
-
-    <div class="hero-badges">
-        <span class="badge">&lt;/&gt; Docs-as-Code</span>
-        <span class="badge">✨ AI-Assisted</span>
-        <span class="badge">👤 Human Reviewed</span>
     </div>
 
     <a class="hero-button" href="style-guide/">
@@ -33,8 +26,7 @@
 <h2>Everything you need</h2>
 
 <p class="section-text">
-Find everything you need to create, maintain and publish professional documentation.
-</p>
+Find everything you need to create, maintain and publish professional documentation.</p>
 <div class="highlight-cards">
 
     <div class="highlight-card highlight-card--purple">

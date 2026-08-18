@@ -1347,24 +1347,20 @@
    HERO
    ========================================================== */
 
-.homepage .home-hero {
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
+.homepage .hero {
+    background: linear-gradient(
+        135deg,
+        #eef1fc 0%,
+        #f3f0fb 55%,
+        #eaf4fb 100%
+    );
 
-    padding: 96px 24px 100px;
+    padding: 45px 20px 35px !important;
+    min-height: auto !important;
+    height: auto !important;
 
+    text-align: left;
     box-sizing: border-box;
-
-    background:
-        linear-gradient(
-            135deg,
-            #0d47a1 0%,
-            #1976d2 52%,
-            #42a5f5 100%
-        );
-
-    color: #ffffff;
 }
 
 
@@ -1885,5 +1881,34 @@
     text-align: center;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: left;
+}
+
+/* Hide left navigation only on homepage */
+body:has(.homepage) .md-sidebar--primary {
+    display: none !important;
+}
+body:has(.homepage) .md-content {
+    max-width: 100% !important;
+}
+
+body:has(.homepage) .md-main__inner {
+    display: block !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+body:has(.homepage) .md-content {
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+body:has(.homepage) .md-content__inner {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body:has(.homepage) .hero {
+    width: 100% !important;
+    box-sizing: border-box;
 }

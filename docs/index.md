@@ -36,14 +36,14 @@ Find everything you need to create, maintain and publish professional documentat
         <a href="release-notes/" class="highlight-link">View Releases →</a>
     </div>
 
-    <div class="highlight-card highlight-card--blue">
+    <div class="highlight-card highlight-card--purple">
         <span class="highlight-icon">📚</span>
         <h3>User Guide</h3>
         <p>Explore guides and learn how to use DocEngine effectively.</p>
         <a href="UserGuide/" class="highlight-link">Explore Guide →</a>
     </div>
 
-    <div class="highlight-card highlight-card--yellow">
+    <div class="highlight-card highlight-card--purple">
         <span class="highlight-icon">⚙️</span>
         <h3>API Reference</h3>
         <p>Explore API endpoints, specifications, and integration details.</p>
@@ -53,40 +53,39 @@ Find everything you need to create, maintain and publish professional documentat
 </div>
 <div class="feature-strip">
 
-    <div class="feature-strip-item">
-        <span class="feature-strip-icon">🛡️</span>
-        <div>
-            <h4>Reliable &amp; Versioned</h4>
-            <p>Version-aware documentation setup you can rely on.</p>
-        </div>
+<div class="feature-strip-item feature-reliable">
+    <span class="feature-strip-icon">🛡️</span>
+    <div>
+        <h4>Reliable &amp; Versioned</h4>
+        <p>Version-aware documentation setup you can rely on.</p>
     </div>
-
-    <div class="feature-strip-item">
-        <span class="feature-strip-icon">👥</span>
-        <div>
-            <h4>Team Collaboration</h4>
-            <p>Draft, review and publish with your team via Human Review</p>
-        </div>
-    </div>
-
-    <div class="feature-strip-item">
-        <span class="feature-strip-icon">⚡</span>
-        <div>
-            <h4>Built for Developers</h4>
-            <p>Markdown, MkDocs and modern tooling.</p>
-        </div>
-    </div>
-
-    <div class="feature-strip-item">
-        <span class="feature-strip-icon">☁️</span>
-        <div>
-            <h4>Automated Publishing</h4>
-            <p>GitHub Actions powered publishing to your docs site.</p>
-        </div>
-    </div>
-
 </div>
 
+<div class="feature-strip-item feature-collaboration">
+    <span class="feature-strip-icon">👥</span>
+    <div>
+        <h4>Team Collaboration</h4>
+        <p>Draft, review and publish with your team via Human Review and the Editor.</p>
+    </div>
+</div>
+
+<div class="feature-strip-item feature-developers">
+    <span class="feature-strip-icon">⚡</span>
+    <div>
+        <h4>Built for Developers</h4>
+        <p>Markdown, MkDocs and modern tooling.</p>
+    </div>
+</div>
+
+<div class="feature-strip-item feature-publishing">
+    <span class="feature-strip-icon">☁️</span>
+    <div>
+        <h4>Automated Publishing</h4>
+        <p>GitHub Actions powered publishing to your docs site.</p>
+    </div>
+</div>
+</div>
+<div>
 <p class="homepage-footer-tagline">♡ Built for technical writers and developers</p>
 
 </section>

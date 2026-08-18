@@ -1912,3 +1912,30 @@ body:has(.homepage) .hero {
     width: 100% !important;
     box-sizing: border-box;
 }
+
+.feature-strip-item {
+    padding: 22px;
+    border-radius: 16px;
+    border: 1px solid var(--de-border);
+    box-sizing: border-box;
+}
+
+.feature-reliable {
+    background: #fdf3e0;
+    border-color: #f5e3bd;
+}
+
+.feature-collaboration {
+    background: #fdf3e0;
+    border-color: #f5e3bd;
+}
+
+.feature-developers {
+    background: #fdf3e0;
+    border-color: #f5e3bd;
+}
+
+.feature-publishing {
+    background: #fdf3e0;
+    border-color: #f5e3bd;
+}

@@ -223,7 +223,7 @@
 /* ---- Bottom highlight cards (Quick Start / Resources) ---- */
 .highlight-cards {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
     margin-top: 32px;
 }
@@ -285,7 +285,7 @@
 /* ---- Feature strip ---- */
 .feature-strip {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 28px;
     margin-top: 56px;
     padding-top: 40px;

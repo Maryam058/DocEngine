@@ -81,25 +81,30 @@ Find everything you need to create, maintain and publish professional documentat
     </div>
 
 </div>
-
 <div class="highlight-cards">
 
-    <div class="highlight-card highlight-card--yellow">
-        <span class="highlight-icon">🚀</span>
-        <h3>Quick Start</h3>
-        <p>New to DocEngine? Get up and running in minutes.</p>
-        <a href="UserGuide/quickstart/" class="highlight-link">Get Started →</a>
+    <div class="highlight-card highlight-card--purple">
+        <span class="highlight-icon">📋</span>
+        <h3>Release Notes</h3>
+        <p>Stay up to date with the latest DocEngine releases and improvements.</p>
+        <a href="release-notes/" class="highlight-link">View Releases →</a>
     </div>
 
     <div class="highlight-card highlight-card--blue">
-        <span class="highlight-icon">🎓</span>
-        <h3>Documentation Resources</h3>
-        <p>Browse the Glossary and Style Guide for writing consistent documentation.</p>
-        <a href="glossary/" class="highlight-link">Explore Resources →</a>
+        <span class="highlight-icon">📚</span>
+        <h3>User Guide</h3>
+        <p>Explore guides and learn how to use DocEngine effectively.</p>
+        <a href="UserGuide/" class="highlight-link">Explore Guide →</a>
+    </div>
+
+    <div class="highlight-card highlight-card--yellow">
+        <span class="highlight-icon">⚙️</span>
+        <h3>API Reference</h3>
+        <p>Explore API endpoints, specifications, and integration details.</p>
+        <a href="api/" class="highlight-link">View API →</a>
     </div>
 
 </div>
-
 <div class="feature-strip">
 
     <div class="feature-strip-item">

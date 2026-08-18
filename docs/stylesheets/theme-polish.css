@@ -1,101 +1,367 @@
 /* ==========================================================
-   THEME POLISH
-   Refinements layered on top of extra.css's existing tokens.
+   THEME POLISH — "Clean SaaS" restyle
+   Layered on top of extra.css's existing tokens/selectors.
    Loaded after extra.css, so these rules win on overlap.
+   Structure of the homepage is unchanged (docs/index.md) —
+   this file is purely visual.
    ========================================================== */
 
-/* ---- Hero: softer gradient, tighter type scale, better spacing ---- */
+:root {
+    --de-accent-purple: #6d5bd0;
+    --de-accent-purple-dark: #5847b8;
+    --de-pastel-yellow: #fdf3e0;
+    --de-pastel-yellow-border: #f5e3bd;
+    --de-pastel-blue: #eef1fc;
+    --de-pastel-blue-border: #dde3f7;
+    --de-heading-navy: #101a33;
+}
+
+/* ---- Top nav: clean, airy, active link underline ---- */
+.md-header {
+    background: var(--de-surface);
+    color: var(--de-heading-navy);
+    box-shadow: 0 1px 0 var(--de-border);
+}
+
+.md-header__title,
+.md-header .md-header__topic .md-ellipsis {
+    color: var(--de-heading-navy);
+    font-weight: 700;
+}
+
+.md-tabs {
+    background: var(--de-surface);
+    border-bottom: 1px solid var(--de-border);
+}
+
+.md-tabs__link {
+    color: var(--de-text-secondary, #333);
+    opacity: 0.85;
+}
+
+.md-tabs__link--active,
+.md-tabs__link:hover {
+    color: var(--de-accent-purple);
+    opacity: 1;
+}
+
+/* ---- Hero: soft gradient, tighter type scale ---- */
 .homepage .hero {
-    background: linear-gradient(135deg, var(--de-brand-dark), var(--de-brand), #4fc3f7);
-    padding: 96px 20px;
+    background: linear-gradient(135deg, #eef1fc 0%, #f3f0fb 55%, #eaf4fb 100%);
+    padding: 96px 20px 64px;
+    text-align: left;
 }
 
 .homepage .hero h1 {
-    font-size: clamp(36px, 6vw, 64px);
+    font-size: clamp(36px, 6vw, 60px);
     font-weight: 800;
     letter-spacing: -0.02em;
-    margin-bottom: 16px;
+    color: var(--de-heading-navy);
+    margin-bottom: 8px;
 }
 
 .homepage .hero h2 {
-    font-size: clamp(20px, 3vw, 32px);
-    font-weight: 500;
-    opacity: 0.92;
+    font-size: clamp(20px, 3vw, 30px);
+    font-weight: 600;
+    background: linear-gradient(90deg, var(--de-brand), var(--de-accent-purple));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
     margin-bottom: 20px;
 }
 
 .homepage .hero p {
-    font-size: 18px;
+    font-size: 17px;
     line-height: 1.6;
+    color: var(--de-text-secondary, #333);
+    max-width: 46ch;
     opacity: 0.9;
 }
 
+/* ---- Hero search pill (decorative, opens real Material search) ---- */
+.hero-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 460px;
+    margin: 28px 0 18px;
+    padding: 14px 18px;
+    background: var(--de-surface);
+    border: 1px solid var(--de-border);
+    border-radius: 999px;
+    box-shadow: 0 4px 14px rgba(16, 26, 51, 0.06);
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.hero-search:hover {
+    border-color: var(--de-accent-purple);
+    box-shadow: 0 6px 18px rgba(109, 91, 208, 0.14);
+}
+
+.hero-search-icon {
+    opacity: 0.6;
+}
+
+.hero-search-placeholder {
+    flex: 1;
+    color: #8a93a6;
+    font-size: 15px;
+}
+
+.hero-search-kbd {
+    font-size: 12px;
+    font-weight: 600;
+    color: #8a93a6;
+    border: 1px solid var(--de-border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    background: var(--de-surface-subtle, #f8fafc);
+}
+
+/* ---- Hero badges ---- */
+.hero-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+
+.hero-badges .badge {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--de-accent-purple-dark);
+    background: rgba(109, 91, 208, 0.1);
+    border: 1px solid rgba(109, 91, 208, 0.18);
+    border-radius: 999px;
+    padding: 6px 14px;
+}
+
 .homepage .hero-button {
-    border-radius: var(--de-radius-sm);
-    box-shadow: var(--de-shadow-btn);
+    display: inline-block;
+    background: linear-gradient(90deg, var(--de-brand), var(--de-accent-purple));
+    color: #fff;
+    border-radius: var(--de-radius-sm, 8px);
+    padding: 12px 24px;
+    font-weight: 600;
+    box-shadow: 0 6px 16px rgba(109, 91, 208, 0.25);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .homepage .hero-button:hover {
     transform: translateY(-2px);
-    box-shadow: var(--de-shadow-frame);
+    box-shadow: 0 10px 22px rgba(109, 91, 208, 0.32);
 }
 
-/* ---- Cards: consistent radius/shadow tokens, calmer hover ---- */
+/* ---- Section heading ---- */
+.home-section > h2 {
+    text-align: center;
+    color: var(--de-heading-navy);
+    font-size: clamp(26px, 4vw, 36px);
+    font-weight: 800;
+}
+
+.home-section .section-text {
+    text-align: center;
+    color: #6b7280;
+    max-width: 56ch;
+    margin: 0 auto 40px;
+}
+
+/* ---- Cards: soft border, radius, shadow ---- */
+.cards {
+    display: grid;
+    gap: 24px;
+}
+
 .card {
     background: var(--de-surface);
     border: 1px solid var(--de-border);
-    border-radius: var(--de-radius-lg);
-    box-shadow: var(--de-shadow-btn);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 2px 10px rgba(16, 26, 51, 0.05);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
     transform: translateY(-4px);
-    box-shadow: var(--de-shadow-frame);
+    box-shadow: 0 12px 26px rgba(16, 26, 51, 0.09);
+}
+
+.card h3 {
+    color: var(--de-heading-navy);
+    font-size: 19px;
+}
+
+.card p {
+    color: #6b7280;
 }
 
 .card-button {
-    background: var(--de-brand);
-    border-radius: var(--de-radius-sm);
-    transition: background 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--de-accent-purple-dark);
+    font-weight: 600;
+    background: none;
+    padding: 0;
+    border-top: 1px solid var(--de-border);
+    padding-top: 14px;
+    margin-top: 14px;
+    width: 100%;
 }
 
-.card-button:hover {
-    background: var(--de-brand-hover);
+.card-button::after {
+    content: "→";
+    transition: transform 0.15s ease;
 }
 
-/* ---- Step cards: align radius/shadow with the rest of the site ---- */
-.step-card {
+.card-button:hover::after {
+    transform: translateX(3px);
+}
+
+/* ---- Bottom highlight cards (Quick Start / Resources) ---- */
+.highlight-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 32px;
+}
+
+@media (max-width: 720px) {
+    .highlight-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+.highlight-card {
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid transparent;
+}
+
+.highlight-card--yellow {
+    background: var(--de-pastel-yellow);
+    border-color: var(--de-pastel-yellow-border);
+}
+
+.highlight-card--blue {
+    background: var(--de-pastel-blue);
+    border-color: var(--de-pastel-blue-border);
+}
+
+.highlight-icon {
+    font-size: 28px;
+}
+
+.highlight-card h3 {
+    color: var(--de-heading-navy);
+    margin: 10px 0 6px;
+}
+
+.highlight-card p {
+    color: #6b7280;
+    margin-bottom: 16px;
+}
+
+.highlight-link {
+    display: inline-block;
+    font-weight: 700;
+    color: var(--de-heading-navy);
+    background: var(--de-surface);
     border: 1px solid var(--de-border);
-    border-radius: var(--de-radius-lg);
-    box-shadow: var(--de-shadow-btn);
+    border-radius: 8px;
+    padding: 10px 18px;
 }
 
-/* ---- Info cards: consistent left-accent + radius ---- */
-.info-card {
-    border-left: 4px solid var(--de-brand);
-    border-radius: var(--de-radius-sm);
+.highlight-card--blue .highlight-link {
+    color: var(--de-accent-purple-dark);
 }
 
-.info-grid div {
+.highlight-link:hover {
+    box-shadow: 0 4px 12px rgba(16, 26, 51, 0.08);
+}
+
+/* ---- Feature strip ---- */
+.feature-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 28px;
+    margin-top: 56px;
+    padding-top: 40px;
+    border-top: 1px solid var(--de-border);
+}
+
+@media (max-width: 900px) {
+    .feature-strip {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 540px) {
+    .feature-strip {
+        grid-template-columns: 1fr;
+    }
+}
+
+.feature-strip-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.feature-strip-icon {
+    font-size: 20px;
+}
+
+.feature-strip-item h4 {
+    color: var(--de-heading-navy);
+    font-size: 15px;
+    margin-bottom: 4px;
+}
+
+.feature-strip-item p {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0;
+}
+
+.homepage-footer-tagline {
+    text-align: center;
+    color: #9aa2b1;
+    font-size: 13px;
+    margin-top: 48px;
+    padding: 10px 18px;
     border: 1px solid var(--de-border);
-    border-radius: var(--de-radius-lg);
-    box-shadow: var(--de-shadow-btn);
+    border-radius: 999px;
+    display: table;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-/* ---- Dark mode: keep hero/cards legible when slate scheme is active ---- */
-[data-md-color-scheme="slate"] .card {
+/* ---- Dark mode: keep new sections legible ---- */
+[data-md-color-scheme="slate"] .homepage .hero {
+    background: linear-gradient(135deg, #171a2b 0%, #1c1930 55%, #16202b 100%);
+}
+
+[data-md-color-scheme="slate"] .hero-search,
+[data-md-color-scheme="slate"] .card,
+[data-md-color-scheme="slate"] .highlight-link {
     background: var(--md-default-bg-color--light, #1c1f26);
     border-color: rgba(255, 255, 255, 0.08);
 }
 
-[data-md-color-scheme="slate"] .info-grid div {
-    background: var(--md-default-bg-color--light, #1c1f26);
-    border-color: rgba(255, 255, 255, 0.08);
+[data-md-color-scheme="slate"] .highlight-card--yellow {
+    background: rgba(253, 243, 224, 0.08);
+    border-color: rgba(253, 243, 224, 0.18);
 }
 
-[data-md-color-scheme="slate"] .step-card {
-    background: var(--md-default-bg-color--light, #1c1f26);
-    border-color: rgba(255, 255, 255, 0.08);
+[data-md-color-scheme="slate"] .highlight-card--blue {
+    background: rgba(238, 241, 252, 0.06);
+    border-color: rgba(238, 241, 252, 0.14);
+}
+
+[data-md-color-scheme="slate"] .md-header,
+[data-md-color-scheme="slate"] .md-tabs {
+    background: var(--md-default-bg-color, #101418);
 }

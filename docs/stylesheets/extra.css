@@ -1323,3 +1323,544 @@
 /* .editor-footer's flex:0 0 auto was consolidated into its single
    definition earlier in this file — no rule dropped, just no
    longer duplicated here. */
+
+   /* ==========================================================
+   DOCENGINE HOMEPAGE — NEW UI
+   Homepage only
+   ========================================================== */
+
+.homepage {
+    width: 100%;
+    background: #ffffff;
+    color: #1f2937;
+}
+
+
+/* ==========================================================
+   HERO
+   ========================================================== */
+
+.homepage .home-hero {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+
+    padding: 96px 24px 100px;
+
+    box-sizing: border-box;
+
+    background:
+        linear-gradient(
+            135deg,
+            #0d47a1 0%,
+            #1976d2 52%,
+            #42a5f5 100%
+        );
+
+    color: #ffffff;
+}
+
+
+.homepage .home-hero-content {
+    max-width: 900px;
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+
+/* ==========================================================
+   HERO EYEBROW
+   ========================================================== */
+
+.homepage .home-eyebrow {
+    display: inline-block;
+
+    margin-bottom: 20px;
+
+    padding: 7px 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.10);
+
+    color: rgba(255, 255, 255, 0.95);
+
+    font-size: 13px;
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+
+/* ==========================================================
+   HERO TITLE
+   ========================================================== */
+
+.homepage .home-hero h1 {
+    margin: 0 0 14px;
+
+    color: #ffffff;
+
+    font-size: clamp(48px, 7vw, 76px);
+    font-weight: 800;
+
+    line-height: 1.05;
+    letter-spacing: -2px;
+}
+
+
+/* ==========================================================
+   HERO SUBTITLE
+   ========================================================== */
+
+.homepage .home-hero h2 {
+    margin: 0 0 22px;
+
+    color: #ffffff;
+
+    font-size: clamp(24px, 3vw, 38px);
+    font-weight: 600;
+
+    line-height: 1.2;
+}
+
+
+/* ==========================================================
+   HERO DESCRIPTION
+   ========================================================== */
+
+.homepage .home-hero p {
+    max-width: 720px;
+
+    margin: 0 auto;
+
+    color: rgba(255, 255, 255, 0.90);
+
+    font-size: 18px;
+    line-height: 1.75;
+}
+
+
+/* ==========================================================
+   HERO BUTTONS
+   ========================================================== */
+
+.homepage .home-hero-actions {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 12px;
+
+    margin-top: 34px;
+}
+
+
+.homepage .home-primary-button,
+.homepage .home-secondary-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 44px;
+
+    padding: 0 22px;
+
+    border-radius: 7px;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    box-sizing: border-box;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+/* PRIMARY */
+
+.homepage .home-primary-button {
+    background: #ffffff;
+    color: var(--de-brand) !important;
+
+    border: 1px solid #ffffff;
+}
+
+
+.homepage .home-primary-button:hover,
+.homepage .home-primary-button:focus {
+    background: #ffffff;
+    color: var(--de-brand-dark) !important;
+
+    transform: translateY(-1px);
+}
+
+
+/* SECONDARY */
+
+.homepage .home-secondary-button {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+
+.homepage .home-secondary-button:hover,
+.homepage .home-secondary-button:focus {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff !important;
+
+    transform: translateY(-1px);
+}
+
+
+/* ==========================================================
+   DOCUMENTATION SECTION
+   ========================================================== */
+
+.homepage .home-section {
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+    padding: 82px 24px 90px;
+
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   SECTION HEADING
+   ========================================================== */
+
+.homepage .home-section-heading {
+    max-width: 700px;
+
+    margin: 0 auto 46px;
+
+    text-align: center;
+}
+
+
+.homepage .home-section-label {
+    display: inline-block;
+
+    margin-bottom: 12px;
+
+    color: var(--de-brand);
+
+    font-size: 12px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+}
+
+
+.homepage .home-section-heading h2 {
+    margin: 0 0 14px;
+
+    color: #1f2937;
+
+    font-size: 34px;
+    font-weight: 750;
+
+    line-height: 1.2;
+}
+
+
+.homepage .home-section-heading p {
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+
+/* ==========================================================
+   CARDS
+   ========================================================== */
+
+.homepage .home-cards {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 24px;
+}
+
+
+.homepage .home-card {
+    display: flex;
+
+    flex-direction: column;
+
+    min-height: 260px;
+
+    padding: 30px;
+
+    box-sizing: border-box;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.05);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+
+.homepage .home-card:hover {
+    transform: translateY(-5px);
+
+    border-color: #bfdbfe;
+
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.09);
+}
+
+
+/* ==========================================================
+   CARD ICON
+   ========================================================== */
+
+.homepage .home-card-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 22px;
+
+    border-radius: 10px;
+
+    background: #eff6ff;
+
+    font-size: 23px;
+}
+
+
+/* ==========================================================
+   CARD TITLE
+   ========================================================== */
+
+.homepage .home-card h3 {
+    margin: 0 0 12px;
+
+    color: #1f2937;
+
+    font-size: 20px;
+    font-weight: 700;
+
+    line-height: 1.35;
+}
+
+
+/* ==========================================================
+   CARD DESCRIPTION
+   ========================================================== */
+
+.homepage .home-card p {
+    flex: 1;
+
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+
+/* ==========================================================
+   CARD LINK
+   ========================================================== */
+
+.homepage .home-card-link {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    align-self: flex-start;
+
+    margin-top: 24px;
+
+    color: var(--de-brand) !important;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+
+.homepage .home-card-link span {
+    transition: transform 0.2s ease;
+}
+
+
+.homepage .home-card-link:hover {
+    color: var(--de-brand-dark) !important;
+}
+
+
+.homepage .home-card-link:hover span {
+    transform: translateX(3px);
+}
+
+
+/* ==========================================================
+   DOCS-AS-CODE SECTION
+   ========================================================== */
+
+.homepage .home-workflow {
+    width: 100vw;
+
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+
+    padding: 72px 24px;
+
+    box-sizing: border-box;
+
+    background: #f8fafc;
+
+    border-top: 1px solid #e5e7eb;
+}
+
+
+.homepage .home-workflow-content {
+    max-width: 760px;
+
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+
+.homepage .home-workflow h2 {
+    margin: 0 0 16px;
+
+    color: #1f2937;
+
+    font-size: 30px;
+    line-height: 1.25;
+}
+
+
+.homepage .home-workflow p {
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 16px;
+    line-height: 1.75;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 900px) {
+
+    .homepage .home-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .homepage .home-card {
+        min-height: auto;
+    }
+
+}
+
+
+@media (max-width: 768px) {
+
+    .homepage .home-hero {
+        padding: 72px 20px 76px;
+    }
+
+    .homepage .home-hero h1 {
+        font-size: 50px;
+        letter-spacing: -1px;
+    }
+
+    .homepage .home-hero h2 {
+        font-size: 27px;
+    }
+
+    .homepage .home-hero p {
+        font-size: 16px;
+    }
+
+    .homepage .home-hero-actions {
+        flex-direction: column;
+    }
+
+    .homepage .home-primary-button,
+    .homepage .home-secondary-button {
+        width: 100%;
+        max-width: 240px;
+    }
+
+    .homepage .home-section {
+        padding: 64px 20px 72px;
+    }
+
+    .homepage .home-section-heading h2 {
+        font-size: 29px;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .homepage .home-hero {
+        padding: 60px 18px 64px;
+    }
+
+    .homepage .home-hero h1 {
+        font-size: 43px;
+    }
+
+    .homepage .home-hero h2 {
+        font-size: 23px;
+    }
+
+    .homepage .home-section {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .homepage .home-card {
+        padding: 24px;
+    }
+
+}

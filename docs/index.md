@@ -35,52 +35,6 @@
 <p class="section-text">
 Find everything you need to create, maintain and publish professional documentation.
 </p>
-
-<div class="cards">
-
-    <div class="card">
-
-        <h3>📘 User Guide</h3>
-
-        <p>
-            Step-by-step documentation for end users.
-        </p>
-
-        <a href="UserGuide/quickstart/" class="card-button">
-            View Guide
-        </a>
-
-    </div>
-
-    <div class="card">
-
-        <h3>💻 API Reference</h3>
-
-        <p>
-            Complete API documentation with endpoints, requests and response examples.
-        </p>
-
-        <a href="api/api-reference/" class="card-button">
-            View API
-        </a>
-
-    </div>
-
-    <div class="card">
-
-        <h3>📝 Release Notes</h3>
-
-        <p>
-            Track product improvements, fixes and the latest software releases.
-        </p>
-
-        <a href="release-notes/latest-release-notes/" class="card-button">
-            View Notes
-        </a>
-
-    </div>
-
-</div>
 <div class="highlight-cards">
 
     <div class="highlight-card highlight-card--purple">
@@ -119,7 +73,7 @@ Find everything you need to create, maintain and publish professional documentat
         <span class="feature-strip-icon">👥</span>
         <div>
             <h4>Team Collaboration</h4>
-            <p>Draft, review and publish with your team via <a href="human-review/">Human Review</a> and the <a href="editor/">Editor</a>.</p>
+            <p>Draft, review and publish with your team via Human Review</p>
         </div>
     </div>
 
@@ -141,7 +95,7 @@ Find everything you need to create, maintain and publish professional documentat
 
 </div>
 
-<p class="homepage-footer-tagline">♡ Built with ❤️ for technical writers and developers</p>
+<p class="homepage-footer-tagline">♡ Built for technical writers and developers</p>
 
 </section>
 </div>

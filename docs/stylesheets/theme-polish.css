@@ -16,7 +16,10 @@
     --de-heading-navy: #101a33;
 }
 
-/* ---- Top nav: clean, airy, active link underline ---- */
+/* ==========================================================
+   TOP NAV
+   ========================================================== */
+
 .md-header {
     background: var(--de-surface);
     color: var(--de-heading-navy);
@@ -45,9 +48,17 @@
     opacity: 1;
 }
 
-/* ---- Hero: soft gradient, tighter type scale ---- */
+/* ==========================================================
+   HERO
+   ========================================================== */
+
 .homepage .hero {
-    background: linear-gradient(135deg, #eef1fc 0%, #f3f0fb 55%, #eaf4fb 100%);
+    background: linear-gradient(
+        135deg,
+        #eef1fc 0%,
+        #f3f0fb 55%,
+        #eaf4fb 100%
+    );
     padding: 96px 20px 64px;
     text-align: left;
 }
@@ -63,7 +74,11 @@
 .homepage .hero h2 {
     font-size: clamp(20px, 3vw, 30px);
     font-weight: 600;
-    background: linear-gradient(90deg, var(--de-brand), var(--de-accent-purple));
+    background: linear-gradient(
+        90deg,
+        var(--de-brand),
+        var(--de-accent-purple)
+    );
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -78,7 +93,10 @@
     opacity: 0.9;
 }
 
-/* ---- Hero search pill (decorative, opens real Material search) ---- */
+/* ==========================================================
+   HERO SEARCH
+   ========================================================== */
+
 .hero-search {
     display: flex;
     align-items: center;
@@ -91,7 +109,9 @@
     border-radius: 999px;
     box-shadow: 0 4px 14px rgba(16, 26, 51, 0.06);
     cursor: pointer;
-    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+    transition:
+        box-shadow 0.15s ease,
+        border-color 0.15s ease;
 }
 
 .hero-search:hover {
@@ -119,7 +139,10 @@
     background: var(--de-surface-subtle, #f8fafc);
 }
 
-/* ---- Hero badges ---- */
+/* ==========================================================
+   HERO BADGES
+   ========================================================== */
+
 .hero-badges {
     display: flex;
     flex-wrap: wrap;
@@ -139,13 +162,19 @@
 
 .homepage .hero-button {
     display: inline-block;
-    background: linear-gradient(90deg, var(--de-brand), var(--de-accent-purple));
+    background: linear-gradient(
+        90deg,
+        var(--de-brand),
+        var(--de-accent-purple)
+    );
     color: #fff;
     border-radius: var(--de-radius-sm, 8px);
     padding: 12px 24px;
     font-weight: 600;
     box-shadow: 0 6px 16px rgba(109, 91, 208, 0.25);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
 .homepage .hero-button:hover {
@@ -153,7 +182,10 @@
     box-shadow: 0 10px 22px rgba(109, 91, 208, 0.32);
 }
 
-/* ---- Section heading ---- */
+/* ==========================================================
+   SECTION HEADING
+   ========================================================== */
+
 .home-section > h2 {
     text-align: center;
     color: var(--de-heading-navy);
@@ -168,7 +200,10 @@
     margin: 0 auto 40px;
 }
 
-/* ---- Cards: soft border, radius, shadow ---- */
+/* ==========================================================
+   MAIN CARDS
+   ========================================================== */
+
 .cards {
     display: grid;
     gap: 24px;
@@ -180,7 +215,9 @@
     border-radius: 16px;
     padding: 28px;
     box-shadow: 0 2px 10px rgba(16, 26, 51, 0.05);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .card:hover {
@@ -220,24 +257,26 @@
     transform: translateX(3px);
 }
 
-/* ---- Bottom highlight cards (Quick Start / Resources) ---- */
+/* ==========================================================
+   HIGHLIGHT CARDS
+   ALWAYS HORIZONTAL
+   Release Notes | User Guide | API Reference
+   ========================================================== */
+
 .highlight-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 24px;
     margin-top: 32px;
-}
-
-@media (max-width: 720px) {
-    .highlight-cards {
-        grid-template-columns: 1fr;
-    }
+    width: 100%;
 }
 
 .highlight-card {
+    min-width: 0;
     border-radius: 16px;
     padding: 32px;
     border: 1px solid transparent;
+    box-sizing: border-box;
 }
 
 .highlight-card--yellow {
@@ -248,6 +287,12 @@
 .highlight-card--blue {
     background: var(--de-pastel-blue);
     border-color: var(--de-pastel-blue-border);
+}
+
+/* Purple card */
+.highlight-card--purple {
+    background: #f1eefb;
+    border-color: #ddd6f5;
 }
 
 .highlight-icon {
@@ -272,9 +317,11 @@
     border: 1px solid var(--de-border);
     border-radius: 8px;
     padding: 10px 18px;
+    text-decoration: none;
 }
 
-.highlight-card--blue .highlight-link {
+.highlight-card--blue .highlight-link,
+.highlight-card--purple .highlight-link {
     color: var(--de-accent-purple-dark);
 }
 
@@ -282,7 +329,10 @@
     box-shadow: 0 4px 12px rgba(16, 26, 51, 0.08);
 }
 
-/* ---- Feature strip ---- */
+/* ==========================================================
+   FEATURE STRIP
+   ========================================================== */
+
 .feature-strip {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -339,9 +389,17 @@
     margin-right: auto;
 }
 
-/* ---- Dark mode: keep new sections legible ---- */
+/* ==========================================================
+   DARK MODE
+   ========================================================== */
+
 [data-md-color-scheme="slate"] .homepage .hero {
-    background: linear-gradient(135deg, #171a2b 0%, #1c1930 55%, #16202b 100%);
+    background: linear-gradient(
+        135deg,
+        #171a2b 0%,
+        #1c1930 55%,
+        #16202b 100%
+    );
 }
 
 [data-md-color-scheme="slate"] .hero-search,
@@ -361,7 +419,44 @@
     border-color: rgba(238, 241, 252, 0.14);
 }
 
+[data-md-color-scheme="slate"] .highlight-card--purple {
+    background: rgba(221, 214, 245, 0.08);
+    border-color: rgba(221, 214, 245, 0.18);
+}
+
 [data-md-color-scheme="slate"] .md-header,
 [data-md-color-scheme="slate"] .md-tabs {
     background: var(--md-default-bg-color, #101418);
+}
+/* ==========================================================
+   FORCE HIGHLIGHT CARDS HORIZONTAL
+   ========================================================== */
+
+.homepage .highlight-cards,
+.highlight-cards {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    grid-auto-flow: row !important;
+    gap: 24px !important;
+    width: 100% !important;
+}
+
+.homepage .highlight-cards > .highlight-card,
+.highlight-cards > .highlight-card {
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
+}
+
+/* IMPORTANT:
+   Do NOT allow these cards to become vertical */
+@media (max-width: 9999px) {
+    .homepage .highlight-cards,
+    .highlight-cards {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
 }

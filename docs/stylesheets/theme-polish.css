@@ -1,0 +1,101 @@
+/* ==========================================================
+   THEME POLISH
+   Refinements layered on top of extra.css's existing tokens.
+   Loaded after extra.css, so these rules win on overlap.
+   ========================================================== */
+
+/* ---- Hero: softer gradient, tighter type scale, better spacing ---- */
+.homepage .hero {
+    background: linear-gradient(135deg, var(--de-brand-dark), var(--de-brand), #4fc3f7);
+    padding: 96px 20px;
+}
+
+.homepage .hero h1 {
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+}
+
+.homepage .hero h2 {
+    font-size: clamp(20px, 3vw, 32px);
+    font-weight: 500;
+    opacity: 0.92;
+    margin-bottom: 20px;
+}
+
+.homepage .hero p {
+    font-size: 18px;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+.homepage .hero-button {
+    border-radius: var(--de-radius-sm);
+    box-shadow: var(--de-shadow-btn);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.homepage .hero-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--de-shadow-frame);
+}
+
+/* ---- Cards: consistent radius/shadow tokens, calmer hover ---- */
+.card {
+    background: var(--de-surface);
+    border: 1px solid var(--de-border);
+    border-radius: var(--de-radius-lg);
+    box-shadow: var(--de-shadow-btn);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--de-shadow-frame);
+}
+
+.card-button {
+    background: var(--de-brand);
+    border-radius: var(--de-radius-sm);
+    transition: background 0.15s ease;
+}
+
+.card-button:hover {
+    background: var(--de-brand-hover);
+}
+
+/* ---- Step cards: align radius/shadow with the rest of the site ---- */
+.step-card {
+    border: 1px solid var(--de-border);
+    border-radius: var(--de-radius-lg);
+    box-shadow: var(--de-shadow-btn);
+}
+
+/* ---- Info cards: consistent left-accent + radius ---- */
+.info-card {
+    border-left: 4px solid var(--de-brand);
+    border-radius: var(--de-radius-sm);
+}
+
+.info-grid div {
+    border: 1px solid var(--de-border);
+    border-radius: var(--de-radius-lg);
+    box-shadow: var(--de-shadow-btn);
+}
+
+/* ---- Dark mode: keep hero/cards legible when slate scheme is active ---- */
+[data-md-color-scheme="slate"] .card {
+    background: var(--md-default-bg-color--light, #1c1f26);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-md-color-scheme="slate"] .info-grid div {
+    background: var(--md-default-bg-color--light, #1c1f26);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-md-color-scheme="slate"] .step-card {
+    background: var(--md-default-bg-color--light, #1c1f26);
+    border-color: rgba(255, 255, 255, 0.08);
+}

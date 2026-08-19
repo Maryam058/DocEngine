@@ -21,7 +21,7 @@ ALLOWED_ORIGINS = {
 
 GEMINI_MODEL = os.environ.get(
     "GEMINI_MODEL",
-    "gemini-2.5-flash"
+    "gemini-flash-latest"
 )
 
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"

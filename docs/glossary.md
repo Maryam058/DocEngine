@@ -2,10 +2,6 @@
 
 This glossary defines the product, healthcare, and documentation-pipeline terms used across DocEngine's User Guide, Release Notes, and API documentation. Terms are listed alphabetically.
 
-**# Terminology Glossary**
-
-This glossary defines the product, healthcare, and documentation-pipeline terms used across DocEngine's User Guide, Release Notes, and API documentation. Terms are listed alphabetically.
-
 **## A**
 
 ****ACC (Accident Compensation Corporation) / ACC45****

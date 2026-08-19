@@ -1,4 +1,4 @@
-# indici AI Copilot
+# indici AI Copilot Release Notes
 
 ## Overview
 

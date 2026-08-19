@@ -9,6 +9,11 @@ const CONFIG = {
     PUBLISH_API:
         "https://doc-engine-nu.vercel.app/api/publish",
 
+    AI_SUGGEST_API:
+        "https://doc-engine-nu.vercel.app/api/ai-suggest",
+
+    AI_REQUEST_TIMEOUT: 30000,
+
     PRODUCTION_URL:
         "https://doc-engine-nu.vercel.app",
 
@@ -2040,6 +2045,9 @@ const WorkflowManager = {
                  * Exit inline editor mode.
                  */
 
+                AIAssistant.reset();
+
+
                 AppState.editor =
                     null;
 
@@ -2627,6 +2635,11 @@ const App = {
                 }
 
             );
+
+
+        AIAssistant.attach(
+            AppState.editor
+        );
 
     },
 
@@ -3389,6 +3402,11 @@ const InlineEditor = {
         registerDraftEvents();
 
 
+        AIAssistant.attach(
+            AppState.editor
+        );
+
+
         /* ==================================================
            Inline Mode Active
         ================================================== */
@@ -3592,6 +3610,1344 @@ const InlineEditor = {
          */
 
         window.location.reload();
+
+    }
+
+};
+
+
+/* ==========================================================
+   AI Suggestion Assistant
+
+   Selection-based AI assistance for the Human Editor.
+
+   The AI only ever runs against text the human explicitly
+   selects. It never reads or rewrites the whole document,
+   never auto-applies a change, and never touches workflow
+   status (Save / Approve / Publish are untouched by this
+   module).
+========================================================== */
+
+const AIAssistant = {
+
+    toolbarEl: null,
+
+    popoverEl: null,
+
+    /*
+     * Selection snapshot, captured the moment the human clicks
+     * an AI action. This — not window.getSelection() — is what
+     * Accept/Reject act on, because clicking into the popover
+     * collapses the live browser selection.
+     */
+
+    pendingSelection: null,
+
+    isRequesting: false,
+
+    requestToken: 0,
+
+    popoverOpen: false,
+
+    boundReposition: null,
+
+
+    /* ======================================================
+       Attach To A Quill Instance
+
+       Called once per editor instance (standalone editor.md
+       page and the inline in-page editor both call this
+       right after their Quill instance is created).
+    ====================================================== */
+
+    attach(quill) {
+
+        if (!quill || quill.__aiAssistantAttached) {
+
+            return;
+
+        }
+
+        quill.__aiAssistantAttached = true;
+
+
+        quill.on(
+            "selection-change",
+            (range) => {
+
+                /*
+                 * While the popover is open, ignore selection
+                 * changes caused by clicking into the popover
+                 * itself (that collapses Quill's selection).
+                 */
+
+                if (this.popoverOpen) {
+
+                    return;
+
+                }
+
+                if (range && range.length > 0) {
+
+                    this.showToolbar(
+                        quill,
+                        range
+                    );
+
+                } else {
+
+                    this.hideToolbar();
+
+                }
+
+            }
+        );
+
+    },
+
+
+    /* ======================================================
+       Reset
+
+       Called when an editor instance is torn down (e.g. after
+       a successful publish exits inline editing mode).
+    ====================================================== */
+
+    reset() {
+
+        this.hideToolbar();
+
+        this.closePopover();
+
+        this.activeQuill = null;
+
+        this.activeRange = null;
+
+    },
+
+
+    /* ======================================================
+       Selection → Viewport Position
+    ====================================================== */
+
+    getViewportBounds(quill, range) {
+
+        const bounds =
+            quill.getBounds(
+                range.index,
+                range.length
+            );
+
+        const editorRect =
+            quill.root.getBoundingClientRect();
+
+        const scrollTop =
+            quill.root.scrollTop || 0;
+
+        const scrollLeft =
+            quill.root.scrollLeft || 0;
+
+        return {
+
+            top:
+                editorRect.top +
+                bounds.top -
+                scrollTop,
+
+            bottom:
+                editorRect.top +
+                bounds.bottom -
+                scrollTop,
+
+            left:
+                editorRect.left +
+                bounds.left -
+                scrollLeft,
+
+            right:
+                editorRect.left +
+                bounds.right -
+                scrollLeft
+
+        };
+
+    },
+
+
+    /* ======================================================
+       Floating Toolbar
+    ====================================================== */
+
+    ensureToolbar() {
+
+        if (this.toolbarEl) {
+
+            return this.toolbarEl;
+
+        }
+
+        const toolbar =
+            document.createElement("div");
+
+        toolbar.className =
+            "ai-suggest-toolbar";
+
+        toolbar.innerHTML = `
+            <button type="button" class="ai-suggest-toolbar-btn" data-ai-mode="suggest" aria-label="AI Suggestion for selected text">
+                ✨ AI Suggestion
+            </button>
+            <button type="button" class="ai-suggest-toolbar-btn ai-suggest-toolbar-btn--ghost" data-ai-mode="ask" aria-label="Ask AI about selected text">
+                💬 Ask AI
+            </button>
+        `;
+
+        toolbar.addEventListener(
+            "mousedown",
+
+            /*
+             * mousedown (not click) + preventDefault stops the
+             * browser from collapsing the Quill selection before
+             * the click handler below can snapshot it.
+             */
+
+            (event) => {
+
+                event.preventDefault();
+
+            }
+        );
+
+        toolbar.addEventListener(
+            "click",
+
+            (event) => {
+
+                const button =
+                    event.target.closest(
+                        "[data-ai-mode]"
+                    );
+
+                if (!button) {
+
+                    return;
+
+                }
+
+                this.openPopover(
+                    button.dataset.aiMode
+                );
+
+            }
+        );
+
+        document.body.appendChild(
+            toolbar
+        );
+
+        this.toolbarEl = toolbar;
+
+        return toolbar;
+
+    },
+
+
+    showToolbar(quill, range) {
+
+        const toolbar =
+            this.ensureToolbar();
+
+        this.activeQuill =
+            quill;
+
+        this.activeRange =
+            range;
+
+        const position =
+            this.getViewportBounds(
+                quill,
+                range
+            );
+
+        toolbar.style.display =
+            "flex";
+
+        this.positionToolbar(
+            position
+        );
+
+
+        if (!this.boundReposition) {
+
+            this.boundReposition =
+                () => {
+
+                    if (
+                        toolbar.style.display ===
+                            "flex" &&
+                        this.activeQuill &&
+                        this.activeRange
+                    ) {
+
+                        this.positionToolbar(
+                            this.getViewportBounds(
+                                this.activeQuill,
+                                this.activeRange
+                            )
+                        );
+
+                    }
+
+                };
+
+            window.addEventListener(
+                "resize",
+                this.boundReposition
+            );
+
+            window.addEventListener(
+                "scroll",
+                this.boundReposition,
+                true
+            );
+
+        }
+
+    },
+
+
+    positionToolbar(position) {
+
+        if (!this.toolbarEl) {
+
+            return;
+
+        }
+
+        const toolbarWidth =
+            this.toolbarEl.offsetWidth ||
+            260;
+
+        let left =
+            position.left;
+
+        const maxLeft =
+            window.innerWidth -
+            toolbarWidth -
+            12;
+
+        if (left > maxLeft) {
+
+            left = Math.max(
+                12,
+                maxLeft
+            );
+
+        }
+
+        if (left < 12) {
+
+            left = 12;
+
+        }
+
+        let top =
+            position.top - 46;
+
+        if (top < 8) {
+
+            top =
+                position.bottom + 8;
+
+        }
+
+        this.toolbarEl.style.left =
+            `${left}px`;
+
+        this.toolbarEl.style.top =
+            `${top}px`;
+
+    },
+
+
+    hideToolbar() {
+
+        /*
+         * Only hides the toolbar visually. activeQuill/activeRange
+         * are intentionally left in place — they are the snapshot
+         * openPopover() reads from, and clicking the toolbar itself
+         * triggers a blur (range → null) just before the click
+         * handler runs, which would otherwise wipe the selection
+         * out from under the click.
+         */
+
+        if (this.toolbarEl) {
+
+            this.toolbarEl.style.display =
+                "none";
+
+        }
+
+    },
+
+
+    /* ======================================================
+       Popover
+    ====================================================== */
+
+    ensurePopover() {
+
+        if (this.popoverEl) {
+
+            return this.popoverEl;
+
+        }
+
+        const popover =
+            document.createElement("div");
+
+        popover.className =
+            "ai-suggest-popover";
+
+        popover.setAttribute(
+            "role",
+            "dialog"
+        );
+
+        popover.setAttribute(
+            "aria-label",
+            "AI writing assistant"
+        );
+
+        popover.style.display =
+            "none";
+
+        document.body.appendChild(
+            popover
+        );
+
+        this.popoverEl =
+            popover;
+
+        return popover;
+
+    },
+
+
+    positionPopover(position) {
+
+        const popover =
+            this.popoverEl;
+
+        if (!popover) {
+
+            return;
+
+        }
+
+        const width =
+            Math.min(
+                380,
+                window.innerWidth - 24
+            );
+
+        popover.style.width =
+            `${width}px`;
+
+        let left =
+            position.left;
+
+        const maxLeft =
+            window.innerWidth -
+            width -
+            12;
+
+        left =
+            Math.min(
+                Math.max(
+                    left,
+                    12
+                ),
+                Math.max(
+                    maxLeft,
+                    12
+                )
+            );
+
+        let top =
+            position.bottom + 10;
+
+        const estimatedHeight = 220;
+
+        if (
+            top + estimatedHeight >
+            window.innerHeight
+        ) {
+
+            top =
+                Math.max(
+                    12,
+                    position.top - estimatedHeight - 10
+                );
+
+        }
+
+        popover.style.left =
+            `${left}px`;
+
+        popover.style.top =
+            `${top}px`;
+
+    },
+
+
+    openPopover(mode) {
+
+        if (
+            !this.activeQuill ||
+            !this.activeRange ||
+            this.activeRange.length === 0
+        ) {
+
+            return;
+
+        }
+
+        const quill =
+            this.activeQuill;
+
+        const range =
+            this.activeRange;
+
+        this.pendingSelection = {
+
+            quill,
+
+            index:
+                range.index,
+
+            length:
+                range.length,
+
+            text:
+                quill.getText(
+                    range.index,
+                    range.length
+                ),
+
+            format:
+                quill.getFormat(
+                    range.index,
+                    range.length
+                )
+
+        };
+
+        const position =
+            this.getViewportBounds(
+                quill,
+                range
+            );
+
+        this.hideToolbar();
+
+        const popover =
+            this.ensurePopover();
+
+        popover.style.display =
+            "block";
+
+        this.popoverOpen =
+            true;
+
+        this.positionPopover(
+            position
+        );
+
+        if (mode === "ask") {
+
+            this.renderAskForm();
+
+        } else {
+
+            this.renderLoading();
+
+            this.requestCompletion(
+                "suggest"
+            );
+
+        }
+
+
+        if (!this.boundKeydown) {
+
+            this.boundKeydown =
+                (event) => {
+
+                    if (
+                        event.key === "Escape" &&
+                        this.popoverOpen
+                    ) {
+
+                        this.closePopover();
+
+                    }
+
+                };
+
+            document.addEventListener(
+                "keydown",
+                this.boundKeydown
+            );
+
+        }
+
+        if (!this.boundOutsideClick) {
+
+            this.boundOutsideClick =
+                (event) => {
+
+                    if (
+                        this.popoverOpen &&
+                        this.popoverEl &&
+                        !this.popoverEl.contains(
+                            event.target
+                        )
+                    ) {
+
+                        this.closePopover();
+
+                    }
+
+                };
+
+            document.addEventListener(
+                "mousedown",
+                this.boundOutsideClick
+            );
+
+        }
+
+    },
+
+
+    closePopover() {
+
+        this.popoverOpen =
+            false;
+
+        this.isRequesting =
+            false;
+
+        this.requestToken++;
+
+        this.pendingSelection =
+            null;
+
+        if (this.popoverEl) {
+
+            this.popoverEl.style.display =
+                "none";
+
+            this.popoverEl.innerHTML =
+                "";
+
+        }
+
+    },
+
+
+    /* ======================================================
+       Popover Content — States
+    ====================================================== */
+
+    renderLoading() {
+
+        if (!this.popoverEl) {
+
+            return;
+
+        }
+
+        this.popoverEl.innerHTML = `
+            <div class="ai-suggest-header">
+                <span class="ai-suggest-title">✨ AI Suggestion</span>
+                <button type="button" class="ai-suggest-close" aria-label="Close">✖</button>
+            </div>
+            <div class="ai-suggest-loading">
+                ✨ Generating suggestion...
+            </div>
+        `;
+
+        this.bindCloseButton();
+
+    },
+
+
+    renderError(message, options = {}) {
+
+        if (!this.popoverEl) {
+
+            return;
+
+        }
+
+        const retryLabel =
+            options.retryMode
+                ? "Retry"
+                : "";
+
+        this.popoverEl.innerHTML = `
+            <div class="ai-suggest-header">
+                <span class="ai-suggest-title">✨ AI Suggestion</span>
+                <button type="button" class="ai-suggest-close" aria-label="Close">✖</button>
+            </div>
+            <p class="ai-suggest-error"></p>
+            <div class="ai-suggest-actions">
+                ${
+                    options.retryMode
+                        ? `<button type="button" class="ai-suggest-btn ai-suggest-btn--primary" data-action="retry">${retryLabel}</button>`
+                        : ""
+                }
+                <button type="button" class="ai-suggest-btn" data-action="close">Close</button>
+            </div>
+        `;
+
+        this.popoverEl.querySelector(
+            ".ai-suggest-error"
+        ).textContent =
+            message;
+
+        this.bindCloseButton();
+
+        const retryButton =
+            this.popoverEl.querySelector(
+                "[data-action='retry']"
+            );
+
+        retryButton?.addEventListener(
+            "click",
+            () => {
+
+                this.renderLoading();
+
+                this.requestCompletion(
+                    options.retryMode
+                );
+
+            }
+        );
+
+        this.popoverEl
+            .querySelector(
+                "[data-action='close']"
+            )
+            ?.addEventListener(
+                "click",
+                () => this.closePopover()
+            );
+
+    },
+
+
+    renderSuggestionResult(suggestionText) {
+
+        if (
+            !this.popoverEl ||
+            !this.pendingSelection
+        ) {
+
+            return;
+
+        }
+
+        this.popoverEl.innerHTML = `
+            <div class="ai-suggest-header">
+                <span class="ai-suggest-title">✨ AI Suggestion</span>
+                <button type="button" class="ai-suggest-close" aria-label="Close">✖</button>
+            </div>
+
+            <div class="ai-suggest-block">
+                <span class="ai-suggest-label">Original</span>
+                <p class="ai-suggest-original"></p>
+            </div>
+
+            <div class="ai-suggest-block ai-suggest-block--result">
+                <span class="ai-suggest-label ai-suggest-label--ai">AI Suggestion</span>
+                <p class="ai-suggest-result"></p>
+                <textarea class="ai-suggest-edit-area" style="display:none;"></textarea>
+            </div>
+
+            <div class="ai-suggest-actions">
+                <button type="button" class="ai-suggest-btn ai-suggest-btn--primary" data-action="accept">Accept</button>
+                <button type="button" class="ai-suggest-btn" data-action="edit">Edit</button>
+                <button type="button" class="ai-suggest-btn ai-suggest-btn--muted" data-action="reject">Reject</button>
+            </div>
+        `;
+
+        this.popoverEl.querySelector(
+            ".ai-suggest-original"
+        ).textContent =
+            this.pendingSelection.text;
+
+        const resultEl =
+            this.popoverEl.querySelector(
+                ".ai-suggest-result"
+            );
+
+        resultEl.textContent =
+            suggestionText;
+
+        const editArea =
+            this.popoverEl.querySelector(
+                ".ai-suggest-edit-area"
+            );
+
+        editArea.value =
+            suggestionText;
+
+        this.bindCloseButton();
+
+        this.popoverEl
+            .querySelector(
+                "[data-action='reject']"
+            )
+            .addEventListener(
+                "click",
+                () => this.closePopover()
+            );
+
+        this.popoverEl
+            .querySelector(
+                "[data-action='edit']"
+            )
+            .addEventListener(
+                "click",
+                (event) => {
+
+                    const isEditing =
+                        editArea.style.display !==
+                        "none";
+
+                    if (isEditing) {
+
+                        resultEl.textContent =
+                            editArea.value;
+
+                        resultEl.style.display =
+                            "block";
+
+                        editArea.style.display =
+                            "none";
+
+                        event.target.textContent =
+                            "Edit";
+
+                    } else {
+
+                        resultEl.style.display =
+                            "none";
+
+                        editArea.style.display =
+                            "block";
+
+                        editArea.focus();
+
+                        event.target.textContent =
+                            "Done Editing";
+
+                    }
+
+                }
+            );
+
+        this.popoverEl
+            .querySelector(
+                "[data-action='accept']"
+            )
+            .addEventListener(
+                "click",
+                () => {
+
+                    const finalText =
+                        editArea.style.display !==
+                        "none"
+                            ? editArea.value
+                            : resultEl.textContent;
+
+                    this.acceptSuggestion(
+                        finalText
+                    );
+
+                }
+            );
+
+    },
+
+
+    renderAskForm() {
+
+        if (!this.popoverEl) {
+
+            return;
+
+        }
+
+        this.popoverEl.innerHTML = `
+            <div class="ai-suggest-header">
+                <span class="ai-suggest-title">💬 Ask AI</span>
+                <button type="button" class="ai-suggest-close" aria-label="Close">✖</button>
+            </div>
+
+            <div class="ai-suggest-block">
+                <span class="ai-suggest-label">Selected Text</span>
+                <p class="ai-suggest-original"></p>
+            </div>
+
+            <label class="ai-suggest-label" for="ai-ask-question">Your question</label>
+            <textarea id="ai-ask-question" class="ai-suggest-ask-input" placeholder="e.g. Is this following our Style Guide?"></textarea>
+
+            <div class="ai-suggest-actions">
+                <button type="button" class="ai-suggest-btn ai-suggest-btn--primary" data-action="ask">Ask</button>
+                <button type="button" class="ai-suggest-btn" data-action="close">Cancel</button>
+            </div>
+        `;
+
+        this.popoverEl.querySelector(
+            ".ai-suggest-original"
+        ).textContent =
+            this.pendingSelection.text;
+
+        this.bindCloseButton();
+
+        this.popoverEl
+            .querySelector(
+                "[data-action='close']"
+            )
+            .addEventListener(
+                "click",
+                () => this.closePopover()
+            );
+
+        const questionInput =
+            this.popoverEl.querySelector(
+                "#ai-ask-question"
+            );
+
+        questionInput.focus();
+
+        this.popoverEl
+            .querySelector(
+                "[data-action='ask']"
+            )
+            .addEventListener(
+                "click",
+                () => {
+
+                    const question =
+                        questionInput.value.trim();
+
+                    if (!question) {
+
+                        questionInput.focus();
+
+                        return;
+
+                    }
+
+                    this.pendingSelection.question =
+                        question;
+
+                    this.renderLoading();
+
+                    this.requestCompletion(
+                        "ask"
+                    );
+
+                }
+            );
+
+    },
+
+
+    renderAskResult(answerText) {
+
+        if (
+            !this.popoverEl ||
+            !this.pendingSelection
+        ) {
+
+            return;
+
+        }
+
+        this.popoverEl.innerHTML = `
+            <div class="ai-suggest-header">
+                <span class="ai-suggest-title">💬 Ask AI</span>
+                <button type="button" class="ai-suggest-close" aria-label="Close">✖</button>
+            </div>
+
+            <div class="ai-suggest-block">
+                <span class="ai-suggest-label ai-suggest-label--ai">Answer</span>
+                <p class="ai-suggest-result"></p>
+            </div>
+
+            <div class="ai-suggest-actions">
+                <button type="button" class="ai-suggest-btn" data-action="close">Close</button>
+            </div>
+        `;
+
+        this.popoverEl.querySelector(
+            ".ai-suggest-result"
+        ).textContent =
+            answerText;
+
+        this.bindCloseButton();
+
+        this.popoverEl
+            .querySelector(
+                "[data-action='close']"
+            )
+            .addEventListener(
+                "click",
+                () => this.closePopover()
+            );
+
+    },
+
+
+    bindCloseButton() {
+
+        this.popoverEl
+            ?.querySelector(
+                ".ai-suggest-close"
+            )
+            ?.addEventListener(
+                "click",
+                () => this.closePopover()
+            );
+
+    },
+
+
+    /* ======================================================
+       Accept
+    ====================================================== */
+
+    acceptSuggestion(finalText) {
+
+        const selection =
+            this.pendingSelection;
+
+        if (
+            !selection ||
+            !selection.quill ||
+            !finalText
+        ) {
+
+            this.closePopover();
+
+            return;
+
+        }
+
+        const quill =
+            selection.quill;
+
+        quill.deleteText(
+            selection.index,
+            selection.length,
+            "user"
+        );
+
+        quill.insertText(
+            selection.index,
+            finalText,
+            selection.format || {},
+            "user"
+        );
+
+        quill.setSelection(
+            selection.index +
+                finalText.length,
+            0,
+            "user"
+        );
+
+        this.closePopover();
+
+    },
+
+
+    /* ======================================================
+       AI Request
+    ====================================================== */
+
+    gatherContext(selection) {
+
+        const quill =
+            selection.quill;
+
+        const windowSize = 400;
+
+        const contextStart =
+            Math.max(
+                0,
+                selection.index - windowSize
+            );
+
+        const contextLength =
+            (selection.index - contextStart) +
+            selection.length +
+            windowSize;
+
+        return quill.getText(
+            contextStart,
+            contextLength
+        );
+
+    },
+
+
+    getDocumentTitle() {
+
+        const heading =
+            document.querySelector(
+                ".md-content__inner h1"
+            );
+
+        if (heading) {
+
+            /*
+             * mkdocs' toc plugin appends a permalink anchor
+             * ("¶") inside h1 — strip it from the title text.
+             */
+
+            const clone =
+                heading.cloneNode(true);
+
+            clone
+                .querySelectorAll(
+                    ".headerlink"
+                )
+                .forEach(
+                    (node) => node.remove()
+                );
+
+            const text =
+                clone.textContent.trim();
+
+            if (text) {
+
+                return text;
+
+            }
+
+        }
+
+        return (
+            document.title ||
+            "Untitled"
+        );
+
+    },
+
+
+    async requestCompletion(mode) {
+
+        if (this.isRequesting) {
+
+            return;
+
+        }
+
+        const selection =
+            this.pendingSelection;
+
+        if (!selection) {
+
+            return;
+
+        }
+
+        this.isRequesting =
+            true;
+
+        const token =
+            ++this.requestToken;
+
+        const body = {
+
+            mode,
+
+            selectedText:
+                selection.text,
+
+            context:
+                this.gatherContext(
+                    selection
+                ),
+
+            documentTitle:
+                this.getDocumentTitle(),
+
+            documentPath:
+                AppState.currentDocument ||
+                window.location.pathname
+
+        };
+
+        if (mode === "ask") {
+
+            body.question =
+                selection.question || "";
+
+        }
+
+        const controller =
+            new AbortController();
+
+        const timeoutId =
+            setTimeout(
+                () => controller.abort(),
+                CONFIG.AI_REQUEST_TIMEOUT
+            );
+
+        try {
+
+            const response =
+                await fetch(
+
+                    CONFIG.AI_SUGGEST_API,
+
+                    {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body:
+                            JSON.stringify(body),
+
+                        signal:
+                            controller.signal
+
+                    }
+
+                );
+
+            let data;
+
+            try {
+
+                data =
+                    await response.json();
+
+            } catch (parseError) {
+
+                throw new Error(
+                    "The AI service returned an invalid response."
+                );
+
+            }
+
+            /*
+             * Stale response — the popover was closed and/or
+             * reopened while this request was in flight.
+             */
+
+            if (
+                token !== this.requestToken ||
+                !this.popoverOpen
+            ) {
+
+                return;
+
+            }
+
+            if (!response.ok || !data.success) {
+
+                throw new Error(
+                    data.message ||
+                    `AI request failed (${response.status}).`
+                );
+
+            }
+
+            if (mode === "ask") {
+
+                if (!data.answer) {
+
+                    throw new Error(
+                        "The AI service returned an empty answer."
+                    );
+
+                }
+
+                this.renderAskResult(
+                    data.answer
+                );
+
+            } else {
+
+                if (!data.suggestion) {
+
+                    throw new Error(
+                        "The AI service returned an empty suggestion."
+                    );
+
+                }
+
+                this.renderSuggestionResult(
+                    data.suggestion
+                );
+
+            }
+
+        } catch (error) {
+
+            if (
+                token !== this.requestToken ||
+                !this.popoverOpen
+            ) {
+
+                return;
+
+            }
+
+            const isAbort =
+                error.name === "AbortError";
+
+            console.error(
+                "AI suggestion request failed:",
+                error
+            );
+
+            this.renderError(
+
+                isAbort
+                    ? "The request timed out. Please try again."
+                    : (
+                        error.message ||
+                        "Something went wrong while contacting the AI service."
+                    ),
+
+                { retryMode: mode }
+
+            );
+
+        } finally {
+
+            clearTimeout(
+                timeoutId
+            );
+
+            this.isRequesting =
+                false;
+
+        }
 
     }
 

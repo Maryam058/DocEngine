@@ -1894,3 +1894,235 @@ button[data-action="publish"]:hover{
     background: #6b7280;
     color: white;
 }
+
+/* ==========================================================
+   AI SUGGESTION ASSISTANT
+   Selection-based floating toolbar + popover.
+========================================================== */
+
+.ai-suggest-toolbar {
+    display: none;
+    position: fixed;
+    z-index: 100000;
+    gap: 4px;
+    padding: 4px;
+    background: var(--de-surface, #ffffff);
+    border: 1px solid var(--de-border-strong, #d9e2ec);
+    border-radius: var(--de-radius-sm, 6px);
+    box-shadow: var(--de-shadow-btn, 0 1px 3px rgba(0, 0, 0, 0.08)), 0 6px 16px rgba(15, 23, 42, 0.14);
+}
+
+.ai-suggest-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: none;
+    border-radius: 4px;
+    padding: 7px 12px;
+    background: var(--de-brand, #1976d2);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.ai-suggest-toolbar-btn:hover,
+.ai-suggest-toolbar-btn:focus-visible {
+    background: var(--de-brand-hover, #1565c0);
+    outline: 2px solid transparent;
+}
+
+.ai-suggest-toolbar-btn--ghost {
+    background: transparent;
+    color: var(--de-text-secondary, #333333);
+    border: 1px solid var(--de-border-secondary, #d1d5db);
+}
+
+.ai-suggest-toolbar-btn--ghost:hover,
+.ai-suggest-toolbar-btn--ghost:focus-visible {
+    background: var(--de-surface-subtle, #f8fafc);
+    color: var(--de-text-secondary, #333333);
+}
+
+.ai-suggest-popover {
+    display: none;
+    position: fixed;
+    z-index: 100001;
+    max-width: 90vw;
+    max-height: 70vh;
+    overflow-y: auto;
+    background: var(--de-surface, #ffffff);
+    border: 1px solid var(--de-border-strong, #d9e2ec);
+    border-radius: var(--de-radius-lg, 12px);
+    box-shadow: var(--de-shadow-modal, 0 20px 60px rgba(0, 0, 0, 0.20));
+    padding: 16px;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.ai-suggest-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.ai-suggest-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--de-modal-title, #1f2937);
+}
+
+.ai-suggest-close {
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.ai-suggest-close:hover,
+.ai-suggest-close:focus-visible {
+    background: var(--de-surface-subtle, #f8fafc);
+    color: #1f2937;
+    outline: 2px solid transparent;
+}
+
+.ai-suggest-loading {
+    padding: 18px 4px;
+    text-align: center;
+    color: var(--de-brand, #1976d2);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ai-suggest-block {
+    margin-bottom: 12px;
+}
+
+.ai-suggest-label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+}
+
+.ai-suggest-label--ai {
+    color: var(--de-brand, #1976d2);
+}
+
+.ai-suggest-original,
+.ai-suggest-result {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: var(--de-radius-sm, 6px);
+    font-size: 14px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.ai-suggest-original {
+    background: var(--de-surface-subtle, #f8fafc);
+    color: #6b7280;
+    border: 1px solid var(--de-border, #e5e7eb);
+    text-decoration: line-through;
+    text-decoration-color: rgba(107, 114, 128, 0.5);
+}
+
+.ai-suggest-block--result .ai-suggest-result {
+    background: #eef4ff;
+    color: #0f172a;
+    border: 1px solid rgba(25, 118, 210, 0.25);
+}
+
+.ai-suggest-edit-area,
+.ai-suggest-ask-input {
+    width: 100%;
+    min-height: 90px;
+    padding: 10px 12px;
+    border-radius: var(--de-radius-sm, 6px);
+    border: 1px solid var(--de-border-secondary, #d1d5db);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.55;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+.ai-suggest-edit-area:focus,
+.ai-suggest-ask-input:focus {
+    outline: none;
+    border-color: var(--de-brand, #1976d2);
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15);
+}
+
+.ai-suggest-error {
+    margin: 4px 0 14px;
+    padding: 10px 12px;
+    border-radius: var(--de-radius-sm, 6px);
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.ai-suggest-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.ai-suggest-btn {
+    border: 1px solid var(--de-border-secondary, #d1d5db);
+    border-radius: var(--de-radius-sm, 6px);
+    background: #ffffff;
+    color: var(--de-text-secondary, #333333);
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ai-suggest-btn:hover,
+.ai-suggest-btn:focus-visible {
+    background: var(--de-surface-subtle, #f8fafc);
+    outline: 2px solid transparent;
+}
+
+.ai-suggest-btn--primary {
+    background: var(--de-brand, #1976d2);
+    border-color: var(--de-brand, #1976d2);
+    color: #ffffff;
+}
+
+.ai-suggest-btn--primary:hover,
+.ai-suggest-btn--primary:focus-visible {
+    background: var(--de-brand-hover, #1565c0);
+    border-color: var(--de-brand-hover, #1565c0);
+}
+
+.ai-suggest-btn--muted {
+    background: transparent;
+    color: #6b7280;
+}
+
+@media (max-width: 480px) {
+
+    .ai-suggest-popover {
+        left: 12px !important;
+        right: 12px;
+        width: auto !important;
+    }
+
+}

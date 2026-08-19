@@ -21,12 +21,12 @@ ALLOWED_ORIGINS = {
 
 GEMINI_MODEL = os.environ.get(
     "GEMINI_MODEL",
-    "gemini-3.7-flash"
+    "gemini-2.5-flash"
 )
 
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
-MAX_OUTPUT_TOKENS = 1024
+MAX_OUTPUT_TOKENS = 2048
 
 MAX_SELECTION_CHARS = 8000
 MAX_CONTEXT_CHARS = 4000
@@ -204,7 +204,15 @@ def call_gemini(api_key, system_prompt, user_message):
 
         "generationConfig": {
             "temperature": 0.3,
-            "maxOutputTokens": MAX_OUTPUT_TOKENS
+            "maxOutputTokens": MAX_OUTPUT_TOKENS,
+
+            # This is a short, latency-sensitive editing suggestion,
+            # not a reasoning task -- skip 2.5 Flash's default
+            # "thinking" pass so the whole token budget goes to the
+            # visible answer.
+            "thinkingConfig": {
+                "thinkingBudget": 0
+            }
         }
 
     }

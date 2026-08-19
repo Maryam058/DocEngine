@@ -1,8 +1,11 @@
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError, URLError
 
 import json
 import os
+import socket
 
 
 # ==========================================================
@@ -16,10 +19,14 @@ ALLOWED_ORIGINS = {
     "http://localhost:8000",
 }
 
-DEFAULT_MODEL = os.environ.get(
-    "AI_SUGGESTION_MODEL",
-    "claude-opus-5"
+GEMINI_MODEL = os.environ.get(
+    "GEMINI_MODEL",
+    "gemini-3.7-flash"
 )
+
+GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
+
+MAX_OUTPUT_TOKENS = 1024
 
 MAX_SELECTION_CHARS = 8000
 MAX_CONTEXT_CHARS = 4000
@@ -148,27 +155,196 @@ def build_user_message(mode, payload, style_guide, glossary):
 
 
 # ==========================================================
-# AI Request
+# AI Request (Google Gemini)
 # ==========================================================
+
+def call_gemini(api_key, system_prompt, user_message):
+
+    url = (
+        f"{GEMINI_API_BASE}/models/{GEMINI_MODEL}:generateContent"
+        f"?key={api_key}"
+    )
+
+    request_body = {
+
+        "systemInstruction": {
+            "parts": [
+                {"text": system_prompt}
+            ]
+        },
+
+        "contents": [
+            {
+                "role": "user",
+                "parts": [
+                    {"text": user_message}
+                ]
+            }
+        ],
+
+        "generationConfig": {
+            "temperature": 0.3,
+            "maxOutputTokens": MAX_OUTPUT_TOKENS
+        }
+
+    }
+
+    request = Request(
+
+        url,
+
+        data=json.dumps(request_body).encode("utf-8"),
+
+        headers={
+            "Content-Type": "application/json"
+        },
+
+        method="POST"
+
+    )
+
+    try:
+
+        with urlopen(
+            request,
+            timeout=REQUEST_TIMEOUT_SECONDS
+        ) as response:
+
+            response_body = response.read().decode("utf-8")
+
+    except HTTPError as error:
+
+        error_body = error.read().decode("utf-8")
+
+        raise RuntimeError(
+            describe_gemini_error(error.code, error_body)
+        )
+
+    except (URLError, socket.timeout) as error:
+
+        reason = getattr(error, "reason", error)
+
+        if isinstance(reason, socket.timeout) or "timed out" in str(reason).lower():
+
+            raise RuntimeError(
+                "The AI provider request timed out. Please try again."
+            )
+
+        raise RuntimeError(
+            "Could not reach the AI provider (network error)."
+        )
+
+    try:
+
+        data = json.loads(response_body)
+
+    except json.JSONDecodeError:
+
+        raise RuntimeError(
+            "The AI provider returned an invalid response."
+        )
+
+    return extract_gemini_text(data)
+
+
+def describe_gemini_error(status_code, error_body):
+
+    message = None
+
+    try:
+
+        parsed = json.loads(error_body)
+
+        message = (
+            parsed.get("error", {}).get("message")
+        )
+
+    except (json.JSONDecodeError, AttributeError):
+
+        message = None
+
+    if status_code in (400, 403) and message and "API key" in message:
+
+        return "The configured GEMINI_API_KEY is invalid or unauthorized."
+
+    if status_code == 404:
+
+        return (
+            "The configured Gemini model "
+            f"('{GEMINI_MODEL}') was not found. Check the "
+            "GEMINI_MODEL environment variable."
+        )
+
+    if status_code == 429:
+
+        return (
+            "Gemini rate limit or quota exceeded. "
+            "Please try again shortly."
+        )
+
+    if status_code >= 500:
+
+        return "The AI provider is temporarily unavailable."
+
+    return message or f"AI provider request failed ({status_code})."
+
+
+def extract_gemini_text(data):
+
+    candidates = data.get("candidates") or []
+
+    if not candidates:
+
+        feedback = data.get("promptFeedback", {})
+
+        block_reason = feedback.get("blockReason")
+
+        if block_reason:
+
+            raise RuntimeError(
+                "The AI provider blocked this request "
+                f"({block_reason})."
+            )
+
+        raise RuntimeError("AI returned an empty response.")
+
+    first_candidate = candidates[0]
+
+    finish_reason = first_candidate.get("finishReason")
+
+    parts = (
+        first_candidate.get("content", {}).get("parts", [])
+    )
+
+    text = "".join(
+        part.get("text", "")
+        for part in parts
+    ).strip()
+
+    if not text:
+
+        if finish_reason and finish_reason not in ("STOP", "MAX_TOKENS"):
+
+            raise RuntimeError(
+                "The AI provider did not return usable text "
+                f"({finish_reason})."
+            )
+
+        raise RuntimeError("AI returned an empty response.")
+
+    return text
+
 
 def request_ai_completion(mode, payload):
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY")
 
     if not api_key:
 
         raise RuntimeError(
             "AI suggestions are not configured on the server "
-            "(missing ANTHROPIC_API_KEY)."
+            "(missing GEMINI_API_KEY)."
         )
-
-    import anthropic
-
-    client = anthropic.Anthropic(
-        api_key=api_key
-    ).with_options(
-        timeout=REQUEST_TIMEOUT_SECONDS
-    )
 
     style_guide = read_reference_file(STYLE_GUIDE_PATH)
     glossary = read_reference_file(GLOSSARY_PATH)
@@ -181,25 +357,11 @@ def request_ai_completion(mode, payload):
         glossary
     )
 
-    response = client.messages.create(
-        model=DEFAULT_MODEL,
-        max_tokens=1024,
-        system=system_prompt,
-        messages=[
-            {"role": "user", "content": user_message}
-        ]
+    return call_gemini(
+        api_key,
+        system_prompt,
+        user_message
     )
-
-    text = "".join(
-        block.text
-        for block in response.content
-        if block.type == "text"
-    ).strip()
-
-    if not text:
-        raise RuntimeError("AI returned an empty response.")
-
-    return text
 
 
 # ==========================================================
@@ -391,19 +553,6 @@ class handler(BaseHTTPRequestHandler):
                 }
             )
 
-        except ImportError:
-
-            self.send_json(
-                500,
-                {
-                    "success": False,
-                    "message": (
-                        "AI suggestions are not available "
-                        "(the anthropic package is not installed)."
-                    )
-                }
-            )
-
         except Exception as error:
 
             print("AI suggestion error:", error)
@@ -417,11 +566,22 @@ class handler(BaseHTTPRequestHandler):
             if "not configured" in lowered:
                 status_code = 500
 
+            elif "invalid" in lowered and (
+                "key" in lowered or "unauthorized" in lowered
+            ):
+                status_code = 401
+
+            elif "not found" in lowered and "model" in lowered:
+                status_code = 500
+
             elif "timeout" in lowered or "timed out" in lowered:
                 status_code = 504
 
-            elif "rate" in lowered and "limit" in lowered:
+            elif "rate limit" in lowered or "quota" in lowered:
                 status_code = 429
+
+            elif "network error" in lowered:
+                status_code = 504
 
             self.send_json(
                 status_code,

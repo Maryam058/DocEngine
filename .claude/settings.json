@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Grep",
+      "Glob",
+      "Bash(python -m mkdocs serve*)",
+      "Bash(python -m mkdocs build*)",
+      "Bash(mkdocs serve*)",
+      "Bash(mkdocs build*)",
+      "Bash(pip install -r requirements.txt)",
+      "Bash(python run_pipeline.py*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ],
+    "ask": [
+      "Bash(git push*)",
+      "Bash(git reset*)",
+      "Bash(git checkout*)",
+      "Bash(git clean*)",
+      "Bash(git branch -D*)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)"
+    ]
+  }
+}

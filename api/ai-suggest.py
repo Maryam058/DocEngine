@@ -158,6 +158,26 @@ def build_user_message(mode, payload, style_guide, glossary):
 # AI Request (Google Gemini)
 # ==========================================================
 
+class AIProviderError(RuntimeError):
+    """Carries the HTTP status the handler should send to the browser,
+    separately from the human-readable message."""
+
+    def __init__(self, status_code, message):
+
+        super().__init__(message)
+
+        self.status_code = status_code
+
+
+def log_diagnostic(label, detail):
+
+    # Server-side only (Vercel function logs) -- never sent to the
+    # browser. `detail` originates from Gemini's own response body,
+    # never from our request, so it cannot contain GEMINI_API_KEY.
+
+    print(f"[ai-suggest] {label}: {detail}"[:800], flush=True)
+
+
 def call_gemini(api_key, system_prompt, user_message):
 
     url = (
@@ -216,21 +236,28 @@ def call_gemini(api_key, system_prompt, user_message):
 
         error_body = error.read().decode("utf-8")
 
-        raise RuntimeError(
-            describe_gemini_error(error.code, error_body)
+        log_diagnostic(
+            f"Gemini HTTP {error.code}",
+            error_body
         )
+
+        raise describe_gemini_error(error.code, error_body)
 
     except (URLError, socket.timeout) as error:
 
         reason = getattr(error, "reason", error)
 
+        log_diagnostic("Gemini network error", repr(reason))
+
         if isinstance(reason, socket.timeout) or "timed out" in str(reason).lower():
 
-            raise RuntimeError(
+            raise AIProviderError(
+                504,
                 "The AI provider request timed out. Please try again."
             )
 
-        raise RuntimeError(
+        raise AIProviderError(
+            502,
             "Could not reach the AI provider (network error)."
         )
 
@@ -240,7 +267,10 @@ def call_gemini(api_key, system_prompt, user_message):
 
     except json.JSONDecodeError:
 
-        raise RuntimeError(
+        log_diagnostic("Gemini non-JSON 200 response", response_body)
+
+        raise AIProviderError(
+            502,
             "The AI provider returned an invalid response."
         )
 
@@ -248,45 +278,105 @@ def call_gemini(api_key, system_prompt, user_message):
 
 
 def describe_gemini_error(status_code, error_body):
+    """Turns a Gemini HTTPError into an AIProviderError whose message
+    distinguishes the failure category (bad key, no permission, model
+    not found, rate limit, provider outage, ...) without leaking the
+    API key or raw internal error payloads."""
 
     message = None
+    reason = None
 
     try:
 
         parsed = json.loads(error_body)
+        error_obj = parsed.get("error", {}) or {}
 
-        message = (
-            parsed.get("error", {}).get("message")
-        )
+        message = error_obj.get("message")
+        reason = error_obj.get("status")
+
+        for detail in error_obj.get("details", []) or []:
+
+            if detail.get("reason"):
+                reason = reason or detail["reason"]
 
     except (json.JSONDecodeError, AttributeError):
 
-        message = None
+        pass
 
-    if status_code in (400, 403) and message and "API key" in message:
+    # --- Invalid / missing key -----------------------------------
 
-        return "The configured GEMINI_API_KEY is invalid or unauthorized."
+    if reason == "API_KEY_INVALID" or (
+        status_code in (400, 401) and message and "api key" in message.lower()
+    ):
 
-    if status_code == 404:
-
-        return (
-            "The configured Gemini model "
-            f"('{GEMINI_MODEL}') was not found. Check the "
-            "GEMINI_MODEL environment variable."
+        return AIProviderError(
+            401,
+            "The configured GEMINI_API_KEY is invalid. "
+            "Check the key value in Vercel's environment variables."
         )
 
-    if status_code == 429:
+    # --- Permission / access problem -------------------------------
 
-        return (
-            "Gemini rate limit or quota exceeded. "
-            "Please try again shortly."
+    if status_code == 403 or reason in (
+        "PERMISSION_DENIED",
+        "CONSUMER_SUSPENDED",
+        "SERVICE_DISABLED",
+    ):
+
+        return AIProviderError(
+            403,
+            "The configured GEMINI_API_KEY does not have permission "
+            f"to use the model '{GEMINI_MODEL}' (or the Generative "
+            "Language API is not enabled for this key's project)."
         )
+
+    # --- Model not found / not available ---------------------------
+
+    if status_code == 404 or reason == "NOT_FOUND":
+
+        return AIProviderError(
+            500,
+            f"The configured Gemini model ('{GEMINI_MODEL}') was not "
+            "found or is not available to this API key. Set the "
+            "GEMINI_MODEL environment variable to a model this key "
+            "can access."
+        )
+
+    # --- Rate limit / quota -----------------------------------------
+
+    if status_code == 429 or reason == "RESOURCE_EXHAUSTED":
+
+        return AIProviderError(
+            429,
+            "Gemini rate limit or quota exceeded. Please try again "
+            "shortly."
+        )
+
+    # --- Bad request (prompt/schema issue) --------------------------
+
+    if status_code == 400:
+
+        return AIProviderError(
+            502,
+            "The AI provider rejected the request "
+            f"({message or 'invalid request'})."
+        )
+
+    # --- Provider/server error ---------------------------------------
 
     if status_code >= 500:
 
-        return "The AI provider is temporarily unavailable."
+        return AIProviderError(
+            502,
+            "The AI provider (Gemini) returned a server error "
+            f"(HTTP {status_code}). Please try again."
+        )
 
-    return message or f"AI provider request failed ({status_code})."
+    return AIProviderError(
+        502,
+        f"AI provider request failed ({status_code}): "
+        f"{message or 'unknown error'}"
+    )
 
 
 def extract_gemini_text(data):
@@ -299,14 +389,17 @@ def extract_gemini_text(data):
 
         block_reason = feedback.get("blockReason")
 
+        log_diagnostic("Gemini empty candidates", data)
+
         if block_reason:
 
-            raise RuntimeError(
+            raise AIProviderError(
+                502,
                 "The AI provider blocked this request "
                 f"({block_reason})."
             )
 
-        raise RuntimeError("AI returned an empty response.")
+        raise AIProviderError(502, "AI returned an empty response.")
 
     first_candidate = candidates[0]
 
@@ -323,14 +416,20 @@ def extract_gemini_text(data):
 
     if not text:
 
+        log_diagnostic(
+            "Gemini empty text",
+            f"finishReason={finish_reason} candidate={first_candidate}"
+        )
+
         if finish_reason and finish_reason not in ("STOP", "MAX_TOKENS"):
 
-            raise RuntimeError(
+            raise AIProviderError(
+                502,
                 "The AI provider did not return usable text "
                 f"({finish_reason})."
             )
 
-        raise RuntimeError("AI returned an empty response.")
+        raise AIProviderError(502, "AI returned an empty response.")
 
     return text
 
@@ -341,7 +440,8 @@ def request_ai_completion(mode, payload):
 
     if not api_key:
 
-        raise RuntimeError(
+        raise AIProviderError(
+            500,
             "AI suggestions are not configured on the server "
             "(missing GEMINI_API_KEY)."
         )
@@ -553,40 +653,29 @@ class handler(BaseHTTPRequestHandler):
                 }
             )
 
-        except Exception as error:
+        except AIProviderError as error:
 
-            print("AI suggestion error:", error)
-
-            message = str(error)
-
-            status_code = 502
-
-            lowered = message.lower()
-
-            if "not configured" in lowered:
-                status_code = 500
-
-            elif "invalid" in lowered and (
-                "key" in lowered or "unauthorized" in lowered
-            ):
-                status_code = 401
-
-            elif "not found" in lowered and "model" in lowered:
-                status_code = 500
-
-            elif "timeout" in lowered or "timed out" in lowered:
-                status_code = 504
-
-            elif "rate limit" in lowered or "quota" in lowered:
-                status_code = 429
-
-            elif "network error" in lowered:
-                status_code = 504
+            print("AI suggestion error:", error, flush=True)
 
             self.send_json(
-                status_code,
+                error.status_code,
                 {
                     "success": False,
-                    "message": message or "AI request failed."
+                    "message": str(error) or "AI request failed."
+                }
+            )
+
+        except Exception as error:
+
+            # Anything not already classified into an AIProviderError
+            # (a genuine bug, not a known Gemini failure mode).
+
+            print("AI suggestion unexpected error:", error, flush=True)
+
+            self.send_json(
+                500,
+                {
+                    "success": False,
+                    "message": "AI request failed unexpectedly."
                 }
             )

@@ -1939,3 +1939,24 @@ body:has(.homepage) .hero {
     background: #fdf3e0;
     border-color: #f5e3bd;
 }
+
+
+/* ==========================================================
+   DOCUMENTATION CONTENT IMAGES
+   Applies a clean, consistent outline to screenshots and
+   figures embedded in doc pages via Markdown. Material's
+   base stylesheet strips all image borders by default
+   (img { border-style: none }), so this is the single
+   source of truth for the border treatment on every
+   documentation image.
+   ========================================================== */
+
+.md-typeset img {
+    box-sizing: border-box;
+    border: 1px solid var(--de-border);
+    border-radius: var(--de-radius-sm);
+}
+
+.md-typeset a.md-author img {
+    border: none;
+}

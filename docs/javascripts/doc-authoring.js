@@ -56,7 +56,11 @@ const AppState = {
 
     statusText: "Draft",
 
-    inlineMode: false
+    inlineMode: false,
+
+    pristineContent: null,
+
+    currentSourceHash: null
 
 };
 
@@ -135,6 +139,131 @@ const Time = {
     }
 
 };
+
+
+/* ==========================================================
+   Content Hash
+
+   A small, deterministic fingerprint (djb2) used only to
+   detect whether a page's current build output still matches
+   whatever a localStorage draft was created from. Not a
+   security hash — just a fast "did the source change" check.
+========================================================== */
+
+function hashText(text) {
+
+    let hash =
+        5381;
+
+    const value =
+        text || "";
+
+    for (let i = 0; i < value.length; i++) {
+
+        hash =
+            ((hash << 5) + hash) + value.charCodeAt(i);
+
+        hash =
+            hash | 0;
+
+    }
+
+    return String(hash);
+
+}
+
+
+/* ==========================================================
+   Sanitize Content For Editing
+
+   Strips everything that should never end up inside the
+   editable draft:
+
+   - Editor chrome injected by this file / page-chrome.js
+     (edit button, actions toolbar, metadata bar, feedback
+     widget). None of it is page content, and if it leaks in
+     here it gets saved/published as if it were.
+
+   - Permalink/back-reference anchors ("headerlink",
+     "footnote-backref"). Material only hides/styles these via
+     CSS scoped to ".md-typeset", which the editor's ".ql-editor"
+     does not have, so they show up as literal clickable "&para;"
+     text glued onto every heading.
+
+   - Whitespace-only text nodes. MkDocs' HTML output has a
+     literal newline between sibling block tags (e.g.
+     "</h2>\n<p>"). That is invisible under normal CSS
+     (white-space: normal), but ".ql-editor" uses
+     "white-space: pre-wrap" (so Quill preserves real typed
+     newlines), which renders those pretty-printing artifacts
+     as stray blank lines once the same HTML is loaded there.
+
+   This is the single source of truth for "what the editor
+   should load" — used both for the pristine, just-built
+   snapshot captured at page load and for the live DOM at the
+   moment the editor opens.
+========================================================== */
+
+function sanitizeForEditing(html) {
+
+    const container =
+        document.createElement("div");
+
+    container.innerHTML =
+        html || "";
+
+    container
+        .querySelectorAll(
+            ".edit-page-button, .edit-btn, .doc-actions, .docengine-page-toolbar, .docengine-meta-bar, .docengine-feedback, a.headerlink, .footnote-backref"
+        )
+        .forEach(element => element.remove());
+
+    const walker =
+        document.createTreeWalker(
+            container,
+            NodeFilter.SHOW_TEXT
+        );
+
+    const whitespaceOnlyNodes =
+        [];
+
+    let currentNode =
+        walker.nextNode();
+
+    while (currentNode) {
+
+        /*
+         * Only newline-bearing whitespace nodes are the
+         * pretty-printing artifact between block tags (e.g.
+         * "</h2>\n<p>"). A plain single space is frequently
+         * real, meaningful content — e.g. "**Bold** *Italic*"
+         * renders as adjacent inline tags separated by exactly
+         * one space text node, which must be preserved.
+         */
+
+        if (
+            /^\s+$/.test(currentNode.textContent) &&
+            currentNode.textContent.includes("\n")
+        ) {
+
+            whitespaceOnlyNodes.push(
+                currentNode
+            );
+
+        }
+
+        currentNode =
+            walker.nextNode();
+
+    }
+
+    whitespaceOnlyNodes.forEach(
+        node => node.remove()
+    );
+
+    return container.innerHTML;
+
+}
 
 
 /* ==========================================================
@@ -789,7 +918,19 @@ const DraftManager = {
                     AppState.currentVersion,
 
                 updatedAt:
-                    now
+                    now,
+
+                /*
+                 * Fingerprint of the source content this draft
+                 * was opened against. InlineEditor.start() only
+                 * resumes this draft next time if the page's
+                 * current build output still hashes to the same
+                 * value — otherwise the source has moved on and
+                 * the fresh content wins instead.
+                 */
+
+                sourceHash:
+                    AppState.currentSourceHash
 
             }
 
@@ -2404,6 +2545,40 @@ const App = {
 
     init() {
 
+        /* ==================================================
+           Capture Pristine Content
+
+           This must run before anything else. It is the one
+           moment ".md-content__inner" is guaranteed to still
+           hold the actual current build output for this page:
+           renderInstantPublishedContent() below can replace it
+           with a stale localStorage snapshot, and page-chrome.js
+           has not injected its toolbar/meta bar/feedback widget
+           yet. InlineEditor.start() uses this snapshot as the
+           canonical "current Markdown source" instead of trusting
+           whatever happens to be on screen when Edit Page is
+           clicked.
+        ================================================== */
+
+        if (!isHomePage()) {
+
+            const initialContentRoot =
+                document.querySelector(
+                    ".md-content__inner"
+                );
+
+            if (initialContentRoot) {
+
+                AppState.pristineContent =
+                    sanitizeForEditing(
+                        initialContentRoot.innerHTML
+                    );
+
+            }
+
+        }
+
+
         /*
          * Current document is based
          * on current URL.
@@ -2425,7 +2600,7 @@ const App = {
 
         /* ==================================================
            Render Instant Published Content
-           
+
            This must happen before
            editor initialization.
         ================================================== */
@@ -2919,6 +3094,18 @@ const InlineEditor = {
 
         /* ==================================================
            Check Existing Local Draft
+
+           A saved draft is only trustworthy if it was created
+           from the same source content this page currently
+           builds to. AppState.pristineContent was captured at
+           App.init() time, before any localStorage override or
+           editor chrome existed, so its hash is the one honest
+           fingerprint of "what the Markdown source currently
+           renders to". If the draft's stored sourceHash does
+           not match, the underlying .md source has changed
+           (edited, regenerated, republished) since that draft
+           was written, and it must not silently keep shadowing
+           the real content.
         ================================================== */
 
         const savedDocument =
@@ -2926,12 +3113,24 @@ const InlineEditor = {
                 AppState.currentDocument
             );
 
+        AppState.currentSourceHash =
+            hashText(
+                AppState.pristineContent || ""
+            );
+
+        const draftMatchesCurrentSource =
+            Boolean(
+                savedDocument &&
+                savedDocument.content &&
+                savedDocument.sourceHash === AppState.currentSourceHash
+            );
+
 
         /* ==================================================
            Restore Saved State
         ================================================== */
 
-        if (savedDocument) {
+        if (draftMatchesCurrentSource) {
 
             AppState.currentStatus =
                 savedDocument.status ||
@@ -2969,6 +3168,22 @@ const InlineEditor = {
 
             AppState.lastSaved =
                 null;
+
+
+            /*
+             * There was a local draft, but it no longer
+             * matches the current source. Let the user know
+             * why their old draft text is not the one that
+             * just loaded, instead of silently discarding it.
+             */
+
+            if (savedDocument && savedDocument.content) {
+
+                updateSaveStatus(
+                    "Loaded latest content — a previous local draft was outdated"
+                );
+
+            }
 
         }
 
@@ -3402,12 +3617,18 @@ const InlineEditor = {
 
         /* ==================================================
            Load Content
+
+           Only ever loads the saved draft when it matches the
+           current source (see draftMatchesCurrentSource above).
+           Otherwise this always loads AppState.pristineContent —
+           the sanitized, just-built snapshot of the actual
+           current Markdown source captured at page load — never
+           whatever happens to currently be on screen, which may
+           itself be a stale "instant published" localStorage
+           render or contain editor chrome that leaked in.
         ================================================== */
 
-        if (
-            savedDocument &&
-            savedDocument.content
-        ) {
+        if (draftMatchesCurrentSource) {
 
             AppState.editor.root.innerHTML =
                 savedDocument.content;
@@ -3415,7 +3636,10 @@ const InlineEditor = {
         } else {
 
             AppState.editor.root.innerHTML =
-                tempContent.innerHTML;
+                AppState.pristineContent ||
+                sanitizeForEditing(
+                    tempContent.innerHTML
+                );
 
         }
 

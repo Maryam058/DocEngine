@@ -799,8 +799,29 @@ const DraftManager = {
 
         }
 
-        AppState.editor.root.innerHTML =
-            html || "";
+        /*
+         * Quill's own import API, not a raw DOM assignment.
+         *
+         * quill.root.innerHTML = html bypasses Quill's Clipboard
+         * matchers entirely. Quill still has to reconcile that raw
+         * DOM against its internal Delta model asynchronously (via
+         * its own MutationObserver), and its reconciler does not
+         * understand genuine "loose list" HTML — an <li> containing
+         * nested <p> block content, which is exactly how a numbered
+         * step followed by an image renders. Rather than preserving
+         * that structure it drops the entire unrecognized subtree,
+         * silently deleting every list item (and any image nested
+         * inside one) from that point on.
+         *
+         * clipboard.dangerouslyPasteHTML() runs the same HTML through
+         * Quill's real HTML-to-Delta conversion up front, which does
+         * know how to flatten a loose list into Quill's own list
+         * representation without losing any list item or image.
+         */
+
+        AppState.editor.clipboard.dangerouslyPasteHTML(
+            html || ""
+        );
 
     },
 
@@ -3626,20 +3647,38 @@ const InlineEditor = {
            whatever happens to currently be on screen, which may
            itself be a stale "instant published" localStorage
            render or contain editor chrome that leaked in.
+
+           Loaded via clipboard.dangerouslyPasteHTML(), Quill's own
+           HTML-import API, NOT a raw "root.innerHTML =" assignment.
+           Quill's asynchronous DOM reconciliation cannot correctly
+           interpret a genuine loose list (an <li> containing nested
+           <p> block content -- exactly how a numbered step followed
+           by its image renders) and silently deletes the entire
+           list, images included, once it tries to reconcile it. The
+           Clipboard API converts that same HTML into a valid Quill
+           Delta up front, which preserves every list item and image
+           (Quill flattens the loose list into its own list
+           representation; nothing is lost). This happens before
+           registerDraftEvents() attaches the text-change listener
+           below, and AppState.draftChanged is explicitly reset to
+           false further down regardless, so loading content this
+           way still never marks the draft as changed.
         ================================================== */
 
         if (draftMatchesCurrentSource) {
 
-            AppState.editor.root.innerHTML =
-                savedDocument.content;
+            AppState.editor.clipboard.dangerouslyPasteHTML(
+                savedDocument.content
+            );
 
         } else {
 
-            AppState.editor.root.innerHTML =
+            AppState.editor.clipboard.dangerouslyPasteHTML(
                 AppState.pristineContent ||
                 sanitizeForEditing(
                     tempContent.innerHTML
-                );
+                )
+            );
 
         }
 

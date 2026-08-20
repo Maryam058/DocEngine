@@ -529,7 +529,6 @@ const PageChrome = {
                 <button type="button" class="docengine-feedback-btn" data-vote="yes" aria-pressed="${stored && stored.vote === "yes"}">👍 Yes</button>
                 <button type="button" class="docengine-feedback-btn" data-vote="no" aria-pressed="${stored && stored.vote === "no"}">👎 No</button>
             </div>
-            <button type="button" class="docengine-feedback-suggest">Suggest an improvement</button>
             <div class="docengine-feedback-thanks"${stored && stored.vote ? "" : " hidden"}>Thanks for your feedback!</div>
         `;
 
@@ -574,56 +573,7 @@ const PageChrome = {
         );
 
     },
-
-
-    openSuggestionPrompt(page) {
-
-        const panel =
-            this.showPanel({
-                title: "Suggest an improvement",
-                size: "medium",
-                bodyHTML: `
-                    <p class="docengine-hint">Saved on this device only — there is no feedback server connected yet.</p>
-                    <textarea id="docengine-suggestion-text" class="docengine-textarea" rows="5" placeholder="What should we improve on this page?"></textarea>
-                `,
-                footerHTML: `
-                    <button type="button" class="docengine-secondary-btn" data-close>Cancel</button>
-                    <button type="button" class="docengine-primary-btn" id="docengine-suggestion-save">Save</button>
-                `
-            });
-
-        panel.querySelector("#docengine-suggestion-save")
-            .addEventListener("click", () => {
-
-                const text =
-                    panel.querySelector("#docengine-suggestion-text").value.trim();
-
-                if (!text) {
-                    this.closeModal();
-                    return;
-                }
-
-                const all =
-                    Storage.load(FEEDBACK_STORAGE_KEY, {});
-
-                all[page] = {
-                    ...(all[page] || {}),
-                    suggestion: text,
-                    suggestedAt: Time.now()
-                };
-
-                Storage.save(
-                    FEEDBACK_STORAGE_KEY,
-                    all
-                );
-
-                this.closeModal();
-
-                this.toast("✓ Suggestion saved");
-
-            });
-
-    },
+           
 
 
     /* ======================================================

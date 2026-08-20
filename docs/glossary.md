@@ -1,6 +1,6 @@
 # Terminology Glossary
 
-This glossary defines the product, healthcare, and documentation-pipeline terms used across DocEngine's User Guide, Release Notes, and API documentation. Terms are listed alphabetically.
+This glossary defines product, healthcare, and documentation pipeline terms used across DocEngine User Guides, Release Notes, and API documentation. Terms are listed in alphabetical order.
 
 **## A**
 

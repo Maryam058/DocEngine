@@ -263,6 +263,24 @@ const PageChrome = {
             editButton
         );
 
+        /*
+         * The server-rendered ".doc-actions" wrapper (from
+         * overrides/main.html) is only ever a single-use shell
+         * around the edit button. Once the button is adopted
+         * into our toolbar, drop the now-empty wrapper so it
+         * does not leave stray blank space behind.
+         */
+
+        contentRoot
+            .querySelectorAll(".doc-actions")
+            .forEach(element => {
+
+                if (!element.children.length) {
+                    element.remove();
+                }
+
+            });
+
         let menuButton =
             toolbar.querySelector(
                 ".docengine-menu-button"

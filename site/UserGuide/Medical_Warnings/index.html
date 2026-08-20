@@ -65,6 +65,8 @@
     
       <link rel="stylesheet" href="../../stylesheets/page-chrome.css">
     
+      <link rel="stylesheet" href="../../stylesheets/image-editing.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -375,8 +377,6 @@
       
         
       
-        
-      
     
     
     
@@ -440,34 +440,6 @@
     
   
     Quick Start
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../Register%20a%20patient/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Register a Patient
   
 
     
@@ -671,10 +643,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#extracted-images" class="md-nav__link">
+  <a href="#configurations-to-access-medical-warnings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Extracted Images¶
+        Configurations to Access Medical Warnings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#medical-warnings-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medical Warnings Workflow
       
     </span>
   </a>
@@ -912,10 +895,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#extracted-images" class="md-nav__link">
+  <a href="#configurations-to-access-medical-warnings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Extracted Images¶
+        Configurations to Access Medical Warnings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#medical-warnings-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medical Warnings Workflow
       
     </span>
   </a>
@@ -1007,38 +1001,62 @@
 
 
 
-<h1 id="medical-warnings">Medical Warnings<a href="#medical-warnings">¶</a><a class="headerlink" href="#medical-warnings" title="Permanent link">&para;</a></h1>
+<h1 id="medical-warnings">Medical Warnings<a class="headerlink" href="#medical-warnings" title="Permanent link">&para;</a></h1>
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
-<p>Our latest release introduces an important new feature that allows users to seamlessly pull patient medical warning records from Health NZ into the indici system. The retrieved medical warnings will be displayed under the "Allergies/Medical Warnings" section of the relevant patientʼs consult screen in indici.</p>
-<p>12</p>
-<p>Requests to fetch the warnings are generated within indici using the Get NMWS Warnings</p>
-<p>button, which triggers a backend script to display the data.</p>
-<p>We have also provided useful filtering capabilities so users can search for medical warnings</p>
-<p>based on specific criteria such as date and status.</p>
-<p>Configurations to Access Medical Warnings</p>
-<p>To enable a user to access indici Medical Warnings, the user's role access rights must be</p>
-<p>configured at the practice level. The following steps need to be followed to display the Medical</p>
-<p>Warnings tab on the Patient Consult screen:</p>
-<p>roles have access to.</p>
-<p>Medical Warnings Workflow</p>
+<p>Our latest release introduces an important new feature that allows users to seamlessly pull patient medical warning records from Health NZ into the indici system. The retrieved medical warnings will be displayed under the "Allergies/Medical Warnings" section of the relevant patient's consult screen in indici.</p>
+<p>Requests to fetch the warnings are generated within indici using the <strong>Get NMWS Warnings</strong> button, which triggers a backend script to display the data.</p>
+<p>We have also provided useful filtering capabilities so users can search for medical warnings based on specific criteria such as date and status.</p>
+<h2 id="configurations-to-access-medical-warnings">Configurations to Access Medical Warnings<a class="headerlink" href="#configurations-to-access-medical-warnings" title="Permanent link">&para;</a></h2>
+<p>To enable a user to access indici Medical Warnings, the user's role access rights must be configured at the practice level. The following steps need to be followed to display the Medical Warnings tab on the <em>Patient Consult</em> screen:</p>
+<ol>
+<li>
+<p>Log in to indici</p>
+<p><img alt="indici login screen" src="../../assets/Medical_Warnings/indici-login-screen.png" /></p>
+</li>
+<li>
+<p>Go to Configurations &gt; User Management &gt; Access Rights</p>
+</li>
+<li>Here you will see the <strong>Medical Warning</strong> permission. This allows you to control which user roles have access to.</li>
+<li>
+<p>Mark the checkboxes under the user roles you want to have access to and click Save:</p>
+<p><img alt="Access Rights screen with the Medical Warnings permission row highlighted" src="../../assets/Medical_Warnings/access-rights-medical-warning-permission.png" /></p>
+</li>
+</ol>
+<h2 id="medical-warnings-workflow">Medical Warnings Workflow<a class="headerlink" href="#medical-warnings-workflow" title="Permanent link">&para;</a></h2>
 <p>The below steps illustrate the complete flow of how medical warnings are displayed indici:</p>
-<p>screen.</p>
-<p>executed in the backend, ensuring that the most up-to-date medical warnings from Health NZ</p>
-<p>are retrieved and displayed accurately:</p>
-<p>image:</p>
-<p>records:</p>
-<p>Date Filter: Allows users to specify a date range or select specific dates when searching for</p>
-<p>medical warnings.</p>
-<p>Status Filter: Enables users to filter warnings by their current status (e.g. Active, Inactive):</p>
-<h2 id="extracted-images">Extracted Images<a href="#extracted-images">¶</a><a class="headerlink" href="#extracted-images" title="Permanent link">&para;</a></h2>
-<p><img alt="Extracted image from page 1, image 1" src="../../assets/Medical_Warnings/image-01.png" /></p>
-<p><img alt="Extracted image from page 2, image 2" src="../../assets/Medical_Warnings/image-02.png" /></p>
-<p><img alt="Extracted image from page 2, image 3" src="../../assets/Medical_Warnings/image-03.png" /></p>
-<p><img alt="Extracted image from page 3, image 4" src="../../assets/Medical_Warnings/image-04.png" /></p>
-<p><img alt="Extracted image from page 3, image 5" src="../../assets/Medical_Warnings/image-05.png" /></p>
-<p><img alt="Extracted image from page 3, image 6" src="../../assets/Medical_Warnings/image-06.png" /></p>
-<p><img alt="Extracted image from page 4, image 7" src="../../assets/Medical_Warnings/image-07.png" /></p>
-<p><img alt="Extracted image from page 4, image 8" src="../../assets/Medical_Warnings/image-08.png" /></p>
+<ol>
+<li>
+<p>Go to <em>Patients &gt; Search &amp; List</em>:</p>
+<p><img alt="Patients menu with Search &amp; List highlighted" src="../../assets/Medical_Warnings/patients-search-and-list-menu.png" /></p>
+</li>
+<li>
+<p>On the <em>Search &amp; List</em> screen, click the name of the relevant patient to open their <em>Consult</em> screen.</p>
+</li>
+<li>
+<p>In the left pane click the <strong>Allergies/Medical Warnings</strong> option:</p>
+<p><img alt="Patient Note Functions pane with Allergies/Medical Warning highlighted, showing the empty Allergies/Adverse reactions tab" src="../../assets/Medical_Warnings/allergies-medical-warning-panel.png" /></p>
+</li>
+<li>
+<p>Click the <em>Medical Warnings</em> tab:</p>
+<p><img alt="Empty Medical Warnings tab" src="../../assets/Medical_Warnings/medical-warnings-tab-empty.png" /></p>
+</li>
+<li>
+<p>To fetch medical warnings from Health NZ, click the <strong>Get NMWS Warnings</strong> button. A script is executed in the backend, ensuring that the most up-to-date medical warnings from Health NZ are retrieved and displayed accurately:</p>
+<p><img alt="Medical Warnings tab with the Get NMWS Warnings button highlighted" src="../../assets/Medical_Warnings/get-nmws-warnings-button.png" /></p>
+</li>
+<li>
+<p>The medical warnings retrieved from Health NZ will be displayed as highlighted in the below image:</p>
+<p><img alt="Medical Warnings tab showing retrieved warning records" src="../../assets/Medical_Warnings/medical-warnings-results-table.png" /></p>
+</li>
+<li>
+<p>The users can filter medical warning records by Date and Status to search and view relevant records:</p>
+<ul>
+<li><strong>Date Filter</strong>: Allows users to specify a date range or select specific dates when searching for medical warnings.</li>
+<li><strong>Status Filter</strong>: Enables users to filter warnings by their current status (e.g. Active, Inactive):</li>
+</ul>
+<p><img alt="Medical Warnings tab with Date and Status filter fields highlighted" src="../../assets/Medical_Warnings/date-status-filter.png" /></p>
+</li>
+</ol>
 
 
 
@@ -1152,6 +1170,8 @@
         <script src="../../javascripts/doc-authoring.js"></script>
       
         <script src="../../javascripts/page-chrome.js"></script>
+      
+        <script src="../../javascripts/image-editing.js"></script>
       
     
   </body>

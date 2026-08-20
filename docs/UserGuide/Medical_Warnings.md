@@ -1,63 +1,55 @@
-# Medical Warnings[¶](#medical-warnings)
+# Medical Warnings
 
 ## Introduction
 
-Our latest release introduces an important new feature that allows users to seamlessly pull patient medical warning records from Health NZ into the indici system. The retrieved medical warnings will be displayed under the "Allergies/Medical Warnings" section of the relevant patientʼs consult screen in indici.
+Our latest release introduces an important new feature that allows users to seamlessly pull patient medical warning records from Health NZ into the indici system. The retrieved medical warnings will be displayed under the "Allergies/Medical Warnings" section of the relevant patient's consult screen in indici.
 
-12
+Requests to fetch the warnings are generated within indici using the **Get NMWS Warnings** button, which triggers a backend script to display the data.
 
-Requests to fetch the warnings are generated within indici using the Get NMWS Warnings
+We have also provided useful filtering capabilities so users can search for medical warnings based on specific criteria such as date and status.
 
-button, which triggers a backend script to display the data.
+## Configurations to Access Medical Warnings
 
-We have also provided useful filtering capabilities so users can search for medical warnings
+To enable a user to access indici Medical Warnings, the user's role access rights must be configured at the practice level. The following steps need to be followed to display the Medical Warnings tab on the *Patient Consult* screen:
 
-based on specific criteria such as date and status.
+1. Log in to indici
 
-Configurations to Access Medical Warnings
+    ![indici login screen](../assets/Medical_Warnings/indici-login-screen.png)
 
-To enable a user to access indici Medical Warnings, the user's role access rights must be
+2. Go to Configurations > User Management > Access Rights
+3. Here you will see the **Medical Warning** permission. This allows you to control which user roles have access to.
+4. Mark the checkboxes under the user roles you want to have access to and click Save:
 
-configured at the practice level. The following steps need to be followed to display the Medical
+    ![Access Rights screen with the Medical Warnings permission row highlighted](../assets/Medical_Warnings/access-rights-medical-warning-permission.png)
 
-Warnings tab on the Patient Consult screen:
-
-roles have access to.
-
-Medical Warnings Workflow
+## Medical Warnings Workflow
 
 The below steps illustrate the complete flow of how medical warnings are displayed indici:
 
-screen.
+1. Go to *Patients > Search & List*:
 
-executed in the backend, ensuring that the most up-to-date medical warnings from Health NZ
+    ![Patients menu with Search & List highlighted](../assets/Medical_Warnings/patients-search-and-list-menu.png)
 
-are retrieved and displayed accurately:
+2. On the *Search & List* screen, click the name of the relevant patient to open their *Consult* screen.
+3. In the left pane click the **Allergies/Medical Warnings** option:
 
-image:
+    ![Patient Note Functions pane with Allergies/Medical Warning highlighted, showing the empty Allergies/Adverse reactions tab](../assets/Medical_Warnings/allergies-medical-warning-panel.png)
 
-records:
+4. Click the *Medical Warnings* tab:
 
-Date Filter: Allows users to specify a date range or select specific dates when searching for
+    ![Empty Medical Warnings tab](../assets/Medical_Warnings/medical-warnings-tab-empty.png)
 
-medical warnings.
+5. To fetch medical warnings from Health NZ, click the **Get NMWS Warnings** button. A script is executed in the backend, ensuring that the most up-to-date medical warnings from Health NZ are retrieved and displayed accurately:
 
-Status Filter: Enables users to filter warnings by their current status (e.g. Active, Inactive):
+    ![Medical Warnings tab with the Get NMWS Warnings button highlighted](../assets/Medical_Warnings/get-nmws-warnings-button.png)
 
-## Extracted Images[¶](#extracted-images)
+6. The medical warnings retrieved from Health NZ will be displayed as highlighted in the below image:
 
-![Extracted image from page 1, image 1](../../assets/Medical_Warnings/image-01.png)
+    ![Medical Warnings tab showing retrieved warning records](../assets/Medical_Warnings/medical-warnings-results-table.png)
 
-![Extracted image from page 2, image 2](../../assets/Medical_Warnings/image-02.png)
+7. The users can filter medical warning records by Date and Status to search and view relevant records:
 
-![Extracted image from page 2, image 3](../../assets/Medical_Warnings/image-03.png)
+    - **Date Filter**: Allows users to specify a date range or select specific dates when searching for medical warnings.
+    - **Status Filter**: Enables users to filter warnings by their current status (e.g. Active, Inactive):
 
-![Extracted image from page 3, image 4](../../assets/Medical_Warnings/image-04.png)
-
-![Extracted image from page 3, image 5](../../assets/Medical_Warnings/image-05.png)
-
-![Extracted image from page 3, image 6](../../assets/Medical_Warnings/image-06.png)
-
-![Extracted image from page 4, image 7](../../assets/Medical_Warnings/image-07.png)
-
-![Extracted image from page 4, image 8](../../assets/Medical_Warnings/image-08.png)
+    ![Medical Warnings tab with Date and Status filter fields highlighted](../assets/Medical_Warnings/date-status-filter.png)

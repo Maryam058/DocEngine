@@ -52,10 +52,17 @@
 
 
 /* ==========================================================
-   HIDE BREADCRUMB
+   HIDE BREADCRUMB (homepage only)
+   Scoped to .homepage: a bare ".md-path { display: none }"
+   here previously hid the breadcrumb trail site-wide, which
+   silently defeated the page-chrome breadcrumb feature on
+   every content page. Material's navigation.path already
+   omits the breadcrumb on the homepage itself (nav depth <= 1),
+   so this rule is now just a defensive belt-and-suspenders
+   match for that same homepage-only intent.
    ========================================================== */
 
-.md-path {
+.homepage .md-path {
     display: none !important;
 }
 

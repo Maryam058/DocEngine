@@ -1,0 +1,83 @@
+/* ==========================================================
+   IMAGE EDITING (editor-only, Confluence-style)
+
+   This overlay is always a separate document.body-appended
+   element positioned over the selected <img> via
+   getBoundingClientRect() — never a DOM child of the image
+   itself. It therefore never ends up in saved/published
+   content, even if a save happens mid-selection.
+   ========================================================== */
+
+.image-editor-overlay {
+    display: none;
+    position: fixed;
+    z-index: 99990;
+    pointer-events: none;
+    box-sizing: border-box;
+    outline: 2px solid var(--de-brand, #1976d2);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.image-editor-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: var(--de-brand, #1976d2);
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    pointer-events: auto;
+}
+
+.image-editor-handle--nw {
+    top: -7px;
+    left: -7px;
+    cursor: nwse-resize;
+}
+
+.image-editor-handle--ne {
+    top: -7px;
+    right: -7px;
+    cursor: nesw-resize;
+}
+
+.image-editor-handle--sw {
+    bottom: -7px;
+    left: -7px;
+    cursor: nesw-resize;
+}
+
+.image-editor-handle--se {
+    bottom: -7px;
+    right: -7px;
+    cursor: nwse-resize;
+}
+
+.image-editor-toolbar {
+    position: absolute;
+    top: -38px;
+    right: 0;
+    pointer-events: auto;
+}
+
+.image-editor-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #ffffff;
+    background: #b42318;
+    border: none;
+    border-radius: var(--de-radius-sm, 6px);
+    box-shadow: var(--de-shadow-btn, 0 1px 3px rgba(0, 0, 0, 0.08)), 0 6px 16px rgba(15, 23, 42, 0.14);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.image-editor-delete-btn:hover,
+.image-editor-delete-btn:focus-visible {
+    background: #96190f;
+}

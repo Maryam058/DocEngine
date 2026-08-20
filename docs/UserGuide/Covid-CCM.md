@@ -1,14 +1,12 @@
-# Covid CCM
+# **COVID Clinical Care Module (CCCM)**
 
-**COVID Clinical Care Module (CCCM)**
+## Launching Healthlink from Patient
 
-Launching Healthlink from Patient
-
-COVID Clinical Care Module (CCCM)
-
-Launching Healthlink from Patient from HL icon:
+1. Click the **Healthlink **icon on the consult toolbar:
 
 ![HealthLink icon on the consult toolbar](../../assets/Covid-CCM/page_1_img_1.png)
+
+If the Healthlink** **icon is not visible, please expand the consult toolbar to access the **Healthlink **icon:
 
 ![Expanded consult toolbar showing the HealthLink icon](../../assets/Covid-CCM/page_1_img_2.png)
 

@@ -1,4 +1,4 @@
-#  Covid CCM
+# Covid CCM
 
 **COVID Clinical Care Module (CCCM)**
 
@@ -6,11 +6,9 @@ Launching Healthlink from Patient
 
 COVID Clinical Care Module (CCCM)
 
-Launching Healthlink from Patient
+Launching Healthlink from Patient from HL icon:
 
 ![HealthLink icon on the consult toolbar](../../assets/Covid-CCM/page_1_img_1.png)
-
-icon:
 
 ![Expanded consult toolbar showing the HealthLink icon](../../assets/Covid-CCM/page_1_img_2.png)
 
@@ -20,11 +18,10 @@ COVID Clinical Care Module (CCCM)
 
 ![HealthLink referral portal with the COVID Clinical Care Module option highlighted](../../assets/Covid-CCM/page_2_img_3.png)
 
-In case you are unable to view the CCCM option please call or email Healthlink team at the
+In case you are unable to view the CCCM option please call or email Healthlink team at the following:
 
-following:
-
-Email:
+**Email:
+**
 
 citc@contacttracing.health.nz
 

@@ -1,0 +1,1888 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AI-assisted technical documentation">
+      
+      
+        <meta name="author" content="Maryam Rehman">
+      
+      
+        <link rel="canonical" href="https://maryam058.github.io/DocEngine/release-notes/AI%20Copilot/">
+      
+      
+        <link rel="prev" href="../Release%20Notes_Sprint%20v2.3.4.7-feb26/">
+      
+      
+        <link rel="next" href="../../glossary/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>AI Copilot - DocEngine</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.snow.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/theme-polish.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/doc-authoring.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/page-chrome.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#indici-ai-copilot-release-notes" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="DocEngine" class="md-header__button md-logo" aria-label="DocEngine" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DocEngine
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              AI Copilot
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../UserGuide/quickstart/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../Release%20Notes_Sprint%20v2.3.4.7-feb26/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Release Notes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../glossary/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Glossary
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../style-guide/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Style Guide
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="DocEngine" class="md-nav__button md-logo" aria-label="DocEngine" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    DocEngine
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../UserGuide/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../UserGuide/Register%20a%20patient/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Register a Patient
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../UserGuide/book-appointment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Book an Appointment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../UserGuide/manage-appointments/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manage Appointments
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../UserGuide/Covid-CCM/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covid CCM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../UserGuide/Health-Kiosk-Integration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Health Kiosk Integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../UserGuide/Medical_Warnings/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Medical Warnings
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Notes
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Release Notes
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Release%20Notes_Sprint%20v2.3.4.7-feb26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sprint v2.3.4.7 (Feb 2026)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Copilot
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Copilot
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview¶
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-ai-powered-transcription" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: AI-Powered Transcription
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 1: AI-Powered Transcription">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ai-transcription-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI Transcription Services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indici-transcriber-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        indici Transcriber App¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-usage-credits-subscription-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI Usage, Credits, &amp; Subscription Management¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-much-does-it-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How much does it Cost?¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#beyond-phase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Beyond Phase 1¶
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Beyond Phase 1¶">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#upcoming-ai-powered-features-in-indici" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upcoming AI-Powered Features in indici¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-based-prescribing-and-medication-reconciliation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI-Based Prescribing and Medication Reconciliation¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auditing-ai-based-transcriptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auditing AI-Based Transcriptions¶
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#copilot-user-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Copilot User Guide¶
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Copilot User Guide¶">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration¶
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration¶">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enabling-indici-ai-copilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enabling indici AI Copilot¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#requesting-ai-credit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requesting AI Credit¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allocating-credit-to-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allocating Credit to Users¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-minimum-credit-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Minimum Credit Thresholds¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-custom-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up Custom Templates¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Access¶
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Managing Access¶">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enabling-users-to-access-the-copilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enabling Users to Access the Copilot¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#access-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access Permissions¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-indici-ai-copilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using indici AI Copilot¶
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using indici AI Copilot¶">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-azure-openai-or-claude-sonnet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Azure OpenAI, or Claude Sonnet¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-heidi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Heidi¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indici-ai-transcriber-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        indici AI Transcriber App¶
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="indici AI Transcriber App¶">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-use-the-indici-transcriber-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to use the indici Transcriber App¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ai-balance-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI Balance Report¶
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../style-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Style Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview¶
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-1-ai-powered-transcription" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: AI-Powered Transcription
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Phase 1: AI-Powered Transcription">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ai-transcription-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI Transcription Services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indici-transcriber-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        indici Transcriber App¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-usage-credits-subscription-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI Usage, Credits, &amp; Subscription Management¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-much-does-it-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How much does it Cost?¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#beyond-phase-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Beyond Phase 1¶
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Beyond Phase 1¶">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#upcoming-ai-powered-features-in-indici" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upcoming AI-Powered Features in indici¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ai-based-prescribing-and-medication-reconciliation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI-Based Prescribing and Medication Reconciliation¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auditing-ai-based-transcriptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auditing AI-Based Transcriptions¶
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#copilot-user-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Copilot User Guide¶
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Copilot User Guide¶">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration¶
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration¶">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enabling-indici-ai-copilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enabling indici AI Copilot¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#requesting-ai-credit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requesting AI Credit¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#allocating-credit-to-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Allocating Credit to Users¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-minimum-credit-thresholds" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Minimum Credit Thresholds¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setting-up-custom-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Setting up Custom Templates¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managing Access¶
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Managing Access¶">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enabling-users-to-access-the-copilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enabling Users to Access the Copilot¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#access-permissions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Access Permissions¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-indici-ai-copilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using indici AI Copilot¶
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using indici AI Copilot¶">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-azure-openai-or-claude-sonnet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Azure OpenAI, or Claude Sonnet¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-heidi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Heidi¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indici-ai-transcriber-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        indici AI Transcriber App¶
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="indici AI Transcriber App¶">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-use-the-indici-transcriber-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How to use the indici Transcriber App¶
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ai-balance-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI Balance Report¶
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../Release%20Notes_Sprint%20v2.3.4.7-feb26/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Release Notes
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+      <li class="md-path__item md-path__item--current">
+        <span class="md-ellipsis">AI Copilot</span>
+      </li>
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+
+  
+
+  <script>
+    window.DOCENGINE_SITE_AUTHOR = "Maryam Rehman";
+    window.DOCENGINE_PAGE_TITLE = "AI Copilot";
+  </script>
+
+  <div class="doc-actions">
+      <button class="edit-btn" onclick="openEditor()">
+          ✏️ Edit Page
+      </button>
+  </div>
+
+  
+
+  
+                  
+
+
+
+<h1 id="indici-ai-copilot-release-notes">indici AI Copilot Release Notes<a href="#indici-ai-copilot-release-notes">¶</a><a class="headerlink" href="#indici-ai-copilot-release-notes" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a href="#overview">¶</a><a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>We are delighted to introduce indici AI Copilot, an AI-powered suite of tools designed to enhance clinical workflows and bring substantial efficiency gains to medical practices.</p>
+<p>As the Copilot will be integrated across a swathe of core features within the indici platform, we are gradually rolling it out to allow users time to adapt. This phased approach ensures:</p>
+<p>Your feedback is crucial! We have always taken a collaborative approach in the design and development of indici to ensure that user experience is prioritised, and the roll out of the Copilot is no exception. So get in touch and let us know how you are getting on, so we can continue to improve our offerings with intelligent, efficient, and user-friendly tools.</p>
+<h2 id="phase-1-ai-powered-transcription">Phase 1: AI-Powered Transcription<a class="headerlink" href="#phase-1-ai-powered-transcription" title="Permanent link">&para;</a></h2>
+<h3 id="ai-transcription-services">AI Transcription Services<a class="headerlink" href="#ai-transcription-services" title="Permanent link">&para;</a></h3>
+<p>As an indici clinical user, you will be able to take full advantage of the Copilot's AI-driven transcription services from the outset. By converting your patient interactions into structured clinical notes within seconds, the Copilot dramatically reduces the amount of time you need to spend documenting your consults.</p>
+<p>Clinical note conversion is performed by multiple established AI processors, all of which are continuously enhancing their capabilities. Therefore, we have taken a flexible approach, allowing practices to choose the service that best suits their needs.</p>
+<p>At present, we offer practices a choice of the following AI processors:</p>
+<h3 id="indici-transcriber-app">indici Transcriber App<a href="#indici-transcriber-app">¶</a><a class="headerlink" href="#indici-transcriber-app" title="Permanent link">&para;</a></h3>
+<p>To further enhance transcription accuracy, we have also rolled out the indici Transcriber app, which allows clinicians to use their mobile phones as recording devices during consultations. This promotes better audio quality, improving the accuracy of AI-generated transcripts. Over time, we will introduce more features to the app, focusing on continuously improving efficiency and user experience.</p>
+<h3 id="ai-usage-credits-subscription-management">AI Usage, Credits, &amp; Subscription Management<a href="#ai-usage-credits-subscription-management">¶</a><a class="headerlink" href="#ai-usage-credits-subscription-management" title="Permanent link">&para;</a></h3>
+<p>AI services require significant computational resources, measured in credits or tokens, which are consumed based on usage. Most AI platforms use a pay-per-use model, requiring users to either purchase tokens or subscribe to a plan with a defined number of tokens.</p>
+<p>However, we have worked to streamline our users' AI experience by including a comprehensive credit and subscription management system within indici. This allows practices to:</p>
+<p>Some AI providers may use an annual subscription model instead of tokens. indici supports seamless handling of such subscriptions, with automated notifications and subscription renewals built in.</p>
+<h3 id="how-much-does-it-cost">How much does it Cost?<a href="#how-much-does-it-cost">¶</a><a class="headerlink" href="#how-much-does-it-cost" title="Permanent link">&para;</a></h3>
+<p>To support the integrated usage of external LLMs for generating consult documentation, we have built an AI Credit Manager into indici, where practices can top up their AI Credit and allocate it to their providers as required. Whenever a provider processes a consult using AI, the relevant charge will be deducted from their AI Credit balance. Details on how to manage AI Credit are provided further down in this document.</p>
+<p>The cost of processing a consult will vary depending on the length of the consult recording, the template, and the LLM. However, as an approximate guide and based on previous usage, a consult typically costs between $0.20 and $0.40 (NZD).</p>
+<h2 id="beyond-phase-1">Beyond Phase 1<a href="#beyond-phase-1">¶</a><a class="headerlink" href="#beyond-phase-1" title="Permanent link">&para;</a></h2>
+<h3 id="upcoming-ai-powered-features-in-indici">Upcoming AI-Powered Features in indici<a href="#upcoming-ai-powered-features-in-indici">¶</a><a class="headerlink" href="#upcoming-ai-powered-features-in-indici" title="Permanent link">&para;</a></h3>
+<p>In addition to transcription and note conversion, we will soon be introducing a wide range of practice-boosting AI features, including:</p>
+<h3 id="ai-based-prescribing-and-medication-reconciliation">AI-Based Prescribing and Medication Reconciliation<a href="#ai-based-prescribing-and-medication-reconciliation">¶</a><a class="headerlink" href="#ai-based-prescribing-and-medication-reconciliation" title="Permanent link">&para;</a></h3>
+<h2 id="auditing-ai-based-transcriptions">Auditing AI-Based Transcriptions<a href="#auditing-ai-based-transcriptions">¶</a><a class="headerlink" href="#auditing-ai-based-transcriptions" title="Permanent link">&para;</a></h2>
+<p>Since AI-powered transcription is a new and evolving technology, we have developed robust auditing features to ensure accuracy and accountability:</p>
+<h2 id="copilot-user-guide">Copilot User Guide<a href="#copilot-user-guide">¶</a><a class="headerlink" href="#copilot-user-guide" title="Permanent link">&para;</a></h2>
+<p>The following sections describe how to configure and use AI Transcription within indici.</p>
+<h3 id="configuration">Configuration<a href="#configuration">¶</a><a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
+<h4 id="enabling-indici-ai-copilot">Enabling indici AI Copilot<a href="#enabling-indici-ai-copilot">¶</a><a class="headerlink" href="#enabling-indici-ai-copilot" title="Permanent link">&para;</a></h4>
+<p>To enable indici AI Copilot for your practice:</p>
+<h4 id="requesting-ai-credit">Requesting AI Credit<a href="#requesting-ai-credit">¶</a><a class="headerlink" href="#requesting-ai-credit" title="Permanent link">&para;</a></h4>
+<p>As mentioned in the introduction, AI services consume tokens or credits in order to operate.</p>
+<p>To request credit for your practice:</p>
+<h4 id="allocating-credit-to-users">Allocating Credit to Users<a href="#allocating-credit-to-users">¶</a><a class="headerlink" href="#allocating-credit-to-users" title="Permanent link">&para;</a></h4>
+<p>When your practice has sufficient AI Copilot credit, the next step is to allocate it to relevant staff members who will then be able to utilise the AI Copilot.</p>
+<p>To do this:</p>
+<h4 id="managing-minimum-credit-thresholds">Managing Minimum Credit Thresholds<a href="#managing-minimum-credit-thresholds">¶</a><a class="headerlink" href="#managing-minimum-credit-thresholds" title="Permanent link">&para;</a></h4>
+<p>You can set minimum credit amounts for indici AI Copilot at both a practice and provider level. What this means is that if a practice's AI credit falls below the defined minimum amount, then a task can be automatically sent to the practice manager, prompting them to request additional credit.</p>
+<p>Likewise, a minimum amount can be set for providers within the practice. If a provider's credit amount falls below the defined minimum, they will be automatically allocated additional credit from the practice's fund.</p>
+<p>To set up these configurations:</p>
+<p>Managing Minimum Amounts for the Practice<a href="#managing-minimum-amounts-for-the-practice">¶</a></p>
+<p>To set a minimum amount for the practice:</p>
+<p><img alt="Auto-Request Threshold for AI Credits and Auto-Request Amount fields highlighted" src="../../assets/AI%20Copilot/image-14.png" /></p>
+<p>In the example above, if the practice's AI credit falls below 20 credits, a task will be automatically generated for the practice manager, prompting them to request a credit amount of 100 from the indici team. The practice manager will do this by contacting the indici team via email.</p>
+<p>Managing Minimum Amounts for Providers<a href="#managing-minimum-amounts-for-providers">¶</a></p>
+<p>To set a minimum amount for providers within the practice:</p>
+<p><img alt="Auto-Top-Up Threshold for Provider Credits and Auto-Top-Up Amount for Provider Credits fields highlighted" src="../../assets/AI%20Copilot/image-15.png" /></p>
+<p>In the example above, if a provider's AI credit falls below 5 credits, they will automatically receive an additional 50 credits, which will be allocated to them from the practice's AI credit fund.</p>
+<h4 id="setting-up-custom-templates">Setting up Custom Templates<a href="#setting-up-custom-templates">¶</a><a class="headerlink" href="#setting-up-custom-templates" title="Permanent link">&para;</a></h4>
+<p>You can set up your custom templates, which will be used to instruct the selected AI processor (e.g. ChatGPT) on how to organise your structured notes post-processing.</p>
+<p>To create a custom template:</p>
+<p>Once templates are made available, users will be able to select them from the <strong>Template</strong> field in the AI Transcribe section within the patient's Consult File.</p>
+<p><img alt="AI Transcribe panel Template dropdown showing system and custom templates available for selection" src="../../assets/AI%20Copilot/image-21.png" /></p>
+<h3 id="managing-access">Managing Access<a href="#managing-access">¶</a><a class="headerlink" href="#managing-access" title="Permanent link">&para;</a></h3>
+<h4 id="enabling-users-to-access-the-copilot">Enabling Users to Access the Copilot<a href="#enabling-users-to-access-the-copilot">¶</a><a class="headerlink" href="#enabling-users-to-access-the-copilot" title="Permanent link">&para;</a></h4>
+<p>To ensure a user has access to indici AI Copilot:</p>
+<p><img alt="AI User Access Rights search with Manage Access checkbox highlighted" src="../../assets/AI%20Copilot/image-22.png" /></p>
+<h4 id="access-permissions">Access Permissions<a href="#access-permissions">¶</a><a class="headerlink" href="#access-permissions" title="Permanent link">&para;</a></h4>
+<p>A number of access permissions have been added to the indici Access Permissions Matrix. To open this matrix, go to <strong>Configurations &gt; User Management &gt; Access Rights</strong>. Here you will see the following new permissions.</p>
+<p>AI Configuration<a href="#ai-configuration">¶</a></p>
+<p>Under <strong>Configurations</strong>, expand <strong>AI Configuration</strong>. This allows you to control which user roles have access to:</p>
+<p>Simply mark the checkboxes under the user roles you want to have access and click <strong>Save</strong>.</p>
+<p><img alt="Access Permissions Matrix with the AI Configuration section, AI Credit Allocation, and AI User Configuration rows highlighted" src="../../assets/AI%20Copilot/image-23.png" /></p>
+<p>AI Activities<a href="#ai-activities">¶</a></p>
+<p>Expand <strong>Patient Note Functions</strong> to see <strong>AI Activities</strong>. This controls who can access the AI Activities section within the Patient Note Functions on the Consult Screen.</p>
+<p>Simply mark the checkboxes under the user roles you want to have access to and click <strong>Save</strong>.</p>
+<p><img alt="Access Permissions Matrix with the AI Activities row highlighted under Patient Note Functions" src="../../assets/AI%20Copilot/image-24.png" /></p>
+<p>AI Balance Usage Report<a href="#ai-balance-usage-report">¶</a></p>
+<p>Expand the <strong>Report</strong> section to see the <strong>AI Balance Usage Report</strong>. This controls who can access the AI Balance Usage Report in order to view AI credit usage details.</p>
+<p>Simply mark the checkboxes under the user roles you want to have access to and click <strong>Save</strong>.</p>
+<p><img alt="Access Permissions Matrix with the AI Balance Usage Report row highlighted under Report" src="../../assets/AI%20Copilot/image-25.png" /></p>
+<h3 id="using-indici-ai-copilot">Using indici AI Copilot<a href="#using-indici-ai-copilot">¶</a><a class="headerlink" href="#using-indici-ai-copilot" title="Permanent link">&para;</a></h3>
+<p>If you have been given access to indici AI Copilot by your practice and allocated sufficient AI credit, you can use indici AI Copilot to assist in documenting your patient consults. Depending on how your practice has set up the Copilot, you may have the choice of using one or multiple AI processors.</p>
+<h4 id="using-azure-openai-or-claude-sonnet">Using Azure OpenAI, or Claude Sonnet<a href="#using-azure-openai-or-claude-sonnet">¶</a><a class="headerlink" href="#using-azure-openai-or-claude-sonnet" title="Permanent link">&para;</a></h4>
+<p>When using Azure OpenAI or Claude Sonnet, please follow the steps below.</p>
+<p>Documenting your Consult<a href="#documenting-your-consult">¶</a></p>
+<p>To document your consult:</p>
+<p>Approving AI-Processed Content<a href="#approving-ai-processed-content">¶</a></p>
+<p>AI-processed content must be approved as follows:</p>
+<p>Documenting an ACC Consult<a href="#documenting-an-acc-consult">¶</a></p>
+<p>If your interaction with the patient includes information related to an accident, the AI Copilot will automatically process the transcript in the context of an ACC Consult.</p>
+<p>Once you click AI-Process, the notes returned by the Copilot will include an accident details section. You can use these notes to automatically populate an ACC45 form by clicking the plus icon next to them.</p>
+<p><img alt="AI Processed ACC section with accident details and the plus icon highlighted" src="../../assets/AI%20Copilot/image-38.png" /></p>
+<p>A pop up will appear reminding you to review the form to ensure its accuracy before submitting. Click <strong>OK</strong> to continue.</p>
+<p><img alt="Warning popup stating the Accident Details section of the ACC45 form is auto-populated using AI processing" src="../../assets/AI%20Copilot/image-39.png" /></p>
+<p>This will open the ACC45 form, where certain fields will be automatically filled in based on your interaction with the patient. Review the form, edit or add to it as required, and then submit as you normally would.</p>
+<p><img alt="ACC45 Accident Detail form with fields pre-populated from the AI-processed consult" src="../../assets/AI%20Copilot/image-40.png" /></p>
+<p>AI Activities<a href="#ai-activities_1">¶</a></p>
+<p>Once you have actioned/approved all of the AI-processed content you wish to include within the patient's record, you can simply leave any unnecessary remaining information as it is. Any information that has not been actioned won't be saved within the record.</p>
+<p>You can always view your AI activities, including the original raw transcription content from the recording, by clicking <strong>AI Activities</strong> in the Patient Note Functions list.</p>
+<p><img alt="AI Activities item in the Patient Note Functions list" src="../../assets/AI%20Copilot/image-41.png" /></p>
+<p>In the section that opens, click the eye icon next to an activity to view it in more detail.</p>
+<p><img alt="AI activities grid with the eye icon highlighted in the Action column" src="../../assets/AI%20Copilot/image-42.png" /></p>
+<h4 id="using-heidi">Using Heidi<a href="#using-heidi">¶</a><a class="headerlink" href="#using-heidi" title="Permanent link">&para;</a></h4>
+<p>Most of the AI processors integrate seamlessly into indici, but some, like Heidi, require an external widget to function alongside the system. Therefore, if you are using Heidi, the workflow is slightly different. Simply follow the steps below:</p>
+<p>If you want to start a new session within Heidi at any point, click the three dots icon and select <strong>New Session</strong>.</p>
+<p><img alt="Heidi widget menu showing Switch to dark mode, New session, and Heidi Help options" src="../../assets/AI%20Copilot/image-53.png" /></p>
+<h3 id="indici-ai-transcriber-app">indici AI Transcriber App<a href="#indici-ai-transcriber-app">¶</a><a class="headerlink" href="#indici-ai-transcriber-app" title="Permanent link">&para;</a></h3>
+<h4 id="overview_1">Overview<a href="#overview_1">¶</a><a class="headerlink" href="#overview_1" title="Permanent link">&para;</a></h4>
+<p>Alongside our indici AI Copilot, we have designed and developed the indici Transcriber app to further enhance the speed and accuracy of documenting a consultation. The indici Transcriber app allows providers to use their phone to record the interaction with their patient and then seamlessly syncs the transcribed data back to indici.</p>
+<p>Often, your phone will have higher levels of audio quality than the microphone built into your computer, meaning it is much better suited to generating accurate consult transcripts. This, in turn, supports more efficient outputs when you use AI to process the consult, essentially optimising the speed and efficiency of your entire consult documentation workflow.</p>
+<p>Building on previous versions of the Transcriber app, we have pared down the process to achieve a truly streamlined user experience. All you have to do is:</p>
+<p>Once the consult is complete, the app automatically syncs the transcribed data back to the patient's file in indici, where it can be processed through your selected AI model to produce full, structured consultation notes.</p>
+<h4 id="how-to-use-the-indici-transcriber-app">How to use the indici Transcriber App<a href="#how-to-use-the-indici-transcriber-app">¶</a><a class="headerlink" href="#how-to-use-the-indici-transcriber-app" title="Permanent link">&para;</a></h4>
+<p>Downloading the App<a href="#downloading-the-app">¶</a></p>
+<p>To download the indici Transcriber app:</p>
+<p>Generating a QR Code<a href="#generating-a-qr-code">¶</a></p>
+<p>The next step is to generate a QR Code for the patient you are seeing. To do so:</p>
+<p>Scanning the QR Code<a href="#scanning-the-qr-code">¶</a></p>
+<p>Recording the Consult<a href="#recording-the-consult">¶</a></p>
+<p>As soon as you have scanned the QR code, the app will start recording the consultation automatically. You will see the timer has been activated, and a message in red font will advise you that the recording is in progress.</p>
+<p><img alt="indici AI Transcriber app showing patient details and the consultation recording in progress" src="../../assets/AI%20Copilot/image-57.png" /></p>
+<p>You should place the phone somewhere close by and unobstructed to get the highest possible audio quality and reduce the potential for errors in the transcript.</p>
+<p>Then simply carry out your consultation with your patient. If you wish to pause the recording at any point, click <strong>Pause</strong>. The app will not record any audio while paused.</p>
+<p><img alt="Consultation Recording screen with the Pause button highlighted" src="../../assets/AI%20Copilot/image-58.png" /></p>
+<p>Once you are finished, click <strong>End Consultation</strong>.</p>
+<p><img alt="Consultation Recording screen with the End Consultation button highlighted" src="../../assets/AI%20Copilot/image-59.png" /></p>
+<p>Syncing the Transcript back to indici<a href="#syncing-the-transcript-back-to-indici">¶</a></p>
+<p>As soon as you click <strong>End Consultation</strong>, you will see a message advising you that the audio is now processing.</p>
+<p><img alt="Consultation Recording screen showing audio processing progress" src="../../assets/AI%20Copilot/image-60.png" /></p>
+<p>Once the processing has been completed, the app will automatically send the generated transcript to the patient's file in indici. You will see a message advising you that it has been sent.</p>
+<p><img alt="Transcript sent successfully confirmation popup" src="../../assets/AI%20Copilot/image-61.png" /></p>
+<p>To view the transcript, open the patient's indici file and navigate to the AI Transcribe section (in the right-hand panel).</p>
+<p><img alt="AI Transcribe panel showing the synced transcript ready for AI processing" src="../../assets/AI%20Copilot/image-62.png" /></p>
+<p>You can then process this data using a selected AI processor model as described in the previous section (<a href="#using-indici-ai-copilot">Using indici AI Copilot</a>).</p>
+<h2 id="ai-balance-report">AI Balance Report<a href="#ai-balance-report">¶</a><a class="headerlink" href="#ai-balance-report" title="Permanent link">&para;</a></h2>
+<p>We have added a new report in indici called AI Balance Report, where you can view how much AI credit has been consumed and by whom.</p>
+<p>To open this report:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+
+
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../Release%20Notes_Sprint%20v2.3.4.7-feb26/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Sprint v2.3.4.7 (Feb 2026)">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Sprint v2.3.4.7 (Feb 2026)
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../glossary/" class="md-footer__link md-footer__link--next" aria-label="Next: Glossary">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Glossary
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      © 2026 DocEngine
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "navigation.path", "search.suggest", "search.highlight", "content.code.copy", "content.tooltips"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+      
+        <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+      
+        <script src="../../javascripts/doc-authoring.js"></script>
+      
+        <script src="../../javascripts/page-chrome.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1962 @@
+:root {
+    /* Brand */
+    --de-brand: #1976d2;
+    --de-brand-dark: #0d47a1;
+    --de-brand-hover: #1565c0;
+
+    /* Neutrals */
+    --de-surface: #ffffff;
+    --de-surface-subtle: #f8fafc;
+    --de-border: #e5e7eb;
+    --de-border-strong: #d9e2ec;
+    --de-text-secondary: #333333;
+    --de-border-secondary: #d1d5db;
+
+    /* Radius */
+    --de-radius-sm: 6px;
+    --de-radius-lg: 12px;
+    --de-radius-xl: 14px;
+
+    /* Shadow */
+    --de-shadow-frame: 0 4px 20px rgba(0, 0, 0, 0.10);
+    --de-shadow-btn: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --de-shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.20);
+
+    /* Modal */
+    --de-modal-title: #1f2937;
+    --de-modal-message: #6b7280;
+    --de-modal-cancel-bg: #e5e7eb;
+    --de-modal-cancel-text: #374151;
+    --de-modal-confirm-bg: #2563eb;
+}
+
+
+/* ==========================================================
+   HOME PAGE - FULL WIDTH
+   ========================================================== */
+
+.homepage .md-main__inner {
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+.homepage .md-content {
+    margin: 0 !important;
+}
+
+.homepage .md-content__inner {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* ==========================================================
+   HIDE BREADCRUMB
+   ========================================================== */
+
+.md-path {
+    display: none !important;
+}
+
+
+/* ==========================================================
+   HOME HERO
+   ========================================================== */
+
+.homepage .hero {
+    position: relative;
+
+    width: 90vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    text-align: center;
+
+    background: linear-gradient(135deg, #1f6fe5, #25b8ea);
+    color: white;
+
+    padding: 80px 20px;
+    box-sizing: border-box;
+}
+
+.homepage .hero h1 {
+    font-size: 72px;
+    margin-bottom: 20px;
+}
+
+.homepage .hero h2 {
+    font-size: 38px;
+    margin-bottom: 25px;
+}
+
+.homepage .hero p {
+    max-width: 800px;
+    font-size: 22px;
+    line-height: 1.7;
+}
+
+.homepage .hero-button {
+    margin-top: 35px;
+    background: #fff;
+    color: #1976d2;
+    padding: 14px 36px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+
+/* ==========================================================
+   HOME SECTION
+   ========================================================== */
+
+.home-section {
+    max-width: 1200px;
+    margin: 80px auto;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.section-text {
+    color: #666;
+    margin-bottom: 50px;
+    font-size: 18px;
+}
+
+
+/* ==========================================================
+   CARDS
+   ========================================================== */
+
+.cards {
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin-top: 40px;
+}
+
+.card {
+    width: 260px;
+    background: #f0f0f3;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, .12);
+    transition: .3s;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+}
+
+.card p {
+    flex: 1;
+    color: #23337c;
+    line-height: 1.6;
+}
+
+.card-button {
+    display: inline-block;
+    align-self: center;
+    margin-top: 20px;
+    padding: 12px 24px;
+    background: #1976d2;
+    color: #fff !important;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    align-items: stretch;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-button {
+    margin-top: auto;
+}
+
+/* ==========================================================
+   HERO BOX
+   ========================================================== */
+
+.hero-box {
+    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    color: #fff;
+    padding: 50px;
+    border-radius: 14px;
+    margin: 30px 0 50px;
+    text-align: center;
+}
+
+.hero-box h1 {
+    color: #fff;
+    margin: 0 0 15px;
+    font-size: 42px;
+}
+
+.hero-box p {
+    color: #fff;
+    font-size: 18px;
+}
+
+
+/* ==========================================================
+   STEP CARDS
+   ========================================================== */
+
+.step-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+
+    background: #fff;
+
+    padding: 30px;
+
+    margin: 30px 0;
+
+    border-radius: 12px;
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .08);
+}
+
+.step-text {
+    flex: 1;
+}
+
+.step-image {
+    flex: 1;
+    text-align: center;
+}
+
+.step-image img {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .15);
+}
+
+
+/* ==========================================================
+   INFORMATION CARDS
+   ========================================================== */
+
+.info-card {
+    background: #f5f7fb;
+    padding: 20px;
+    border-left: 5px solid #1976d2;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.info-grid div {
+    background: #f8f9fc;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .08);
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 768px) {
+    .step-card {
+        flex-direction: column;
+    }
+}
+
+
+/* ==========================================================
+   LEFT NAVIGATION
+   ========================================================== */
+
+.md-sidebar--primary .md-nav__title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1976d2;
+}
+
+.md-sidebar--primary .md-nav__link {
+    font-size: 16px;
+    font-weight: 500;
+    padding: 8px 0;
+}
+
+.md-sidebar--primary .md-nav__link--active {
+    color: #1976d2 !important;
+    font-weight: 700;
+}
+
+
+/* ==========================================================
+   HIDE TABLE OF CONTENTS
+   ========================================================== */
+
+.md-sidebar--secondary {
+    display: none !important;
+}
+
+.md-main__inner {
+    grid-template-columns: 280px 1fr !important;
+}
+
+
+/* ==========================================================
+   HOME PAGE FULL WIDTH
+   ========================================================== */
+
+.md-main__inner.md-grid {
+    max-width: 100% !important;
+}
+
+
+/* ==========================================================
+   AI DRAFT / HUMAN REVIEW EDITOR
+   ========================================================== */
+
+.review-editable-page {
+    border: 2px dashed #1976d2;
+    border-radius: 8px;
+    padding: 20px;
+    background: #fcfdff;
+    min-height: 400px;
+    outline: none;
+}
+
+.review-editable-page:focus {
+    border-color: #0d47a1;
+    box-shadow: 0 0 0 4px rgba(25, 118, 210, .15);
+}
+
+.review-editable-page h1,
+.review-editable-page h2,
+.review-editable-page h3,
+.review-editable-page h4,
+.review-editable-page h5,
+.review-editable-page h6 {
+    cursor: text;
+}
+
+.review-editable-page p,
+.review-editable-page li,
+.review-editable-page td,
+.review-editable-page th,
+.review-editable-page blockquote {
+    cursor: text;
+}
+
+.review-editable-page img {
+    max-width: 100%;
+    border: 2px solid transparent;
+    transition: .2s;
+}
+
+.review-editable-page img:hover {
+    border-color: #1976d2;
+}
+
+
+/* ==========================================================
+   REVIEW BANNER
+   ========================================================== */
+
+.review-banner {
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    background: #e3f2fd;
+    border: 1px solid #1976d2;
+}
+
+.review-workspace {
+    margin-top: 30px;
+}
+
+.review-panel {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #ddd;
+}
+
+.review-actions {
+    margin: 20px 0;
+}
+
+.review-actions button {
+    padding: 10px 18px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+
+/* ==========================================================
+   EDIT DOCUMENT BUTTON
+   ========================================================== */
+
+.edit-document-btn {
+    display: inline-block;
+    padding: 8px 16px;
+    margin: 10px 0;
+    background: #bcc0d6;
+    color: rgb(14, 13, 13);
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.edit-document-btn:hover {
+    opacity: 0.85;
+}
+
+
+/* ==========================================================
+   DOCUMENT ACTIONS
+   ========================================================== */
+
+.doc-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.doc-actions button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.doc-actions button:hover {
+    background: #1d4ed8;
+}
+
+
+/* ==========================================================
+   EDIT PAGE BUTTON
+   ALWAYS RIGHT ALIGNED
+   ========================================================== */
+
+.edit-btn {
+    display: block !important;
+
+    width: fit-content !important;
+
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    margin-bottom: 18px !important;
+
+    padding: 7px 14px;
+
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+
+    color: #ffffff !important;
+    background: var(--de-brand) !important;
+
+    border: 1px solid var(--de-brand) !important;
+    border-radius: var(--de-radius-sm);
+
+    cursor: pointer;
+    text-decoration: none;
+
+    box-shadow: var(--de-shadow-btn);
+
+    box-sizing: border-box;
+}
+
+.edit-btn:hover,
+.edit-btn:focus,
+.edit-btn:active {
+    background: var(--de-brand) !important;
+    color: #ffffff !important;
+    border-color: var(--de-brand) !important;
+
+    box-shadow: var(--de-shadow-btn);
+
+    transform: none !important;
+}
+
+
+/* ==========================================================
+   EDITING MODE
+   ========================================================== */
+
+.editing-mode {
+    border: 2px solid #2196f3;
+    padding: 20px;
+    background: #fff;
+}
+
+#page-editor {
+    background: white;
+}
+
+
+/* ==========================================================
+   EDITOR TOOLBAR
+   ========================================================== */
+
+#editor-toolbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+
+    position: sticky;
+    top: 0;
+
+    padding: 10px 15px;
+
+    margin-bottom: 20px;
+
+    background: #ffffff;
+
+    border: 1px solid #ddd;
+    border-radius: 8px;
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    box-sizing: border-box;
+
+    z-index: 999;
+}
+
+#editor-toolbar button {
+    min-width: 40px;
+    height: 35px;
+
+    padding: 6px 12px;
+
+    background: #ffffff;
+
+    border: 1px solid #ccc;
+    border-radius: 5px;
+
+    cursor: pointer;
+
+    font-size: 16px;
+    font-weight: 600;
+}
+
+#editor-toolbar button:hover {
+    background: #e3f2fd;
+}
+
+
+/* ==========================================================
+   SAVE PAGE DRAFT
+   ========================================================== */
+
+#save-page-draft {
+    background: #1976d2;
+    color: white;
+
+    border: none;
+
+    padding: 10px 18px;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    margin-bottom: 15px;
+
+    user-select: none;
+}
+
+#save-page-draft:hover {
+    background: #1565c0;
+}
+
+
+/* ==========================================================
+   FINAL EDITOR FRAME
+   ========================================================== */
+
+.editor-page {
+    width: 100%;
+    max-width: 1200px;
+
+    margin: 40px auto !important;
+
+    padding: 0 24px !important;
+
+    box-sizing: border-box;
+}
+
+.editor-frame {
+    /* Consolidated: merges the base frame rules below with the later
+       "position/fixed-height workspace" overrides that used to live
+       in two separate blocks further down this file (same selector,
+       same computed result as before this pass). */
+    width: 100%;
+
+    background: var(--de-surface);
+
+    box-sizing: border-box;
+
+    border: 1px solid var(--de-border-strong) !important;
+    border-radius: var(--de-radius-lg) !important;
+    box-shadow: var(--de-shadow-frame) !important;
+
+    position: relative !important;
+
+    height: calc(100vh - 120px) !important;
+    min-height: 600px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    overflow: hidden !important;
+}
+
+.editor-header {
+    /* Consolidated: base layout + the later "clear the absolutely
+       positioned action buttons" padding-top override + the later
+       "fixed header, doesn't scroll" flex override. Same computed
+       result as before this pass. */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 22px 28px !important;
+    padding-top: 70px !important;
+
+    background: var(--de-surface-subtle);
+
+    border-bottom: 1px solid var(--de-border);
+
+    flex: 0 0 auto !important;
+}
+
+.editor-container {
+    /* Consolidated: base rules + the later "fills remaining height,
+       Quill area scrolls internally" override. Same computed result
+       as before this pass. */
+    width: 100%;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    border: 0 !important;
+
+    background: var(--de-surface);
+
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+
+    overflow: hidden !important;
+}
+
+#editor {
+    /* Consolidated: base rules + the later "Quill root fills its
+       container" override. Same computed result as before this pass. */
+    height: 100% !important;
+    min-height: 0 !important;
+
+    padding: 30px 36px !important;
+
+    border: 0 !important;
+
+    box-sizing: border-box;
+
+    overflow: hidden !important;
+}
+
+.editor-footer {
+    /* Consolidated: base rules + the later "fixed at bottom, doesn't
+       scroll" flex override. Same computed result as before this pass. */
+    padding: 14px 24px !important;
+
+    background: var(--de-surface-subtle);
+
+    border-top: 1px solid var(--de-border);
+    border-bottom: 1px solid var(--de-border);
+
+    flex: 0 0 auto !important;
+}
+
+.editor-actions {
+    /* Consolidated: the base rules below were entirely superseded by
+       a later "top-right, absolutely positioned" override block; this
+       is that override's full computed result (same as before this
+       pass), now the single definition. */
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 10px !important;
+
+    width: 100% !important;
+    box-sizing: border-box !important;
+
+    margin: 0 !important;
+    padding: 12px 24px !important;
+
+    background: var(--de-surface) !important;
+    border: 0 !important;
+
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+
+    z-index: 20 !important;
+}
+
+
+/* ==========================================================
+   INLINE EDITOR FRAME
+   ========================================================== */
+
+.inline-editor-workspace.editor-frame {
+    /* Consolidated: merges the base frame rules with the later
+       "remove side spacing, full-bleed" override that used to live
+       in a separate block below — same computed result as before
+       this pass. */
+    width: 100% !important;
+
+    max-width: none !important;
+
+    margin: 20px 0 !important;
+
+    padding: 0 !important;
+
+    box-sizing: border-box;
+
+    background: var(--de-surface);
+
+    border: 1px solid var(--de-border-strong) !important;
+
+    border-radius: var(--de-radius-lg) !important;
+
+    box-shadow: var(--de-shadow-frame) !important;
+
+    overflow: hidden;
+}
+
+
+/* ==========================================================
+   INLINE EDITOR - REMOVE SIDE SPACING
+   ========================================================== */
+
+.md-content__inner:has(.inline-editor-workspace) {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+
+/* ==========================================================
+   INLINE EDITOR CONTENT
+   ========================================================== */
+
+.inline-editor-workspace .ql-editor {
+    width: 100% !important;
+
+    max-width: none !important;
+
+    margin: 0 !important;
+
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   INLINE EDITOR CONTENT ALIGNMENT
+   ========================================================== */
+
+.inline-editor-workspace .ql-editor > * {
+    max-width: none !important;
+
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+
+/* ==========================================================
+   INLINE EDITOR HEADINGS
+   ========================================================== */
+
+.inline-editor-workspace .ql-editor h1,
+.inline-editor-workspace .ql-editor h2,
+.inline-editor-workspace .ql-editor h3 {
+    max-width: none !important;
+
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+
+/* ==========================================================
+   INLINE EDITOR PARAGRAPHS
+   ========================================================== */
+
+.inline-editor-workspace .ql-editor p {
+    max-width: none !important;
+
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+
+/* ==========================================================
+   EDIT PAGE BUTTON
+   PUBLISHED / GENERATED VERSION
+   ALWAYS RIGHT ALIGNED
+   ========================================================== */
+
+.edit-page-button {
+    display: block !important;
+
+    width: fit-content !important;
+
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    margin-bottom: 18px !important;
+
+    padding: 7px 14px;
+
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.2;
+
+    color: #ffffff !important;
+    background: var(--de-brand) !important;
+
+    border: 1px solid var(--de-brand) !important;
+    border-radius: var(--de-radius-sm);
+
+    cursor: pointer;
+    text-decoration: none;
+
+    box-shadow: var(--de-shadow-btn);
+
+    box-sizing: border-box;
+}
+
+.edit-page-button:hover,
+.edit-page-button:focus,
+.edit-page-button:active {
+    background: var(--de-brand) !important;
+    color: #ffffff !important;
+
+    border-color: var(--de-brand) !important;
+
+    box-shadow: var(--de-shadow-btn);
+
+    transform: none !important;
+}
+
+
+/* ==========================================================
+   GENERIC EDITOR BUTTON
+   KEEP SAME ON HOVER
+   ========================================================== */
+
+.editor-btn {
+    background: var(--de-surface);
+
+    color: var(--de-text-secondary);
+
+    border: 1px solid var(--de-border-secondary);
+}
+
+.editor-btn:hover,
+.editor-btn:focus,
+.editor-btn:active {
+    background: var(--de-surface);
+
+    color: var(--de-text-secondary);
+
+    border: 1px solid var(--de-border-secondary);
+
+    box-shadow: none;
+
+    transform: none;
+}
+/* ==========================================================
+   DocEngine Workflow Modal
+========================================================== */
+
+.docengine-modal-overlay {
+
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.45);
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    z-index: 99999;
+
+    padding: 20px;
+
+}
+
+
+.docengine-modal {
+
+    width: min(460px, 100%);
+
+    background: var(--de-surface);
+
+    border-radius: var(--de-radius-xl);
+
+    padding: 28px;
+
+    text-align: center;
+
+    box-shadow:
+        var(--de-shadow-modal);
+
+}
+
+
+.docengine-modal-icon {
+
+    font-size: 38px;
+
+    margin-bottom: 12px;
+
+}
+
+
+.docengine-modal-title {
+
+    font-size: 21px;
+
+    font-weight: 700;
+
+    color: var(--de-modal-title);
+
+    margin-bottom: 10px;
+
+}
+
+
+.docengine-modal-message {
+
+    font-size: 15px;
+
+    line-height: 1.6;
+
+    color: var(--de-modal-message);
+
+    margin-bottom: 24px;
+
+}
+
+
+.docengine-modal-actions {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 10px;
+
+}
+
+
+.docengine-modal-actions button {
+
+    border: none;
+
+    border-radius: 8px;
+
+    padding: 10px 20px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+}
+
+
+.docengine-modal-confirm {
+
+    background: var(--de-modal-confirm-bg);
+
+    color: #ffffff;
+
+}
+
+
+.docengine-modal-cancel {
+
+    background: var(--de-modal-cancel-bg);
+
+    color: var(--de-modal-cancel-text);
+
+}
+
+
+.docengine-modal-confirm:hover,
+.docengine-modal-cancel:hover {
+
+    opacity: 0.9;
+
+}
+/* ==========================================================
+   INLINE EDITOR WORKFLOW BUTTONS
+   ========================================================== */
+
+.inline-editor-actions {
+    /* Consolidated: merges the base panel rules with the later
+       "absolute, top-right, fixed" overrides that used to live in
+       two separate blocks further down this file — same computed
+       result as before this pass. */
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 10px !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+    width: auto !important;
+
+    position: absolute !important;
+    top: 18px !important;
+    right: 24px !important;
+    z-index: 9999 !important;
+
+    flex: 0 0 auto !important;
+
+    background: var(--de-surface);
+    border-top: 1px solid var(--de-border);
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   COMMON BUTTON STYLE
+   ========================================================== */
+
+.inline-editor-actions button {
+    /* Consolidated: merges the base button rules with the later
+       "compact top-right sizing" override that used to live in a
+       separate block further down this file — same computed
+       result as before this pass. */
+    display: inline-flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    min-height: 38px !important;
+
+    padding: 8px 14px !important;
+
+    margin: 0 !important;
+
+    cursor: pointer !important;
+
+    border-radius: var(--de-radius-sm);
+
+    font-size: 14px;
+    font-weight: 600;
+
+    line-height: 1.2;
+
+    border: 1px solid transparent;
+
+    box-sizing: border-box;
+
+    transition: none !important;
+}
+
+
+/* ==========================================================
+   SAVE DRAFT
+   ========================================================== */
+
+#inline-save {
+    background: var(--de-brand);
+    color: #ffffff;
+
+    border-color: var(--de-brand);
+}
+
+#inline-save:hover,
+#inline-save:focus,
+#inline-save:active {
+    background: var(--de-brand);
+    color: #ffffff;
+
+    border-color: var(--de-brand);
+
+    box-shadow: none;
+
+    transform: none;
+}
+
+
+/* ==========================================================
+   APPROVE
+   ========================================================== */
+
+#inline-approve {
+    background: var(--de-brand);
+    color: #ffffff;
+
+    border-color: var(--de-brand);
+}
+
+#inline-approve:hover,
+#inline-approve:focus,
+#inline-approve:active {
+    background: var(--de-brand);
+    color: #ffffff;
+
+    border-color: var(--de-brand);
+
+    box-shadow: none;
+
+    transform: none;
+}
+
+
+/* ==========================================================
+   PUBLISH
+   ========================================================== */
+
+#inline-publish {
+    background: var(--de-brand);
+    color: #ffffff;
+
+    border-color: var(--de-brand);
+}
+
+#inline-publish:hover,
+#inline-publish:focus,
+#inline-publish:active {
+    background: var(--de-brand);
+    color: #ffffff;
+
+    border-color: var(--de-brand);
+
+    box-shadow: none;
+
+    transform: none;
+}
+
+
+/* ==========================================================
+   CANCEL
+   ========================================================== */
+
+#inline-cancel {
+    background: var(--de-brand);
+    color: #ffffff;
+
+    border-color: var(--de-brand);
+}
+
+#inline-cancel:hover,
+#inline-cancel:focus,
+#inline-cancel:active {
+    background: var(--de-brand);
+    color: #ffffff;
+
+    border-color: var(--de-brand);
+
+    box-shadow: none;
+
+    transform: none;
+}
+
+/* ==========================================================
+   DOCENGINE WORKFLOW ACTIONS
+   TOP RIGHT - KEEP EXISTING FUNCTIONALITY
+   ========================================================== */
+
+/* .editor-frame position + .editor-actions layout + .editor-header
+   padding-top were consolidated into their single definitions
+   earlier in this file (search "Consolidated") — no rule dropped,
+   just no longer duplicated here. */
+
+/* Keep the buttons compact and aligned */
+.editor-actions .editor-btn,
+.editor-actions #cancel-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    min-height: 38px !important;
+    padding: 9px 16px !important;
+
+    margin: 0 !important;
+
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+
+    cursor: pointer !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+
+/* Preserve the existing neutral button appearance */
+.editor-actions .editor-btn,
+.editor-actions #cancel-btn {
+    background: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Keep hover/focus/active visually unchanged */
+.editor-actions .editor-btn:hover,
+.editor-actions .editor-btn:focus,
+.editor-actions .editor-btn:active,
+.editor-actions #cancel-btn:hover,
+.editor-actions #cancel-btn:focus,
+.editor-actions #cancel-btn:active {
+    background: #ffffff !important;
+    color: #333333 !important;
+    border: 1px solid #d1d5db !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+/* Mobile: allow the buttons to wrap instead of overlapping */
+@media (max-width: 768px) {
+    .editor-actions {
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+
+        flex-wrap: wrap !important;
+        justify-content: flex-end !important;
+
+        padding: 12px 16px !important;
+    }
+
+    .editor-header {
+        padding-top: 22px !important;
+    }
+}
+/* .inline-editor-actions's top-right/absolute positioning and its
+   button sizing, plus the later flex:0 0 auto override, were
+   consolidated into the single definitions earlier in this file —
+   no rule dropped, just no longer duplicated here. */
+
+/* .editor-frame's fixed-height/flex rules and .editor-header's
+   flex:0 0 auto were consolidated into their single definitions
+   earlier in this file — no rule dropped, just no longer
+   duplicated here. */
+
+/* .editor-container's flex-fill rules and #editor's fill-height
+   rules were consolidated into their single definitions earlier
+   in this file — no rule dropped, just no longer duplicated here. */
+
+/* ==========================================================
+   QUILL CONTAINER
+   ========================================================== */
+
+#editor .ql-container {
+    height: 100% !important;
+    min-height: 0 !important;
+
+    overflow: hidden !important;
+}
+
+
+/* ==========================================================
+   EDITABLE CONTENT
+   ONLY THIS AREA SCROLLS
+   ========================================================== */
+
+#editor .ql-editor {
+    height: 100% !important;
+    min-height: 0 !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+
+    box-sizing: border-box !important;
+
+    padding: 24px 28px !important;
+}
+
+/* .editor-footer's flex:0 0 auto was consolidated into its single
+   definition earlier in this file — no rule dropped, just no
+   longer duplicated here. */
+
+   /* ==========================================================
+   DOCENGINE HOMEPAGE — NEW UI
+   Homepage only
+   ========================================================== */
+
+.homepage {
+    width: 100%;
+    background: #ffffff;
+    color: #1f2937;
+}
+
+
+/* ==========================================================
+   HERO
+   ========================================================== */
+
+.homepage .hero {
+    background: linear-gradient(
+        135deg,
+        #eef1fc 0%,
+        #f3f0fb 55%,
+        #eaf4fb 100%
+    );
+
+    padding: 45px 20px 35px !important;
+    min-height: auto !important;
+    height: auto !important;
+
+    text-align: left;
+    box-sizing: border-box;
+}
+
+
+.homepage .home-hero-content {
+    max-width: 900px;
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+
+/* ==========================================================
+   HERO EYEBROW
+   ========================================================== */
+
+.homepage .home-eyebrow {
+    display: inline-block;
+
+    margin-bottom: 20px;
+
+    padding: 7px 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.10);
+
+    color: rgba(255, 255, 255, 0.95);
+
+    font-size: 13px;
+    font-weight: 700;
+
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+
+/* ==========================================================
+   HERO TITLE
+   ========================================================== */
+
+.homepage .home-hero h1 {
+    margin: 0 0 14px;
+
+    color: #ffffff;
+
+    font-size: clamp(48px, 7vw, 76px);
+    font-weight: 800;
+
+    line-height: 1.05;
+    letter-spacing: -2px;
+}
+
+
+/* ==========================================================
+   HERO SUBTITLE
+   ========================================================== */
+
+.homepage .home-hero h2 {
+    margin: 0 0 22px;
+
+    color: #ffffff;
+
+    font-size: clamp(24px, 3vw, 38px);
+    font-weight: 600;
+
+    line-height: 1.2;
+}
+
+
+/* ==========================================================
+   HERO DESCRIPTION
+   ========================================================== */
+
+.homepage .home-hero p {
+    max-width: 720px;
+
+    margin: 0 auto;
+
+    color: rgba(255, 255, 255, 0.90);
+
+    font-size: 18px;
+    line-height: 1.75;
+}
+
+
+/* ==========================================================
+   HERO BUTTONS
+   ========================================================== */
+
+.homepage .home-hero-actions {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 12px;
+
+    margin-top: 34px;
+}
+
+
+.homepage .home-primary-button,
+.homepage .home-secondary-button {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-height: 44px;
+
+    padding: 0 22px;
+
+    border-radius: 7px;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    box-sizing: border-box;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+/* PRIMARY */
+
+.homepage .home-primary-button {
+    background: #ffffff;
+    color: var(--de-brand) !important;
+
+    border: 1px solid #ffffff;
+}
+
+
+.homepage .home-primary-button:hover,
+.homepage .home-primary-button:focus {
+    background: #ffffff;
+    color: var(--de-brand-dark) !important;
+
+    transform: translateY(-1px);
+}
+
+
+/* SECONDARY */
+
+.homepage .home-secondary-button {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff !important;
+
+    border: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+
+.homepage .home-secondary-button:hover,
+.homepage .home-secondary-button:focus {
+    background: rgba(255, 255, 255, 0.16);
+    color: #ffffff !important;
+
+    transform: translateY(-1px);
+}
+
+
+/* ==========================================================
+   DOCUMENTATION SECTION
+   ========================================================== */
+
+.homepage .home-section {
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+    padding: 82px 24px 90px;
+
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   SECTION HEADING
+   ========================================================== */
+
+.homepage .home-section-heading {
+    max-width: 700px;
+
+    margin: 0 auto 46px;
+
+    text-align: center;
+}
+
+
+.homepage .home-section-label {
+    display: inline-block;
+
+    margin-bottom: 12px;
+
+    color: var(--de-brand);
+
+    font-size: 12px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+}
+
+
+.homepage .home-section-heading h2 {
+    margin: 0 0 14px;
+
+    color: #1f2937;
+
+    font-size: 34px;
+    font-weight: 750;
+
+    line-height: 1.2;
+}
+
+
+.homepage .home-section-heading p {
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+
+/* ==========================================================
+   CARDS
+   ========================================================== */
+
+.homepage .home-cards {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 24px;
+}
+
+
+.homepage .home-card {
+    display: flex;
+
+    flex-direction: column;
+
+    min-height: 260px;
+
+    padding: 30px;
+
+    box-sizing: border-box;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.05);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+
+.homepage .home-card:hover {
+    transform: translateY(-5px);
+
+    border-color: #bfdbfe;
+
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.09);
+}
+
+
+/* ==========================================================
+   CARD ICON
+   ========================================================== */
+
+.homepage .home-card-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 22px;
+
+    border-radius: 10px;
+
+    background: #eff6ff;
+
+    font-size: 23px;
+}
+
+
+/* ==========================================================
+   CARD TITLE
+   ========================================================== */
+
+.homepage .home-card h3 {
+    margin: 0 0 12px;
+
+    color: #1f2937;
+
+    font-size: 20px;
+    font-weight: 700;
+
+    line-height: 1.35;
+}
+
+
+/* ==========================================================
+   CARD DESCRIPTION
+   ========================================================== */
+
+.homepage .home-card p {
+    flex: 1;
+
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+
+/* ==========================================================
+   CARD LINK
+   ========================================================== */
+
+.homepage .home-card-link {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    align-self: flex-start;
+
+    margin-top: 24px;
+
+    color: var(--de-brand) !important;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+
+.homepage .home-card-link span {
+    transition: transform 0.2s ease;
+}
+
+
+.homepage .home-card-link:hover {
+    color: var(--de-brand-dark) !important;
+}
+
+
+.homepage .home-card-link:hover span {
+    transform: translateX(3px);
+}
+
+
+/* ==========================================================
+   DOCS-AS-CODE SECTION
+   ========================================================== */
+
+.homepage .home-workflow {
+    width: 100vw;
+
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+
+    padding: 72px 24px;
+
+    box-sizing: border-box;
+
+    background: #f8fafc;
+
+    border-top: 1px solid #e5e7eb;
+}
+
+
+.homepage .home-workflow-content {
+    max-width: 760px;
+
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+
+.homepage .home-workflow h2 {
+    margin: 0 0 16px;
+
+    color: #1f2937;
+
+    font-size: 30px;
+    line-height: 1.25;
+}
+
+
+.homepage .home-workflow p {
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 16px;
+    line-height: 1.75;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 900px) {
+
+    .homepage .home-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .homepage .home-card {
+        min-height: auto;
+    }
+
+}
+
+
+@media (max-width: 768px) {
+
+    .homepage .home-hero {
+        padding: 72px 20px 76px;
+    }
+
+    .homepage .home-hero h1 {
+        font-size: 50px;
+        letter-spacing: -1px;
+    }
+
+    .homepage .home-hero h2 {
+        font-size: 27px;
+    }
+
+    .homepage .home-hero p {
+        font-size: 16px;
+    }
+
+    .homepage .home-hero-actions {
+        flex-direction: column;
+    }
+
+    .homepage .home-primary-button,
+    .homepage .home-secondary-button {
+        width: 100%;
+        max-width: 240px;
+    }
+
+    .homepage .home-section {
+        padding: 64px 20px 72px;
+    }
+
+    .homepage .home-section-heading h2 {
+        font-size: 29px;
+    }
+
+}
+
+
+@media (max-width: 480px) {
+
+    .homepage .home-hero {
+        padding: 60px 18px 64px;
+    }
+
+    .homepage .home-hero h1 {
+        font-size: 43px;
+    }
+
+    .homepage .home-hero h2 {
+        font-size: 23px;
+    }
+
+    .homepage .home-section {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .homepage .home-card {
+        padding: 24px;
+    }
+
+}
+/* ==========================================================
+   REMOVE ONLY BOTTOM NAVIGATION
+   ========================================================== */
+
+.md-footer__inner {
+    display: none !important;
+}
+
+.feature-strip-item:last-child {
+    grid-column: 2;
+    justify-self: center;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+}
+
+/* Hide left navigation only on homepage */
+body:has(.homepage) .md-sidebar--primary {
+    display: none !important;
+}
+body:has(.homepage) .md-content {
+    max-width: 100% !important;
+}
+
+body:has(.homepage) .md-main__inner {
+    display: block !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+body:has(.homepage) .md-content {
+    max-width: 100% !important;
+    margin: 0 !important;
+}
+
+body:has(.homepage) .md-content__inner {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body:has(.homepage) .hero {
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+.feature-strip-item {
+    padding: 22px;
+    border-radius: 16px;
+    border: 1px solid var(--de-border);
+    box-sizing: border-box;
+}
+
+.feature-reliable {
+    background: #fdf3e0;
+    border-color: #f5e3bd;
+}
+
+.feature-collaboration {
+    background: #fdf3e0;
+    border-color: #f5e3bd;
+}
+
+.feature-developers {
+    background: #fdf3e0;
+    border-color: #f5e3bd;
+}
+
+.feature-publishing {
+    background: #fdf3e0;
+    border-color: #f5e3bd;
+}
+
+
+/* ==========================================================
+   DOCUMENTATION CONTENT IMAGES
+   Applies a clean, consistent outline to screenshots and
+   figures embedded in doc pages via Markdown. Material's
+   base stylesheet strips all image borders by default
+   (img { border-style: none }), so this is the single
+   source of truth for the border treatment on every
+   documentation image.
+   ========================================================== */
+
+.md-typeset img {
+    box-sizing: border-box;
+    border: 1px solid var(--de-border);
+    border-radius: var(--de-radius-sm);
+}
+
+.md-typeset a.md-author img {
+    border: none;
+}

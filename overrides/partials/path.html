@@ -1,0 +1,33 @@
+{#-
+  DocEngine override of Material's breadcrumb partial.
+
+  Upstream `partials/path.html` renders Home + ancestor sections only.
+  This adds the current page itself as a final, non-linked crumb so the
+  trail reads "Home / User Guide / Register a Patient" per the
+  Confluence-style page chrome requirement, while keeping every other
+  behavior (hidden on the homepage, hidden via page.meta.hide) identical
+  to the stock partial.
+-#}
+{% import "partials/path-item.html" as item with context %}
+{% if page.meta and page.meta.hide %}
+  {% set hidden = "hidden" if "path" in page.meta.hide %}
+{% endif %}
+{% set depth = page.ancestors | length %}
+{% if nav.homepage %}
+  {% set depth = depth + 1 %}
+{% endif %}
+{% if depth > 1 %}
+  <nav class="md-path" aria-label="{{ lang.t('nav') }}" {{ hidden }}>
+    <ol class="md-path__list">
+      {% if nav.homepage %}
+        {{ item.render(nav.homepage) }}
+      {% endif %}
+      {% for nav_item in page.ancestors | reverse %}
+        {{ item.render(nav_item) }}
+      {% endfor %}
+      <li class="md-path__item md-path__item--current">
+        <span class="md-ellipsis">{{ page.title }}</span>
+      </li>
+    </ol>
+  </nav>
+{% endif %}

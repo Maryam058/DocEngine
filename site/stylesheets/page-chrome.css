@@ -1,0 +1,762 @@
+/* ==========================================================
+   DOCENGINE PAGE CHROME
+   Confluence-style breadcrumbs, page metadata, actions menu,
+   version history / assets / info panels, and page feedback.
+   Reuses --de-* tokens defined in extra.css.
+   ========================================================== */
+
+
+/* ==========================================================
+   BREADCRUMBS (Material navigation.path, lightly restyled)
+   ========================================================== */
+
+.md-path {
+    margin: 0 0 0.6rem;
+}
+
+.md-path__list {
+    font-size: 0.72rem;
+    color: var(--de-modal-message, #6b7280);
+}
+
+.md-path__item::after {
+    color: var(--de-border-strong, #d9e2ec);
+}
+
+.md-path__link {
+    color: var(--de-modal-message, #6b7280) !important;
+}
+
+.md-path__link:hover {
+    color: var(--de-brand, #1976d2) !important;
+}
+
+.md-path__item--current .md-ellipsis {
+    color: var(--de-text-secondary, #333);
+    font-weight: 600;
+}
+
+
+/* ==========================================================
+   PAGE TOOLBAR (Edit Page + ⋮ actions menu, grouped)
+   ========================================================== */
+
+.docengine-page-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+/* Neutralize the standalone buttons' own forced margins
+   so they sit correctly as a group inside this toolbar. */
+.docengine-page-toolbar .edit-btn,
+.docengine-page-toolbar .edit-page-button {
+    margin: 0 !important;
+}
+
+.docengine-menu-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    font-size: 18px;
+    line-height: 1;
+    color: var(--de-text-secondary, #333);
+    background: var(--de-surface, #fff);
+    border: 1px solid var(--de-border-secondary, #d1d5db);
+    border-radius: var(--de-radius-sm, 6px);
+    cursor: pointer;
+    box-shadow: var(--de-shadow-btn, 0 1px 3px rgba(0, 0, 0, 0.08));
+    box-sizing: border-box;
+}
+
+.docengine-menu-button:hover,
+.docengine-menu-button:focus-visible {
+    background: var(--de-surface-subtle, #f8fafc);
+    border-color: var(--de-brand, #1976d2);
+    color: var(--de-brand, #1976d2);
+}
+
+.docengine-menu-button[aria-expanded="true"] {
+    background: var(--de-surface-subtle, #f8fafc);
+    border-color: var(--de-brand, #1976d2);
+    color: var(--de-brand, #1976d2);
+}
+
+
+/* ==========================================================
+   ACTIONS MENU (dropdown)
+   ========================================================== */
+
+.docengine-actions-menu {
+    position: absolute;
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+    min-width: 220px;
+    max-width: min(280px, calc(100vw - 16px));
+    padding: 6px;
+    background: var(--de-surface, #fff);
+    border: 1px solid var(--de-border-strong, #d9e2ec);
+    border-radius: var(--de-radius-lg, 12px);
+    box-shadow: var(--de-shadow-modal, 0 20px 60px rgba(0, 0, 0, 0.2));
+}
+
+.docengine-actions-menu.open {
+    display: flex;
+}
+
+.docengine-menu-item {
+    display: block;
+    width: 100%;
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 14px;
+    color: var(--de-text-secondary, #333);
+    background: none;
+    border: none;
+    border-radius: var(--de-radius-sm, 6px);
+    cursor: pointer;
+}
+
+.docengine-menu-item:hover:not([disabled]),
+.docengine-menu-item:focus-visible:not([disabled]) {
+    background: var(--de-surface-subtle, #f8fafc);
+    color: var(--de-brand, #1976d2);
+    outline: none;
+}
+
+.docengine-menu-item[disabled] {
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+
+/* ==========================================================
+   METADATA BAR (below page title)
+   ========================================================== */
+
+.docengine-meta-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 22px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--de-border, #e5e7eb);
+    font-size: 13px;
+    color: var(--de-modal-message, #6b7280);
+}
+
+.docengine-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.docengine-status-badge--published {
+    background: #e6f4ea;
+    color: #1e7e34;
+}
+
+.docengine-status-badge--approved {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+.docengine-status-badge--pending {
+    background: #fff4e0;
+    color: #b26a00;
+}
+
+.docengine-status-badge--draft {
+    background: #f1f0fb;
+    color: #5847b8;
+}
+
+.docengine-meta-text {
+    white-space: nowrap;
+}
+
+.docengine-meta-dot {
+    opacity: 0.6;
+}
+
+
+/* ==========================================================
+   PANEL MODAL (Version History / Assets / Info / Feedback)
+   ========================================================== */
+
+.docengine-panel-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+    background: rgba(0, 0, 0, 0.45);
+    overflow-y: auto;
+}
+
+.docengine-panel {
+    width: 100%;
+    max-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+    background: var(--de-surface, #fff);
+    border-radius: var(--de-radius-xl, 14px);
+    box-shadow: var(--de-shadow-modal, 0 20px 60px rgba(0, 0, 0, 0.2));
+}
+
+.docengine-panel--medium {
+    max-width: 520px;
+}
+
+.docengine-panel--large {
+    max-width: 720px;
+}
+
+.docengine-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--de-border, #e5e7eb);
+}
+
+.docengine-panel-title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--de-modal-title, #1f2937);
+}
+
+.docengine-panel-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: var(--de-radius-sm, 6px);
+    background: none;
+    color: var(--de-modal-message, #6b7280);
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.docengine-panel-close:hover,
+.docengine-panel-close:focus-visible {
+    background: var(--de-surface-subtle, #f8fafc);
+}
+
+.docengine-panel-body {
+    padding: 20px 22px;
+    overflow-y: auto;
+}
+
+.docengine-panel-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 22px;
+    border-top: 1px solid var(--de-border, #e5e7eb);
+}
+
+.docengine-primary-btn,
+.docengine-secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: var(--de-radius-sm, 6px);
+    cursor: pointer;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.docengine-primary-btn {
+    background: var(--de-brand, #1976d2);
+    color: #fff;
+    border: 1px solid var(--de-brand, #1976d2);
+}
+
+.docengine-primary-btn:hover {
+    background: var(--de-brand-hover, #1565c0);
+}
+
+.docengine-secondary-btn {
+    background: var(--de-surface, #fff);
+    color: var(--de-text-secondary, #333);
+    border: 1px solid var(--de-border-secondary, #d1d5db);
+}
+
+.docengine-secondary-btn:hover {
+    background: var(--de-surface-subtle, #f8fafc);
+}
+
+.docengine-secondary-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.docengine-empty,
+.docengine-hint {
+    margin: 0;
+    color: var(--de-modal-message, #6b7280);
+    font-size: 13.5px;
+    line-height: 1.6;
+}
+
+.docengine-textarea {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--de-text-secondary, #333);
+    background: var(--de-surface, #fff);
+    border: 1px solid var(--de-border-secondary, #d1d5db);
+    border-radius: var(--de-radius-sm, 6px);
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+
+/* ==========================================================
+   VERSION HISTORY
+   ========================================================== */
+
+.docengine-version-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.docengine-version-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.docengine-version-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--de-border, #e5e7eb);
+    border-radius: var(--de-radius-lg, 12px);
+}
+
+.docengine-version-select {
+    display: flex;
+}
+
+.docengine-version-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.docengine-version-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 13.5px;
+}
+
+.docengine-version-num {
+    font-weight: 700;
+    color: var(--de-brand, #1976d2);
+}
+
+.docengine-version-date {
+    color: var(--de-modal-message, #6b7280);
+}
+
+.docengine-version-author {
+    color: var(--de-modal-message, #6b7280);
+}
+
+.docengine-version-action {
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--de-text-secondary, #333);
+}
+
+.docengine-version-preview {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 4px 2px;
+}
+
+
+/* ==========================================================
+   COMPARE / DIFF
+   ========================================================== */
+
+.docengine-diff-legend {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--de-modal-message, #6b7280);
+}
+
+.docengine-diff-added-swatch,
+.docengine-diff-removed-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.docengine-diff-added-swatch {
+    background: #d5f5dd;
+}
+
+.docengine-diff-removed-swatch {
+    background: #fde2e2;
+}
+
+.docengine-diff-text {
+    max-height: 40vh;
+    overflow-y: auto;
+    padding: 12px 14px;
+    background: var(--de-surface-subtle, #f8fafc);
+    border: 1px solid var(--de-border, #e5e7eb);
+    border-radius: var(--de-radius-lg, 12px);
+    font-size: 14px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+}
+
+.docengine-diff-text ins {
+    background: #d5f5dd;
+    color: #1e7e34;
+    text-decoration: none;
+}
+
+.docengine-diff-text del {
+    background: #fde2e2;
+    color: #b42318;
+}
+
+.docengine-diff-images {
+    margin-top: 14px;
+}
+
+.docengine-diff-images h4 {
+    margin: 0 0 6px;
+    font-size: 13.5px;
+}
+
+.docengine-diff-image-added {
+    color: #1e7e34;
+    font-size: 13.5px;
+}
+
+.docengine-diff-image-removed {
+    color: #b42318;
+    font-size: 13.5px;
+}
+
+
+/* ==========================================================
+   PAGE ASSETS
+   ========================================================== */
+
+.docengine-asset-list {
+    list-style: none;
+    margin: 0 0 14px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.docengine-asset-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px;
+    border: 1px solid var(--de-border, #e5e7eb);
+    border-radius: var(--de-radius-lg, 12px);
+}
+
+.docengine-asset-thumb-btn {
+    flex: 0 0 auto;
+    padding: 0;
+    border: 1px solid var(--de-border, #e5e7eb);
+    border-radius: var(--de-radius-sm, 6px);
+    background: var(--de-surface-subtle, #f8fafc);
+    cursor: pointer;
+    overflow: hidden;
+    width: 64px;
+    height: 64px;
+}
+
+.docengine-asset-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.docengine-asset-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.docengine-asset-name {
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--de-text-secondary, #333);
+    word-break: break-all;
+}
+
+.docengine-asset-meta {
+    margin-top: 2px;
+    font-size: 12.5px;
+    color: var(--de-modal-message, #6b7280);
+}
+
+.docengine-asset-summary {
+    font-size: 13px;
+    color: var(--de-modal-message, #6b7280);
+}
+
+
+/* ==========================================================
+   LIGHTBOX
+   ========================================================== */
+
+.docengine-lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    background: rgba(0, 0, 0, 0.8);
+    cursor: zoom-out;
+}
+
+.docengine-lightbox-img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+
+/* ==========================================================
+   PAGE INFORMATION
+   ========================================================== */
+
+.docengine-info-grid {
+    margin: 0;
+    display: grid;
+    grid-template-columns: minmax(120px, 160px) 1fr;
+    row-gap: 12px;
+    column-gap: 16px;
+}
+
+.docengine-info-grid dt {
+    font-size: 12.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--de-modal-message, #6b7280);
+}
+
+.docengine-info-grid dd {
+    margin: 0;
+    font-size: 14px;
+    color: var(--de-text-secondary, #333);
+}
+
+
+/* ==========================================================
+   PAGE FEEDBACK
+   ========================================================== */
+
+.docengine-feedback {
+    margin-top: 40px;
+    padding: 18px 20px;
+    border: 1px solid var(--de-border, #e5e7eb);
+    border-radius: var(--de-radius-lg, 12px);
+    background: var(--de-surface-subtle, #f8fafc);
+}
+
+.docengine-feedback-question {
+    font-weight: 600;
+    color: var(--de-text-secondary, #333);
+    margin-bottom: 10px;
+}
+
+.docengine-feedback-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.docengine-feedback-btn {
+    padding: 7px 16px;
+    font-size: 13.5px;
+    border: 1px solid var(--de-border-secondary, #d1d5db);
+    border-radius: 999px;
+    background: var(--de-surface, #fff);
+    cursor: pointer;
+}
+
+.docengine-feedback-btn:hover {
+    background: #fff;
+    border-color: var(--de-brand, #1976d2);
+}
+
+.docengine-feedback-btn[aria-pressed="true"] {
+    background: var(--de-brand, #1976d2);
+    border-color: var(--de-brand, #1976d2);
+    color: #fff;
+}
+
+.docengine-feedback-suggest {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--de-brand, #1976d2);
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.docengine-feedback-thanks {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #1e7e34;
+}
+
+.docengine-feedback-thanks[hidden] {
+    display: none;
+}
+
+
+/* ==========================================================
+   TOAST
+   ========================================================== */
+
+#docengine-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    z-index: 100002;
+    transform: translate(-50%, 12px);
+    padding: 10px 18px;
+    background: #1f2937;
+    color: #fff;
+    font-size: 13.5px;
+    border-radius: 999px;
+    box-shadow: var(--de-shadow-modal, 0 20px 60px rgba(0, 0, 0, 0.2));
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none;
+}
+
+#docengine-toast.docengine-toast--error {
+    background: #b42318;
+}
+
+#docengine-toast.visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+
+/* ==========================================================
+   PRINT
+   ========================================================== */
+
+@media print {
+
+    .md-header,
+    .md-sidebar,
+    .md-tabs,
+    .md-footer,
+    .md-path,
+    .docengine-page-toolbar,
+    .docengine-feedback,
+    .docengine-actions-menu,
+    .docengine-panel-overlay,
+    #docengine-toast {
+        display: none !important;
+    }
+
+    .docengine-meta-bar {
+        border-bottom: 1px solid #ccc;
+    }
+
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+   ========================================================== */
+
+@media (max-width: 640px) {
+
+    .docengine-page-toolbar {
+        flex-wrap: wrap;
+    }
+
+    .docengine-meta-bar {
+        gap: 8px;
+        font-size: 12.5px;
+    }
+
+    .docengine-panel-overlay {
+        padding: 0;
+        align-items: stretch;
+    }
+
+    .docengine-panel {
+        max-width: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .docengine-asset-item {
+        flex-wrap: wrap;
+    }
+
+    .docengine-info-grid {
+        grid-template-columns: 1fr;
+        row-gap: 4px;
+    }
+
+    .docengine-info-grid dt {
+        margin-top: 8px;
+    }
+
+}

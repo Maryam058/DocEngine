@@ -4,12 +4,17 @@
 
   {% if page.url != "" and page.url != "index/" %}
 
+  <script>
+    window.DOCENGINE_SITE_AUTHOR = {{ config.site_author | tojson }};
+    window.DOCENGINE_PAGE_TITLE = {{ page.title | tojson }};
+  </script>
+
   <div class="doc-actions">
       <button class="edit-btn" onclick="openEditor()">
           ✏️ Edit Page
       </button>
   </div>
-  
+
   {% endif %}
 
   {{ super() }}

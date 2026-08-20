@@ -2066,6 +2066,8 @@ const WorkflowManager = {
 
                 AIAssistant.reset();
 
+                ImageEditor.reset();
+
 
                 AppState.editor =
                     null;
@@ -2657,6 +2659,10 @@ const App = {
 
 
         AIAssistant.attach(
+            AppState.editor
+        );
+
+        ImageEditor.attach(
             AppState.editor
         );
 
@@ -3422,6 +3428,10 @@ const InlineEditor = {
 
 
         AIAssistant.attach(
+            AppState.editor
+        );
+
+        ImageEditor.attach(
             AppState.editor
         );
 

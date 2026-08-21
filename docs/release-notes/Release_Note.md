@@ -1,12 +1,8 @@
 # Release Notes
 
-Stay up to date with the latest improvements, enhancements, and fixes across the DocEngine documentation and product experience.
+Stay up to date with the latest improvements, enhancements, and fixes across the DocEngine documentation and product experience. Explore recent releases to see what has changed, what has been improved, and what new capabilities are available.
 
-## What's New
-
-Explore recent releases to see what has changed, what has been improved, and what new capabilities are available.
-
-### Latest Releases
+## Latest Releases
 
 Browse release notes by version to quickly find:
 

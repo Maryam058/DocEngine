@@ -1,5 +1,3 @@
-window.DOCENGINE_SITE_AUTHOR = "Maryam Rehman"; window.DOCENGINE_PAGE_TITLE = "Medical Warnings";
-
 # Medical Warnings
 
 ## Introduction
@@ -54,8 +52,8 @@ The below steps illustrate the complete flow of how medical warnings are display
 
 12. The users can filter medical warning records by Date and Status to search and view relevant records:
 
-- **Date Filter**: Allows users to specify a date range or select specific dates when searching for medical warnings.
+13. **Date Filter**: Allows users to specify a date range or select specific dates when searching for medical warnings.
 
-- **Status Filter**: Enables users to filter warnings by their current status (e.g. Active, Inactive):
+14. **Status Filter**: Enables users to filter warnings by their current status (e.g. Active, Inactive):
 
-1. ![Medical Warnings tab with Date and Status filter fields highlighted](../../assets/Medical_Warnings/date-status-filter.png)
+15. ![Medical Warnings tab with Date and Status filter fields highlighted](../../assets/Medical_Warnings/date-status-filter.png)

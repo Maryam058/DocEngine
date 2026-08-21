@@ -1,3 +1,5 @@
+window.DOCENGINE_SITE_AUTHOR = "Maryam Rehman"; window.DOCENGINE_PAGE_TITLE = "Medical Warnings";
+
 # Medical Warnings
 
 ## Introduction
@@ -14,13 +16,15 @@ To enable a user to access indici Medical Warnings, the user's role access right
 
 1. Log in to indici
 
-    ![indici login screen](../assets/Medical_Warnings/indici-login-screen.png)
+2. ![indici login screen](../../assets/Medical_Warnings/indici-login-screen.png)
 
-2. Go to Configurations > User Management > Access Rights
-3. Here you will see the **Medical Warning** permission. This allows you to control which user roles have access to.
-4. Mark the checkboxes under the user roles you want to have access to and click Save:
+3. Go to Configurations > User Management > Access Rights
 
-    ![Access Rights screen with the Medical Warnings permission row highlighted](../assets/Medical_Warnings/access-rights-medical-warning-permission.png)
+4. Here you will see the **Medical Warning** permission. This allows you to control which user roles have access to.
+
+5. Mark the checkboxes under the user roles you want to have access to and click Save:
+
+6. ![Access Rights screen with the Medical Warnings permission row highlighted](../../assets/Medical_Warnings/access-rights-medical-warning-permission.png)
 
 ## Medical Warnings Workflow
 
@@ -28,28 +32,30 @@ The below steps illustrate the complete flow of how medical warnings are display
 
 1. Go to *Patients > Search & List*:
 
-    ![Patients menu with Search & List highlighted](../assets/Medical_Warnings/patients-search-and-list-menu.png)
+2. ![Patients menu with Search & List highlighted](../../assets/Medical_Warnings/patients-search-and-list-menu.png)
 
-2. On the *Search & List* screen, click the name of the relevant patient to open their *Consult* screen.
-3. In the left pane click the **Allergies/Medical Warnings** option:
+3. On the *Search & List* screen, click the name of the relevant patient to open their *Consult* screen.
 
-    ![Patient Note Functions pane with Allergies/Medical Warning highlighted, showing the empty Allergies/Adverse reactions tab](../assets/Medical_Warnings/allergies-medical-warning-panel.png)
+4. In the left pane click the **Allergies/Medical Warnings** option:
 
-4. Click the *Medical Warnings* tab:
+5. ![Patient Note Functions pane with Allergies/Medical Warning highlighted, showing the empty Allergies/Adverse reactions tab](../../assets/Medical_Warnings/allergies-medical-warning-panel.png)
 
-    ![Empty Medical Warnings tab](../assets/Medical_Warnings/medical-warnings-tab-empty.png)
+6. Click the *Medical Warnings* tab:
 
-5. To fetch medical warnings from Health NZ, click the **Get NMWS Warnings** button. A script is executed in the backend, ensuring that the most up-to-date medical warnings from Health NZ are retrieved and displayed accurately:
+7. ![Empty Medical Warnings tab](../../assets/Medical_Warnings/medical-warnings-tab-empty.png)
 
-    ![Medical Warnings tab with the Get NMWS Warnings button highlighted](../assets/Medical_Warnings/get-nmws-warnings-button.png)
+8. To fetch medical warnings from Health NZ, click the **Get NMWS Warnings** button. A script is executed in the backend, ensuring that the most up-to-date medical warnings from Health NZ are retrieved and displayed accurately:
 
-6. The medical warnings retrieved from Health NZ will be displayed as highlighted in the below image:
+9. ![Medical Warnings tab with the Get NMWS Warnings button highlighted](../../assets/Medical_Warnings/get-nmws-warnings-button.png)
 
-    ![Medical Warnings tab showing retrieved warning records](../assets/Medical_Warnings/medical-warnings-results-table.png)
+10. The medical warnings retrieved from Health NZ will be displayed as highlighted in the below image:
 
-7. The users can filter medical warning records by Date and Status to search and view relevant records:
+11. ![Medical Warnings tab showing retrieved warning records](../../assets/Medical_Warnings/medical-warnings-results-table.png)
 
-    - **Date Filter**: Allows users to specify a date range or select specific dates when searching for medical warnings.
-    - **Status Filter**: Enables users to filter warnings by their current status (e.g. Active, Inactive):
+12. The users can filter medical warning records by Date and Status to search and view relevant records:
 
-    ![Medical Warnings tab with Date and Status filter fields highlighted](../assets/Medical_Warnings/date-status-filter.png)
+- **Date Filter**: Allows users to specify a date range or select specific dates when searching for medical warnings.
+
+- **Status Filter**: Enables users to filter warnings by their current status (e.g. Active, Inactive):
+
+1. ![Medical Warnings tab with Date and Status filter fields highlighted](../../assets/Medical_Warnings/date-status-filter.png)

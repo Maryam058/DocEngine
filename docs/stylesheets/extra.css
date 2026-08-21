@@ -677,9 +677,16 @@
 }
 
 .editor-container {
-    /* Consolidated: base rules + the later "fills remaining height,
-       Quill area scrolls internally" override. Same computed result
-       as before this pass. */
+    /* Quill (initialized on #editor with an array toolbar config)
+       inserts its auto-generated .ql-toolbar as a sibling *before*
+       #editor inside this wrapper. Without display:flex here, #editor's
+       height:100% was measured against this container's full height —
+       ignoring the space the toolbar actually takes up — so #editor
+       (and the .ql-editor filling it) rendered past this container's
+       bottom edge and got clipped by overflow:hidden instead of being
+       reachable via .ql-editor's own scrollbar. Making this a flex
+       column lets the toolbar keep its natural height and #editor
+       shrink to the true remaining space. */
     width: 100%;
 
     margin: 0 !important;
@@ -689,6 +696,9 @@
 
     background: var(--de-surface);
 
+    display: flex !important;
+    flex-direction: column !important;
+
     flex: 1 1 auto !important;
     min-height: 0 !important;
 
@@ -696,9 +706,9 @@
 }
 
 #editor {
-    /* Consolidated: base rules + the later "Quill root fills its
-       container" override. Same computed result as before this pass. */
-    height: 100% !important;
+    /* Sized by the flex layout above (not height:100%) so it never
+       overclaims space the toolbar sibling is already using. */
+    flex: 1 1 auto !important;
     min-height: 0 !important;
 
     padding: 30px 36px !important;
@@ -1307,14 +1317,11 @@
 
 /* ==========================================================
    QUILL CONTAINER
+   Quill puts the .ql-container/.ql-snow classes on #editor itself
+   (it's the element passed to `new Quill(...)`), so "#editor
+   .ql-container" as a descendant selector never matched anything —
+   #editor's own rule above already covers this element.
    ========================================================== */
-
-#editor .ql-container {
-    height: 100% !important;
-    min-height: 0 !important;
-
-    overflow: hidden !important;
-}
 
 
 /* ==========================================================
@@ -1328,6 +1335,11 @@
 
     overflow-y: auto !important;
     overflow-x: hidden !important;
+
+    /* Without this, once this element's own scroll bottoms/tops out,
+       leftover wheel/trackpad delta chains up to the surrounding page
+       instead of stopping here — the page itself would then scroll. */
+    overscroll-behavior: contain !important;
 
     box-sizing: border-box !important;
 

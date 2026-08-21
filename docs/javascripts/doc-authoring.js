@@ -179,6 +179,13 @@ function hashText(text) {
    Strips everything that should never end up inside the
    editable draft:
 
+   - <script> / <style> elements. These are never documentation
+     content, but Quill's clipboard matchers don't recognize
+     them either and fall back to importing their raw text,
+     which is how page metadata (e.g. window.DOCENGINE_* config
+     injected by overrides/main.html) could otherwise leak into
+     the editor as literal text.
+
    - Editor chrome injected by this file / page-chrome.js
      (edit button, actions toolbar, metadata bar, feedback
      widget). None of it is page content, and if it leaks in
@@ -214,7 +221,7 @@ function sanitizeForEditing(html) {
 
     container
         .querySelectorAll(
-            ".edit-page-button, .edit-btn, .doc-actions, .docengine-page-toolbar, .docengine-meta-bar, .docengine-feedback, a.headerlink, .footnote-backref"
+            "script, style, .edit-page-button, .edit-btn, .doc-actions, .docengine-page-toolbar, .docengine-meta-bar, .docengine-feedback, a.headerlink, .footnote-backref"
         )
         .forEach(element => element.remove());
 

@@ -19,8 +19,9 @@ nav:
       - Medical Warnings: UserGuide/Medical_Warnings.md
 
   - Release Notes:
+      - Overview: release-notes/Overview.md
       - Sprint v2.3.4.7 (Feb 2026): release-notes/Release Notes_Sprint v2.3.4.7-feb26.md
-      - AI Copilot: release-notes/AI Copilot.md
+      - AI Copilot Release Notes: release-notes/AI Copilot.md
 
   - Glossary: glossary.md
 

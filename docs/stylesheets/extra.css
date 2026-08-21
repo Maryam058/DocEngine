@@ -1979,3 +1979,8 @@ body:has(.homepage) .hero {
 .md-typeset a.md-author img {
     border: none;
 }
+/* Hide heading permalink/anchor symbols everywhere */
+.md-typeset .headerlink,
+.md-content .headerlink {
+  display: none !important;
+}

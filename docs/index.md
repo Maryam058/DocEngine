@@ -33,7 +33,8 @@ Find everything you need to create, maintain and publish professional documentat
         <span class="highlight-icon">📋</span>
         <h3>Release Notes</h3>
         <p>Stay up to date with the latest DocEngine releases and improvements.</p>
-        <a href="release-notes/Overview/" class="highlight-link">View Releases →</a>
+        <a href="
+        release-notes/Overview/" class="highlight-link">View Releases →</a>
     </div>
 
     <div class="highlight-card highlight-card--purple">

@@ -6,6 +6,7 @@ from urllib.error import HTTPError, URLError
 import json
 import os
 import socket
+import time
 
 
 # ==========================================================
@@ -19,6 +20,24 @@ ALLOWED_ORIGINS = {
     "http://localhost:8000",
 }
 
+# Model history for this API key, confirmed via the diagnostic logging
+# below (not guesses):
+#   gemini-3.7-flash (pinned)  -> real HTTP 503, brand-new model,
+#                                  free-tier capacity not yet available.
+#   gemini-2.5-flash (pinned)  -> real HTTP 404 "model not found" for
+#                                  this specific key.
+#   gemini-flash-latest (alias) -> currently resolves to gemini-3.7-flash
+#                                  (Google's "New Stable" flash release as
+#                                  of 2026-08-14), so it inherits the same
+#                                  503-under-load behavior as the first
+#                                  pinned attempt above.
+# Given a pinned older model 404s for this key and the newest release
+# 503s under load, the alias is still the right choice: it stays valid
+# as Google rotates the underlying model, and RETRYABLE_HTTP_STATUSES
+# below absorbs the transient-overload 503s that a brand-new release
+# gets. If 503s persist long-term (not just at launch), re-run the
+# model-listing verification (see the incident notes / PR description)
+# against this key before trying another pinned model.
 GEMINI_MODEL = os.environ.get(
     "GEMINI_MODEL",
     "gemini-flash-latest"
@@ -33,6 +52,16 @@ MAX_CONTEXT_CHARS = 4000
 MAX_QUESTION_CHARS = 500
 
 REQUEST_TIMEOUT_SECONDS = 25.0
+
+# Retries apply ONLY to raw Gemini HTTP 503 (UNAVAILABLE, transient
+# overload) and 429 (RESOURCE_EXHAUSTED, rate limit) -- both of which
+# Google's own error-handling guidance says to retry with backoff.
+# Never retried: 4xx auth/invalid-request/model-not-found errors,
+# and client/network timeouts -- those are not transient and retrying
+# them just adds latency without changing the outcome.
+MAX_PROVIDER_RETRIES = 2
+RETRY_BACKOFF_BASE_SECONDS = 0.5
+RETRYABLE_HTTP_STATUSES = (429, 503)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 STYLE_GUIDE_PATH = PROJECT_ROOT / "docs" / "style-guide.md"
@@ -178,6 +207,23 @@ def log_diagnostic(label, detail):
     print(f"[ai-suggest] {label}: {detail}"[:800], flush=True)
 
 
+def _extract_gemini_error_message(error_body):
+    """Pulls just the human-readable `error.message` out of a Gemini
+    error response body, for compact logging (the raw body can be
+    logged too, but this keeps the one-line summary readable)."""
+
+    try:
+
+        return (
+            json.loads(error_body).get("error", {}).get("message")
+            or "(no message)"
+        )
+
+    except (json.JSONDecodeError, AttributeError):
+
+        return "(unparseable error body)"
+
+
 def call_gemini(api_key, system_prompt, user_message):
 
     url = (
@@ -206,68 +252,142 @@ def call_gemini(api_key, system_prompt, user_message):
             "temperature": 0.3,
             "maxOutputTokens": MAX_OUTPUT_TOKENS,
 
-            # This is a short, latency-sensitive editing suggestion,
-            # not a reasoning task -- skip 2.5 Flash's default
-            # "thinking" pass so the whole token budget goes to the
-            # visible answer.
+            # This is a short, latency-sensitive editing suggestion, not
+            # a reasoning task. The legacy "thinkingBudget" field (used
+            # for Gemini 2.5) gives unpredictable latency on Gemini 3.x
+            # models -- including long stalls that blow past our request
+            # timeout -- because 3.x models size their own thinking pass
+            # instead of honoring a token budget. "thinkingLevel" is the
+            # field Gemini 3.x actually respects for capping latency;
+            # "minimal" is the lowest-latency level Gemini 3 Flash
+            # supports. Do not send both fields -- Gemini rejects a
+            # request that sets thinkingLevel and thinkingBudget
+            # together with an HTTP 400.
             "thinkingConfig": {
-                "thinkingBudget": 0
+                "thinkingLevel": "minimal"
             }
         }
 
     }
 
-    request = Request(
+    request_body_bytes = json.dumps(request_body).encode("utf-8")
 
-        url,
-
-        data=json.dumps(request_body).encode("utf-8"),
-
-        headers={
-            "Content-Type": "application/json"
-        },
-
-        method="POST"
-
+    log_diagnostic(
+        "provider config",
+        f"provider=gemini sdk=rest(urllib) endpoint={GEMINI_API_BASE} "
+        f"model={GEMINI_MODEL} timeout_s={REQUEST_TIMEOUT_SECONDS}"
     )
 
-    try:
+    attempt = 0
 
-        with urlopen(
-            request,
-            timeout=REQUEST_TIMEOUT_SECONDS
-        ) as response:
+    while True:
 
-            response_body = response.read().decode("utf-8")
+        attempt += 1
 
-    except HTTPError as error:
+        request = Request(
 
-        error_body = error.read().decode("utf-8")
+            url,
+
+            data=request_body_bytes,
+
+            headers={
+                "Content-Type": "application/json"
+            },
+
+            method="POST"
+
+        )
 
         log_diagnostic(
-            f"Gemini HTTP {error.code}",
-            error_body
+            "provider request started",
+            f"model={GEMINI_MODEL} attempt={attempt}/{MAX_PROVIDER_RETRIES + 1}"
         )
 
-        raise describe_gemini_error(error.code, error_body)
+        started_at = time.monotonic()
 
-    except (URLError, socket.timeout) as error:
+        try:
 
-        reason = getattr(error, "reason", error)
+            with urlopen(
+                request,
+                timeout=REQUEST_TIMEOUT_SECONDS
+            ) as response:
 
-        log_diagnostic("Gemini network error", repr(reason))
+                response_body = response.read().decode("utf-8")
 
-        if isinstance(reason, socket.timeout) or "timed out" in str(reason).lower():
+                log_diagnostic(
+                    "provider response",
+                    f"status={response.status} attempt={attempt} "
+                    f"duration_ms={int((time.monotonic() - started_at) * 1000)}"
+                )
 
-            raise AIProviderError(
-                504,
-                "The AI provider request timed out. Please try again."
+            break
+
+        except HTTPError as error:
+
+            error_body = error.read().decode("utf-8")
+            duration_ms = int((time.monotonic() - started_at) * 1000)
+
+            provider_message = _extract_gemini_error_message(error_body)
+
+            log_diagnostic(
+                f"provider error type=http status={error.code}",
+                f"attempt={attempt} duration_ms={duration_ms} "
+                f"message={provider_message!r}"
             )
 
-        raise AIProviderError(
-            502,
-            "Could not reach the AI provider (network error)."
-        )
+            if (
+                error.code in RETRYABLE_HTTP_STATUSES
+                and attempt <= MAX_PROVIDER_RETRIES
+            ):
+
+                backoff_seconds = (
+                    RETRY_BACKOFF_BASE_SECONDS * (2 ** (attempt - 1))
+                )
+
+                log_diagnostic(
+                    "provider retry",
+                    f"status={error.code} attempt={attempt} "
+                    f"backoff_s={backoff_seconds}"
+                )
+
+                time.sleep(backoff_seconds)
+
+                continue
+
+            raise describe_gemini_error(error.code, error_body)
+
+        except (URLError, socket.timeout) as error:
+
+            reason = getattr(error, "reason", error)
+
+            is_timeout = (
+                isinstance(reason, socket.timeout)
+                or "timed out" in str(reason).lower()
+            )
+
+            log_diagnostic(
+                f"provider error type={'timeout' if is_timeout else 'network'}",
+                f"attempt={attempt} "
+                f"duration_ms={int((time.monotonic() - started_at) * 1000)} "
+                f"reason={reason!r}"
+            )
+
+            # Network errors and timeouts are not in RETRYABLE_HTTP_STATUSES
+            # (there's no HTTP status to check) and are not retried --
+            # they're not the transient "provider overloaded" case the
+            # retry loop targets.
+
+            if is_timeout:
+
+                raise AIProviderError(
+                    504,
+                    "The AI provider request timed out. Please try again."
+                )
+
+            raise AIProviderError(
+                502,
+                "Could not reach the AI provider (network error)."
+            )
 
     try:
 
@@ -445,6 +565,12 @@ def extract_gemini_text(data):
 def request_ai_completion(mode, payload):
 
     api_key = os.environ.get("GEMINI_API_KEY")
+
+    log_diagnostic(
+        "selected provider/model",
+        f"provider=gemini model={GEMINI_MODEL} "
+        f"api_key_detected={bool(api_key)}"
+    )
 
     if not api_key:
 
@@ -632,6 +758,13 @@ class handler(BaseHTTPRequestHandler):
             return
 
         mode = payload.get("mode") or "suggest"
+
+        log_diagnostic(
+            "request received",
+            f"mode={mode} "
+            f"selection_chars={len(payload.get('selectedText') or '')} "
+            f"context_chars={len(payload.get('context') or '')}"
+        )
 
         validation_error = validate_payload(mode, payload)
 

@@ -258,13 +258,22 @@ def call_gemini(api_key, system_prompt, user_message):
             # models -- including long stalls that blow past our request
             # timeout -- because 3.x models size their own thinking pass
             # instead of honoring a token budget. "thinkingLevel" is the
-            # field Gemini 3.x actually respects for capping latency;
-            # "minimal" is the lowest-latency level Gemini 3 Flash
-            # supports. Do not send both fields -- Gemini rejects a
-            # request that sets thinkingLevel and thinkingBudget
-            # together with an HTTP 400.
+            # field Gemini 3.x actually respects for capping latency.
+            #
+            # "minimal" was tried first but the live API rejected it for
+            # the model gemini-flash-latest currently resolves to:
+            #   "Thinking level MINIMAL is not supported for this model.
+            #    Please retry with other thinking level."
+            # (confirmed via the provider error logging below, not a
+            # guess). Gemini 3.x has no way to fully disable thinking --
+            # unlike Gemini 2.5's thinkingBudget=0 -- so "low" is the
+            # lowest level to use instead: it's documented as supported
+            # across the whole Gemini 3.x line and is still the
+            # low-latency/high-throughput tier, just not the absolute
+            # floor. Do not send both thinkingLevel and thinkingBudget --
+            # Gemini rejects a request that sets both with an HTTP 400.
             "thinkingConfig": {
-                "thinkingLevel": "minimal"
+                "thinkingLevel": "low"
             }
         }
 

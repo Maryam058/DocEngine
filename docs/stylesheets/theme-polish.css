@@ -61,9 +61,9 @@
 .homepage .hero {
     background: linear-gradient(
         135deg,
-        #eef1fc 0%,
-        #f3f0fb 55%,
-        #eaf4fb 100%
+        #d9def5 0%,
+        #d0d7f2 55%,
+        #c5cff0 100%
     );
     padding: 96px 20px 64px;
     text-align: left;

@@ -1796,6 +1796,50 @@ button[data-action="publish"]:hover{
     margin: 0 auto;
 }
 
+/* ==========================================================
+   EDITOR CONTENT RENDERING FIXES
+
+   Quill's snow theme resets every heading to
+   "margin: 0; padding: 0" and has no ".ql-editor img" rule at
+   all, so content loaded straight from a MkDocs-rendered page
+   (headings flush against surrounding text, screenshots at
+   native pixel size) looks visually broken compared to how the
+   same content renders on the published page. Restoring
+   reasonable heading spacing and capping image width to the
+   editor's own content width fixes both without touching
+   Quill's list/code-block CSS (which is otherwise correct).
+   ========================================================== */
+
+#editor .ql-editor h1,
+#editor .ql-editor h2,
+#editor .ql-editor h3,
+#editor .ql-editor h4,
+#inline-editor .ql-editor h1,
+#inline-editor .ql-editor h2,
+#inline-editor .ql-editor h3,
+#inline-editor .ql-editor h4 {
+    margin: 1.2em 0 0.5em;
+    line-height: 1.4;
+}
+
+#editor .ql-editor h1:first-child,
+#inline-editor .ql-editor h1:first-child,
+#editor .ql-editor h2:first-child,
+#inline-editor .ql-editor h2:first-child {
+    margin-top: 0;
+}
+
+#editor .ql-editor p,
+#inline-editor .ql-editor p {
+    margin: 0 0 1em;
+}
+
+#editor .ql-editor img,
+#inline-editor .ql-editor img {
+    max-width: 100%;
+    height: auto;
+}
+
 /* Document metadata row (avatar, author, read time, actions) */
 
 .inline-editor-meta {

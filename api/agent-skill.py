@@ -48,15 +48,37 @@ GEMINI_MODEL = os.environ.get(
 
 GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
-MAX_REPORT_TOKENS = 2048
+# Diagnosed root cause of the production "AI provider request timed
+# out" error: input prompt size was ruled out by measurement (this
+# endpoint's real prompt is ~10K chars vs. api/ai-suggest.py's ~31K
+# chars for its style-guide+glossary+selection prompt, which responds
+# fine) -- Gemini's latency scales with OUTPUT tokens generated, not
+# input size. The actual mismatch: SKILL.md's own report template
+# says "Keep the whole report short enough to read in under a minute"
+# (roughly 200-300 words, ~300-400 tokens), but MAX_REPORT_TOKENS
+# allowed generation up to 2048 tokens (~1500 words) -- a report that
+# actually used a meaningful fraction of that budget could take far
+# longer to generate than api/ai-suggest.py's typical short
+# suggestion, even at the same "low" thinking level. Capped down to
+# match what the skill is actually supposed to produce.
+MAX_REPORT_TOKENS = 1024
 MAX_DOCUMENT_CHARS = 20000
 
-REQUEST_TIMEOUT_SECONDS = 25.0
+# Reduced from 25.0: with MAX_REPORT_TOKENS lowered above, a
+# legitimate report should finish well inside 15s. This also directly
+# tightens the retry-multiplied worst case (see MAX_PROVIDER_RETRIES
+# below): 2 fast 429/503 responses + backoff + one attempt that
+# genuinely hangs -> ~18s worst case measured locally, down from ~28s
+# at the previous 25s per-attempt timeout.
+REQUEST_TIMEOUT_SECONDS = 15.0
 SCRIPT_TIMEOUT_SECONDS = 15.0
 
 # Same retry policy as api/ai-suggest.py's Gemini calls: 429 is rate
 # limiting, 503 is Gemini's transient-overload status. Auth/invalid-
-# request/model-not-found errors are never retried.
+# request/model-not-found errors are never retried. A genuine network
+# timeout (as opposed to a fast 429/503 HTTP response) is also never
+# retried -- see the URLError/socket.timeout branch in call_gemini --
+# so retries cannot multiply a real hang into 3x the wait.
 MAX_PROVIDER_RETRIES = 2
 RETRY_BACKOFF_BASE_SECONDS = 0.5
 RETRYABLE_HTTP_STATUSES = (429, 503)
@@ -801,9 +823,20 @@ class handler(BaseHTTPRequestHandler):
 
             return
 
+        total_started_at = time.monotonic()
+
         try:
 
+            log_diagnostic("deterministic checks started", target_file.name)
+
+            checks_started_at = time.monotonic()
+
             deterministic = run_deterministic_checks(target_file)
+
+            log_diagnostic(
+                "deterministic checks completed",
+                f"in {int((time.monotonic() - checks_started_at) * 1000)} ms"
+            )
 
             document_text = read_text_file(target_file)
 
@@ -816,6 +849,11 @@ class handler(BaseHTTPRequestHandler):
             )
 
             duration_ms = int((time.monotonic() - started_at) * 1000)
+
+            log_diagnostic(
+                "total request time",
+                f"{int((time.monotonic() - total_started_at) * 1000)} ms"
+            )
 
             self.send_json(
                 200,
@@ -831,6 +869,11 @@ class handler(BaseHTTPRequestHandler):
         except AIProviderError as error:
 
             print("Agent skill error:", error, flush=True)
+
+            log_diagnostic(
+                "total request time (failed)",
+                f"{int((time.monotonic() - total_started_at) * 1000)} ms"
+            )
 
             self.send_json(
                 error.status_code,

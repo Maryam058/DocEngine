@@ -1,10 +1,15 @@
 """Documentation QA Agent Skill runner.
 
-Independent of api/ai-suggest.py -- separate feature (Claude, not
-Gemini), separate endpoint, separate env vars. Runs the deterministic
-checks from skills/documentation-qa/scripts/run_checks.py against a
-published page, then asks Claude to turn those findings plus the
-page's own content into a short QA report, following
+Separate endpoint from api/ai-suggest.py (different feature, own
+request/response contract), but uses the same Gemini provider and the
+same GEMINI_API_KEY / GEMINI_MODEL env vars -- switched from Claude/
+Anthropic because the Anthropic account backing ANTHROPIC_API_KEY ran
+out of credits, and this project deliberately avoids running two
+different paid providers for two AI features when one already works.
+Runs the deterministic checks from
+skills/documentation-qa/scripts/run_checks.py against a published
+page, then asks Gemini to turn those findings plus the page's own
+content into a short QA report, following
 skills/documentation-qa/SKILL.md and templates/qa-report.md.
 """
 
@@ -32,13 +37,16 @@ ALLOWED_ORIGINS = {
     "http://localhost:8000",
 }
 
-CLAUDE_MODEL = os.environ.get(
-    "CLAUDE_MODEL",
-    "claude-sonnet-5"
+# Same env var api/ai-suggest.py reads -- one Gemini key backs both
+# AI features in this project. Deliberately not a second, competing
+# key variable: there's no reason for the QA report generator to use
+# a different Google account/key than AI Suggestion does.
+GEMINI_MODEL = os.environ.get(
+    "GEMINI_MODEL",
+    "gemini-flash-latest"
 )
 
-ANTHROPIC_API_BASE = "https://api.anthropic.com/v1/messages"
-ANTHROPIC_VERSION = "2023-06-01"
+GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
 
 MAX_REPORT_TOKENS = 2048
 MAX_DOCUMENT_CHARS = 20000
@@ -46,13 +54,12 @@ MAX_DOCUMENT_CHARS = 20000
 REQUEST_TIMEOUT_SECONDS = 25.0
 SCRIPT_TIMEOUT_SECONDS = 15.0
 
-# Same retry policy as api/ai-suggest.py's Gemini calls, adapted to
-# Anthropic's status codes: 429 is rate limiting, 529 is Anthropic's
-# "Overloaded" status (their equivalent of Gemini's transient 503).
-# Auth/invalid-request/model-not-found errors are never retried.
+# Same retry policy as api/ai-suggest.py's Gemini calls: 429 is rate
+# limiting, 503 is Gemini's transient-overload status. Auth/invalid-
+# request/model-not-found errors are never retried.
 MAX_PROVIDER_RETRIES = 2
 RETRY_BACKOFF_BASE_SECONDS = 0.5
-RETRYABLE_HTTP_STATUSES = (429, 529)
+RETRYABLE_HTTP_STATUSES = (429, 503)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DOCS_DIR = PROJECT_ROOT / "docs"
@@ -106,7 +113,7 @@ def log_diagnostic(label, detail):
     print(f"[agent-skill] {label}: {detail}"[:800], flush=True)
 
 
-def _extract_claude_error_message(error_body):
+def _extract_gemini_error_message(error_body):
 
     try:
 
@@ -250,23 +257,50 @@ def build_report_request(deterministic, document_text, document_label):
 
 
 # ==========================================================
-# AI Request (Anthropic Claude)
+# AI Request (Google Gemini)
 # ==========================================================
 
-def call_claude(system_prompt, user_message):
+def call_gemini(api_key, system_prompt, user_message):
+
+    url = (
+        f"{GEMINI_API_BASE}/models/{GEMINI_MODEL}:generateContent"
+        f"?key={api_key}"
+    )
 
     request_body = {
 
-        "model": CLAUDE_MODEL,
-        "max_tokens": MAX_REPORT_TOKENS,
-        "system": system_prompt,
+        "systemInstruction": {
+            "parts": [
+                {"text": system_prompt}
+            ]
+        },
 
-        "messages": [
+        "contents": [
             {
                 "role": "user",
-                "content": user_message,
+                "parts": [
+                    {"text": user_message}
+                ]
             }
         ],
+
+        "generationConfig": {
+            "temperature": 0.3,
+            "maxOutputTokens": MAX_REPORT_TOKENS,
+
+            # Same reasoning as api/ai-suggest.py: this is a
+            # template-filling task, not open-ended reasoning, so
+            # keep thinking minimal for a fast, reliable response.
+            # "thinkingLevel" (not the legacy "thinkingBudget") is
+            # the field gemini-flash-latest's current Gemini 3.x
+            # target actually respects; "low" is the lowest level
+            # confirmed to work for this model (see
+            # api/ai-suggest.py's call_gemini for why "minimal" was
+            # rejected).
+            "thinkingConfig": {
+                "thinkingLevel": "low"
+            }
+        }
 
     }
 
@@ -274,11 +308,9 @@ def call_claude(system_prompt, user_message):
 
     log_diagnostic(
         "provider config",
-        f"provider=anthropic sdk=rest(urllib) endpoint={ANTHROPIC_API_BASE} "
-        f"model={CLAUDE_MODEL} timeout_s={REQUEST_TIMEOUT_SECONDS}"
+        f"provider=gemini sdk=rest(urllib) endpoint={GEMINI_API_BASE} "
+        f"model={GEMINI_MODEL} timeout_s={REQUEST_TIMEOUT_SECONDS}"
     )
-
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
 
     attempt = 0
 
@@ -288,14 +320,12 @@ def call_claude(system_prompt, user_message):
 
         request = Request(
 
-            ANTHROPIC_API_BASE,
+            url,
 
             data=request_body_bytes,
 
             headers={
-                "Content-Type": "application/json",
-                "x-api-key": api_key,
-                "anthropic-version": ANTHROPIC_VERSION,
+                "Content-Type": "application/json"
             },
 
             method="POST"
@@ -304,7 +334,7 @@ def call_claude(system_prompt, user_message):
 
         log_diagnostic(
             "provider request started",
-            f"model={CLAUDE_MODEL} attempt={attempt}/{MAX_PROVIDER_RETRIES + 1}"
+            f"model={GEMINI_MODEL} attempt={attempt}/{MAX_PROVIDER_RETRIES + 1}"
         )
 
         started_at = time.monotonic()
@@ -331,7 +361,7 @@ def call_claude(system_prompt, user_message):
             error_body = error.read().decode("utf-8")
             duration_ms = int((time.monotonic() - started_at) * 1000)
 
-            provider_message = _extract_claude_error_message(error_body)
+            provider_message = _extract_gemini_error_message(error_body)
 
             log_diagnostic(
                 f"provider error type=http status={error.code}",
@@ -358,7 +388,7 @@ def call_claude(system_prompt, user_message):
 
                 continue
 
-            raise describe_claude_error(error.code, error_body)
+            raise describe_gemini_error(error.code, error_body)
 
         except (URLError, socket.timeout) as error:
 
@@ -394,23 +424,24 @@ def call_claude(system_prompt, user_message):
 
     except json.JSONDecodeError:
 
-        log_diagnostic("Claude non-JSON 200 response", response_body)
+        log_diagnostic("Gemini non-JSON 200 response", response_body)
 
         raise AIProviderError(
             502,
             "The AI provider returned an invalid response."
         )
 
-    return extract_claude_text(data)
+    return extract_gemini_text(data)
 
 
-def describe_claude_error(status_code, error_body):
-    """Turns a Claude HTTPError into an AIProviderError whose message
+def describe_gemini_error(status_code, error_body):
+    """Turns a Gemini HTTPError into an AIProviderError whose message
     distinguishes the failure category without leaking the API key or
-    raw internal error payloads."""
+    raw internal error payloads. Mirrors api/ai-suggest.py's
+    describe_gemini_error -- same provider, same error taxonomy."""
 
     message = None
-    error_type = None
+    reason = None
 
     try:
 
@@ -418,7 +449,12 @@ def describe_claude_error(status_code, error_body):
         error_obj = parsed.get("error", {}) or {}
 
         message = error_obj.get("message")
-        error_type = error_obj.get("type")
+        reason = error_obj.get("status")
+
+        for detail in error_obj.get("details", []) or []:
+
+            if detail.get("reason"):
+                reason = reason or detail["reason"]
 
     except (json.JSONDecodeError, AttributeError):
 
@@ -426,48 +462,56 @@ def describe_claude_error(status_code, error_body):
 
     # --- Invalid / missing key -----------------------------------
 
-    if status_code == 401 or error_type == "authentication_error":
+    if reason == "API_KEY_INVALID" or (
+        status_code in (400, 401) and message and "api key" in message.lower()
+    ):
 
         return AIProviderError(
             401,
-            "The configured ANTHROPIC_API_KEY is invalid or missing. "
+            "The configured GEMINI_API_KEY is invalid. "
             "Check the key value in Vercel's environment variables."
         )
 
     # --- Permission / access problem -------------------------------
 
-    if status_code == 403 or error_type == "permission_error":
+    if status_code == 403 or reason in (
+        "PERMISSION_DENIED",
+        "CONSUMER_SUSPENDED",
+        "SERVICE_DISABLED",
+    ):
 
         return AIProviderError(
             403,
-            "The configured ANTHROPIC_API_KEY does not have permission "
-            f"to use the model '{CLAUDE_MODEL}'."
+            "The configured GEMINI_API_KEY does not have permission "
+            f"to use the model '{GEMINI_MODEL}' (or the Generative "
+            "Language API is not enabled for this key's project)."
         )
 
     # --- Model not found / not available ---------------------------
 
-    if status_code == 404 or error_type == "not_found_error":
+    if status_code == 404 or reason == "NOT_FOUND":
 
         return AIProviderError(
             500,
-            f"The configured Claude model ('{CLAUDE_MODEL}') was not "
+            f"The configured Gemini model ('{GEMINI_MODEL}') was not "
             "found or is not available to this API key. Set the "
-            "CLAUDE_MODEL environment variable to a model this key "
+            "GEMINI_MODEL environment variable to a model this key "
             "can access."
         )
 
-    # --- Rate limit -----------------------------------------
+    # --- Rate limit / quota -----------------------------------------
 
-    if status_code == 429 or error_type == "rate_limit_error":
+    if status_code == 429 or reason == "RESOURCE_EXHAUSTED":
 
         return AIProviderError(
             429,
-            "Claude rate limit exceeded. Please try again shortly."
+            "Gemini rate limit or quota exceeded. Please try again "
+            "shortly."
         )
 
     # --- Bad request (prompt/schema issue) --------------------------
 
-    if status_code == 400 or error_type == "invalid_request_error":
+    if status_code == 400:
 
         return AIProviderError(
             502,
@@ -475,21 +519,13 @@ def describe_claude_error(status_code, error_body):
             f"({message or 'invalid request'})."
         )
 
-    # --- Overloaded / provider server error ---------------------------
-
-    if status_code == 529 or error_type == "overloaded_error":
-
-        return AIProviderError(
-            502,
-            "The AI provider (Claude) is currently overloaded. "
-            "Please try again shortly."
-        )
+    # --- Provider/server error ---------------------------------------
 
     if status_code >= 500:
 
         return AIProviderError(
             502,
-            "The AI provider (Claude) returned a server error "
+            "The AI provider (Gemini) returned a server error "
             f"(HTTP {status_code}). Please try again."
         )
 
@@ -500,22 +536,55 @@ def describe_claude_error(status_code, error_body):
     )
 
 
-def extract_claude_text(data):
+def extract_gemini_text(data):
 
-    content = data.get("content") or []
+    candidates = data.get("candidates") or []
+
+    if not candidates:
+
+        feedback = data.get("promptFeedback", {})
+
+        block_reason = feedback.get("blockReason")
+
+        log_diagnostic("Gemini empty candidates", data)
+
+        if block_reason:
+
+            raise AIProviderError(
+                502,
+                "The AI provider blocked this request "
+                f"({block_reason})."
+            )
+
+        raise AIProviderError(502, "AI returned an empty response.")
+
+    first_candidate = candidates[0]
+
+    finish_reason = first_candidate.get("finishReason")
+
+    parts = (
+        first_candidate.get("content", {}).get("parts", [])
+    )
 
     text = "".join(
-        block.get("text", "")
-        for block in content
-        if block.get("type") == "text"
+        part.get("text", "")
+        for part in parts
     ).strip()
 
     if not text:
 
         log_diagnostic(
-            "Claude empty text",
-            f"stop_reason={data.get('stop_reason')}"
+            "Gemini empty text",
+            f"finishReason={finish_reason} candidate={first_candidate}"
         )
+
+        if finish_reason and finish_reason not in ("STOP", "MAX_TOKENS"):
+
+            raise AIProviderError(
+                502,
+                "The AI provider did not return usable text "
+                f"({finish_reason})."
+            )
 
         raise AIProviderError(502, "AI returned an empty response.")
 
@@ -524,11 +593,11 @@ def extract_claude_text(data):
 
 def request_qa_report(deterministic, document_text, document_label):
 
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY")
 
     log_diagnostic(
         "selected provider/model",
-        f"provider=anthropic model={CLAUDE_MODEL} "
+        f"provider=gemini model={GEMINI_MODEL} "
         f"api_key_detected={bool(api_key)}"
     )
 
@@ -537,7 +606,7 @@ def request_qa_report(deterministic, document_text, document_label):
         raise AIProviderError(
             500,
             "The AI Agent panel is not configured on the server "
-            "(missing ANTHROPIC_API_KEY)."
+            "(missing GEMINI_API_KEY)."
         )
 
     system_prompt, user_message = build_report_request(
@@ -546,7 +615,7 @@ def request_qa_report(deterministic, document_text, document_label):
         document_label
     )
 
-    return call_claude(system_prompt, user_message)
+    return call_gemini(api_key, system_prompt, user_message)
 
 
 # ==========================================================
@@ -752,7 +821,7 @@ class handler(BaseHTTPRequestHandler):
                 200,
                 {
                     "success": True,
-                    "model": CLAUDE_MODEL,
+                    "model": GEMINI_MODEL,
                     "deterministic": deterministic,
                     "report": report_text,
                     "duration_ms": duration_ms,
@@ -774,7 +843,7 @@ class handler(BaseHTTPRequestHandler):
         except Exception as error:
 
             # Anything not already classified into an AIProviderError
-            # (a genuine bug, not a known Claude failure mode).
+            # (a genuine bug, not a known Gemini failure mode).
 
             print("Agent skill unexpected error:", error, flush=True)
 

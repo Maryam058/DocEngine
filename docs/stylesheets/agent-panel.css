@@ -1,0 +1,240 @@
+/* ==========================================================
+   DocEngine AI Agent Panel
+
+   Isolated `.docengine-agent-*` namespace -- no overlap with
+   `.ai-suggest-*` (doc-authoring.css) or `.docengine-page-*`
+   (page-chrome.css). Reads existing --de-* design tokens
+   read-only for visual consistency; defines none of its own
+   globally-scoped tokens.
+   ========================================================== */
+
+.docengine-agent-launcher {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 1000;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 12px 18px;
+    border: none;
+    border-radius: 999px;
+
+    background: linear-gradient(
+        90deg,
+        var(--de-brand, #1976d2),
+        var(--de-accent-purple, #6d5bd0)
+    );
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+
+    box-shadow: var(--de-shadow-btn, 0 1px 3px rgba(0, 0, 0, 0.08)),
+        0 6px 16px rgba(109, 91, 208, 0.25);
+    cursor: pointer;
+
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.docengine-agent-launcher:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(109, 91, 208, 0.32);
+}
+
+.docengine-agent-panel {
+    position: fixed;
+    right: 24px;
+    bottom: 88px;
+    z-index: 1001;
+
+    width: min(380px, calc(100vw - 48px));
+    max-height: min(560px, calc(100vh - 140px));
+
+    display: flex;
+    flex-direction: column;
+
+    background: var(--de-surface, #fff);
+    border: 1px solid var(--de-border, #e5e7eb);
+    border-radius: var(--de-radius-lg, 12px);
+    box-shadow: var(--de-shadow-modal, 0 20px 60px rgba(0, 0, 0, 0.2));
+
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.docengine-agent-panel--open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.docengine-agent-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--de-border, #e5e7eb);
+}
+
+.docengine-agent-title {
+    font-weight: 700;
+    color: var(--de-heading-navy, #101a33);
+}
+
+.docengine-agent-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--de-text-secondary, #333);
+    opacity: 0.6;
+}
+
+.docengine-agent-close:hover {
+    opacity: 1;
+}
+
+.docengine-agent-body {
+    padding: 16px;
+    overflow-y: auto;
+}
+
+.docengine-agent-description {
+    margin: 0 0 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--de-text-secondary, #333);
+}
+
+.docengine-agent-btn {
+    display: inline-block;
+    padding: 9px 16px;
+    border: 1px solid var(--de-border, #e5e7eb);
+    border-radius: var(--de-radius-sm, 6px);
+    background: var(--de-surface-subtle, #f8fafc);
+    color: var(--de-text-secondary, #333);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.docengine-agent-btn--primary {
+    border: none;
+    background: linear-gradient(
+        90deg,
+        var(--de-brand, #1976d2),
+        var(--de-accent-purple, #6d5bd0)
+    );
+    color: #fff;
+}
+
+.docengine-agent-btn--muted {
+    background: transparent;
+}
+
+.docengine-agent-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.docengine-agent-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--de-text-secondary, #333);
+}
+
+.docengine-agent-spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--de-border, #e5e7eb);
+    border-top-color: var(--de-brand, #1976d2);
+    animation: docengine-agent-spin 0.8s linear infinite;
+}
+
+@keyframes docengine-agent-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.docengine-agent-error {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #b91c1c;
+}
+
+.docengine-agent-section-title {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--de-text-secondary, #333);
+    opacity: 0.7;
+}
+
+.docengine-agent-checklist {
+    list-style: none;
+    margin: 0 0 16px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.docengine-agent-check {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.docengine-agent-check-id {
+    font-weight: 600;
+    color: var(--de-heading-navy, #101a33);
+}
+
+.docengine-agent-check-detail {
+    color: var(--de-text-secondary, #333);
+    opacity: 0.85;
+}
+
+.docengine-agent-report {
+    margin: 0;
+    padding: 12px;
+    background: var(--de-surface-subtle, #f8fafc);
+    border: 1px solid var(--de-border, #e5e7eb);
+    border-radius: var(--de-radius-sm, 6px);
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+@media (max-width: 480px) {
+
+    .docengine-agent-panel {
+        right: 12px;
+        left: 12px;
+        width: auto;
+        bottom: 80px;
+    }
+
+    .docengine-agent-launcher {
+        right: 16px;
+        bottom: 16px;
+    }
+
+}

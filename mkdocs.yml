@@ -64,6 +64,7 @@ extra_css:
   - stylesheets/doc-authoring.css
   - stylesheets/page-chrome.css
   - stylesheets/image-editing.css
+  - stylesheets/agent-panel.css
 
 
 extra_javascript:
@@ -72,6 +73,7 @@ extra_javascript:
   - javascripts/doc-authoring.js
   - javascripts/page-chrome.js
   - javascripts/image-editing.js
+  - javascripts/agent-panel.js
 
 markdown_extensions:
   - admonition

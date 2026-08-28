@@ -84,8 +84,6 @@ After confirming, check that the appointment appears in the patient's appointmen
 
 ## Important Notes
 
-Note
-
 Only fields visible in the current booking screens are documented here. Provider, department, and clinic are confirmed as real fields on the review screen, but the exact screens used to select them aren't available in the project's source material — confirm the exact steps with your system administrator if this guide doesn't match what you see.
 
 ## Troubleshooting

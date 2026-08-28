@@ -51,14 +51,34 @@ MAX_SELECTION_CHARS = 8000
 MAX_CONTEXT_CHARS = 4000
 MAX_QUESTION_CHARS = 500
 
-REQUEST_TIMEOUT_SECONDS = 25.0
+# Reduced from 25.0. Root-caused via production log analysis: the
+# "AI provider request timed out" message users see is this module's
+# own formatted 504 (call_gemini's URLError/socket.timeout branch
+# below), not a frontend abort (CONFIG.AI_REQUEST_TIMEOUT is 30000ms,
+# comfortably above this) and not a raw Vercel platform kill (those
+# don't come back as our own clean JSON). The real risk is retry
+# multiplication: at 25s, two fast 429/503 responses (~0.7s each,
+# measured) plus their backoff, followed by one attempt that
+# genuinely stalls, adds up to ~28s worst case for a single request --
+# uncomfortably close to typical serverless execution limits. Cut to
+# 15s (matching the identical fix already applied to
+# api/agent-skill.py's Gemini calls) to bring that worst case to
+# ~18s, without touching retry count/backoff/status-code policy or
+# any model/generation config -- none of those were demonstrably the
+# cause.
+REQUEST_TIMEOUT_SECONDS = 15.0
 
 # Retries apply ONLY to raw Gemini HTTP 503 (UNAVAILABLE, transient
 # overload) and 429 (RESOURCE_EXHAUSTED, rate limit) -- both of which
 # Google's own error-handling guidance says to retry with backoff.
 # Never retried: 4xx auth/invalid-request/model-not-found errors,
 # and client/network timeouts -- those are not transient and retrying
-# them just adds latency without changing the outcome.
+# them just adds latency without changing the outcome. A genuine
+# network timeout is also never retried (see the URLError/
+# socket.timeout branch in call_gemini), so retries cannot multiply a
+# real stall into 3x the wait -- the worst case above is bounded by
+# two FAST error responses plus one full-length final attempt, not
+# three full-length attempts.
 MAX_PROVIDER_RETRIES = 2
 RETRY_BACKOFF_BASE_SECONDS = 0.5
 RETRYABLE_HTTP_STATUSES = (429, 503)

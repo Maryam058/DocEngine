@@ -83,6 +83,48 @@ MAX_PROVIDER_RETRIES = 2
 RETRY_BACKOFF_BASE_SECONDS = 0.5
 RETRYABLE_HTTP_STATUSES = (429, 503)
 
+# Which provider actually serves AI Suggestion requests. Kept as an
+# env var (not a hardcoded branch) specifically so switching back to
+# Gemini -- or to any future provider -- is a config change, not a
+# code change: the Gemini implementation above is untouched and still
+# fully wired up via request_ai_completion() below, just not the
+# default anymore.
+#
+# Switched the default to "groq": production root-cause diagnosis
+# (real requests against /api/ai-suggest AND /api/agent-skill, same
+# GEMINI_API_KEY, varying content from a trivial 2-word selection to
+# a full realistic sentence) showed every request hanging for the
+# full provider timeout with zero response from Gemini, while a
+# request to the same Gemini endpoint with a deliberately invalid key
+# still got a fast, normal 400 in ~1.2s. That isolates the problem to
+# the configured Gemini credential/project, not to this code, not to
+# request size, and not to a general Gemini outage -- see the
+# incident notes for the full evidence. Not a code fix Gemini-side;
+# switching the active provider instead.
+AI_PROVIDER = os.environ.get(
+    "AI_PROVIDER",
+    "groq"
+)
+
+GROQ_MODEL = os.environ.get(
+    "GROQ_MODEL",
+    "openai/gpt-oss-20b"
+)
+
+GROQ_API_BASE = "https://api.groq.com/openai/v1/chat/completions"
+
+# openai/gpt-oss-20b on Groq: 131,072 token context window, 65,536
+# max completion tokens (confirmed against Groq's own model docs, not
+# assumed). The full existing prompt (system prompt + full
+# style-guide.md + full glossary.md + up to MAX_CONTEXT_CHARS of
+# surrounding context + up to MAX_SELECTION_CHARS of selected text)
+# measures well under 10,000 characters (~2,500 tokens) for this
+# project's actual style-guide.md/glossary.md -- comfortably inside
+# the 131K window with no truncation needed. If either reference
+# file grows enough to approach that ceiling, re-check this comment
+# rather than assuming it still holds.
+GROQ_CONTEXT_WINDOW_TOKENS = 131072
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 STYLE_GUIDE_PATH = PROJECT_ROOT / "docs" / "style-guide.md"
 GLOSSARY_PATH = PROJECT_ROOT / "docs" / "glossary.md"
@@ -591,23 +633,330 @@ def extract_gemini_text(data):
     return text
 
 
-def request_ai_completion(mode, payload):
+# ==========================================================
+# AI Request (Groq)
+# ==========================================================
 
-    api_key = os.environ.get("GEMINI_API_KEY")
+def _extract_groq_error_message(error_body):
+    """Same shape as _extract_gemini_error_message: pulls just
+    error.message out of Groq's (OpenAI-compatible) error body for
+    compact logging. `detail` originates from Groq's own response,
+    never from our request, so it cannot contain GROQ_API_KEY."""
+
+    try:
+
+        return (
+            json.loads(error_body).get("error", {}).get("message")
+            or "(no message)"
+        )
+
+    except (json.JSONDecodeError, AttributeError):
+
+        return "(unparseable error body)"
+
+
+def call_groq(api_key, system_prompt, user_message):
+
+    request_body = {
+
+        "model": GROQ_MODEL,
+        "temperature": 0.3,
+        "max_completion_tokens": MAX_OUTPUT_TOKENS,
+
+        # gpt-oss-20b is a reasoning model; "low" is the lowest
+        # reasoning_effort it supports (Groq's gpt-oss models don't
+        # accept "none" the way some other model families on Groq
+        # do -- confirmed against Groq's docs, not assumed). This is
+        # a short, latency-sensitive editing suggestion, not a
+        # reasoning task, so minimize reasoning overhead the same way
+        # the Gemini path above uses thinkingLevel: "low".
+        # include_reasoning: false keeps reasoning tokens out of the
+        # response entirely, so extract_groq_text below only ever
+        # has to handle the final answer text, matching how
+        # extract_gemini_text only reads the final candidate text.
+        "reasoning_effort": "low",
+        "include_reasoning": False,
+
+        "messages": [
+            {
+                "role": "system",
+                "content": system_prompt,
+            },
+            {
+                "role": "user",
+                "content": user_message,
+            },
+        ],
+
+    }
+
+    request_body_bytes = json.dumps(request_body).encode("utf-8")
 
     log_diagnostic(
-        "selected provider/model",
-        f"provider=gemini model={GEMINI_MODEL} "
-        f"api_key_detected={bool(api_key)}"
+        "provider config",
+        f"provider=groq sdk=rest(urllib) endpoint={GROQ_API_BASE} "
+        f"model={GROQ_MODEL} timeout_s={REQUEST_TIMEOUT_SECONDS}"
     )
 
-    if not api_key:
+    attempt = 0
+
+    while True:
+
+        attempt += 1
+
+        request = Request(
+
+            GROQ_API_BASE,
+
+            data=request_body_bytes,
+
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_key}",
+            },
+
+            method="POST"
+
+        )
+
+        log_diagnostic(
+            "provider request started",
+            f"model={GROQ_MODEL} attempt={attempt}/{MAX_PROVIDER_RETRIES + 1}"
+        )
+
+        started_at = time.monotonic()
+
+        try:
+
+            with urlopen(
+                request,
+                timeout=REQUEST_TIMEOUT_SECONDS
+            ) as response:
+
+                response_body = response.read().decode("utf-8")
+
+                log_diagnostic(
+                    "provider response",
+                    f"status={response.status} attempt={attempt} "
+                    f"duration_ms={int((time.monotonic() - started_at) * 1000)}"
+                )
+
+            break
+
+        except HTTPError as error:
+
+            error_body = error.read().decode("utf-8")
+            duration_ms = int((time.monotonic() - started_at) * 1000)
+
+            provider_message = _extract_groq_error_message(error_body)
+
+            log_diagnostic(
+                f"provider error type=http status={error.code}",
+                f"attempt={attempt} duration_ms={duration_ms} "
+                f"message={provider_message!r}"
+            )
+
+            if (
+                error.code in RETRYABLE_HTTP_STATUSES
+                and attempt <= MAX_PROVIDER_RETRIES
+            ):
+
+                backoff_seconds = (
+                    RETRY_BACKOFF_BASE_SECONDS * (2 ** (attempt - 1))
+                )
+
+                log_diagnostic(
+                    "provider retry",
+                    f"status={error.code} attempt={attempt} "
+                    f"backoff_s={backoff_seconds}"
+                )
+
+                time.sleep(backoff_seconds)
+
+                continue
+
+            raise describe_groq_error(error.code, error_body)
+
+        except (URLError, socket.timeout) as error:
+
+            reason = getattr(error, "reason", error)
+
+            is_timeout = (
+                isinstance(reason, socket.timeout)
+                or "timed out" in str(reason).lower()
+            )
+
+            log_diagnostic(
+                f"provider error type={'timeout' if is_timeout else 'network'}",
+                f"attempt={attempt} "
+                f"duration_ms={int((time.monotonic() - started_at) * 1000)} "
+                f"reason={reason!r}"
+            )
+
+            # Network errors and timeouts are not in RETRYABLE_HTTP_STATUSES
+            # (there's no HTTP status to check) and are not retried --
+            # they're not the transient "provider overloaded" case the
+            # retry loop targets.
+
+            if is_timeout:
+
+                raise AIProviderError(
+                    504,
+                    "The AI provider request timed out. Please try again."
+                )
+
+            raise AIProviderError(
+                502,
+                "Could not reach the AI provider (network error)."
+            )
+
+    try:
+
+        data = json.loads(response_body)
+
+    except json.JSONDecodeError:
+
+        log_diagnostic("Groq non-JSON 200 response", response_body)
 
         raise AIProviderError(
-            500,
-            "AI suggestions are not configured on the server "
-            "(missing GEMINI_API_KEY)."
+            502,
+            "The AI provider returned an invalid response."
         )
+
+    return extract_groq_text(data)
+
+
+def describe_groq_error(status_code, error_body):
+    """Turns a Groq HTTPError into an AIProviderError whose message
+    distinguishes the failure category, mirroring
+    describe_gemini_error's categories exactly (auth, permission,
+    model-not-found, rate-limit, bad-request, provider outage) --
+    same taxonomy, different provider's error shape. Groq's error
+    body is OpenAI-compatible: {"error": {"message", "type"}}."""
+
+    message = None
+    error_type = None
+
+    try:
+
+        parsed = json.loads(error_body)
+        error_obj = parsed.get("error", {}) or {}
+
+        message = error_obj.get("message")
+        error_type = error_obj.get("type")
+
+    except (json.JSONDecodeError, AttributeError):
+
+        pass
+
+    # --- Invalid / missing key -----------------------------------
+
+    if status_code == 401:
+
+        return AIProviderError(
+            401,
+            "The configured GROQ_API_KEY is invalid or missing. "
+            "Check the key value in Vercel's environment variables."
+        )
+
+    # --- Permission / access problem -------------------------------
+
+    if status_code == 403:
+
+        return AIProviderError(
+            403,
+            "The configured GROQ_API_KEY does not have permission "
+            f"to use the model '{GROQ_MODEL}'."
+        )
+
+    # --- Model not found / not available ---------------------------
+
+    if status_code == 404:
+
+        return AIProviderError(
+            500,
+            f"The configured Groq model ('{GROQ_MODEL}') was not "
+            "found or is not available to this API key. Set the "
+            "GROQ_MODEL environment variable to a model this key "
+            "can access."
+        )
+
+    # --- Rate limit / quota -----------------------------------------
+
+    if status_code == 429:
+
+        return AIProviderError(
+            429,
+            "Groq rate limit or quota exceeded. Please try again "
+            "shortly."
+        )
+
+    # --- Bad request (prompt/schema issue) --------------------------
+
+    if status_code == 400 or error_type == "invalid_request_error":
+
+        return AIProviderError(
+            502,
+            "The AI provider rejected the request "
+            f"({message or 'invalid request'})."
+        )
+
+    # --- Provider/server error ---------------------------------------
+
+    if status_code >= 500:
+
+        return AIProviderError(
+            502,
+            "The AI provider (Groq) returned a server error "
+            f"(HTTP {status_code}). Please try again."
+        )
+
+    return AIProviderError(
+        502,
+        f"AI provider request failed ({status_code}): "
+        f"{message or 'unknown error'}"
+    )
+
+
+def extract_groq_text(data):
+
+    choices = data.get("choices") or []
+
+    if not choices:
+
+        log_diagnostic("Groq empty choices", data)
+
+        raise AIProviderError(502, "AI returned an empty response.")
+
+    first_choice = choices[0]
+
+    finish_reason = first_choice.get("finish_reason")
+
+    text = (
+        (first_choice.get("message") or {}).get("content") or ""
+    ).strip()
+
+    if not text:
+
+        log_diagnostic(
+            "Groq empty text",
+            f"finish_reason={finish_reason} choice={first_choice}"
+        )
+
+        if finish_reason and finish_reason not in ("stop", "length"):
+
+            raise AIProviderError(
+                502,
+                "The AI provider did not return usable text "
+                f"({finish_reason})."
+            )
+
+        raise AIProviderError(502, "AI returned an empty response.")
+
+    return text
+
+
+def request_ai_completion(mode, payload):
 
     style_guide = read_reference_file(STYLE_GUIDE_PATH)
     glossary = read_reference_file(GLOSSARY_PATH)
@@ -620,7 +969,49 @@ def request_ai_completion(mode, payload):
         glossary
     )
 
-    return call_gemini(
+    if AI_PROVIDER == "gemini":
+
+        api_key = os.environ.get("GEMINI_API_KEY")
+
+        log_diagnostic(
+            "selected provider/model",
+            f"provider=gemini model={GEMINI_MODEL} "
+            f"api_key_detected={bool(api_key)}"
+        )
+
+        if not api_key:
+
+            raise AIProviderError(
+                500,
+                "AI suggestions are not configured on the server "
+                "(missing GEMINI_API_KEY)."
+            )
+
+        return call_gemini(
+            api_key,
+            system_prompt,
+            user_message
+        )
+
+    # Default: Groq.
+
+    api_key = os.environ.get("GROQ_API_KEY")
+
+    log_diagnostic(
+        "selected provider/model",
+        f"provider=groq model={GROQ_MODEL} "
+        f"api_key_detected={bool(api_key)}"
+    )
+
+    if not api_key:
+
+        raise AIProviderError(
+            500,
+            "AI suggestions are not configured on the server "
+            "(missing GROQ_API_KEY)."
+        )
+
+    return call_groq(
         api_key,
         system_prompt,
         user_message

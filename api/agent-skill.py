@@ -1,18 +1,3 @@
-"""Documentation QA Agent Skill runner.
-
-Separate endpoint from api/ai-suggest.py (different feature, own
-request/response contract), but uses the same Gemini provider and the
-same GEMINI_API_KEY / GEMINI_MODEL env vars -- switched from Claude/
-Anthropic because the Anthropic account backing ANTHROPIC_API_KEY ran
-out of credits, and this project deliberately avoids running two
-different paid providers for two AI features when one already works.
-Runs the deterministic checks from
-skills/documentation-qa/scripts/run_checks.py against a published
-page, then asks Gemini to turn those findings plus the page's own
-content into a short QA report, following
-skills/documentation-qa/SKILL.md and templates/qa-report.md.
-"""
-
 from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.request import Request, urlopen
@@ -37,48 +22,26 @@ ALLOWED_ORIGINS = {
     "http://localhost:8000",
 }
 
-# Same env var api/ai-suggest.py reads -- one Gemini key backs both
-# AI features in this project. Deliberately not a second, competing
-# key variable: there's no reason for the QA report generator to use
-# a different Google account/key than AI Suggestion does.
-GEMINI_MODEL = os.environ.get(
-    "GEMINI_MODEL",
-    "gemini-flash-latest"
+# Groq configuration. Keep the API key server-side in Vercel/local
+# environment variables. Never expose it to browser JavaScript.
+GROQ_MODEL = os.environ.get(
+    "GROQ_MODEL",
+    "openai/gpt-oss-20b"
 )
 
-GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
+GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 
-# Diagnosed root cause of the production "AI provider request timed
-# out" error: input prompt size was ruled out by measurement (this
-# endpoint's real prompt is ~10K chars vs. api/ai-suggest.py's ~31K
-# chars for its style-guide+glossary+selection prompt, which responds
-# fine) -- Gemini's latency scales with OUTPUT tokens generated, not
-# input size. The actual mismatch: SKILL.md's own report template
-# says "Keep the whole report short enough to read in under a minute"
-# (roughly 200-300 words, ~300-400 tokens), but MAX_REPORT_TOKENS
-# allowed generation up to 2048 tokens (~1500 words) -- a report that
-# actually used a meaningful fraction of that budget could take far
-# longer to generate than api/ai-suggest.py's typical short
-# suggestion, even at the same "low" thinking level. Capped down to
-# match what the skill is actually supposed to produce.
-MAX_REPORT_TOKENS = 1024
+# The QA skill is intended to produce a short, readable report.
+MAX_REPORT_TOKENS = 700
 MAX_DOCUMENT_CHARS = 20000
 
-# Reduced from 25.0: with MAX_REPORT_TOKENS lowered above, a
-# legitimate report should finish well inside 15s. This also directly
-# tightens the retry-multiplied worst case (see MAX_PROVIDER_RETRIES
-# below): 2 fast 429/503 responses + backoff + one attempt that
-# genuinely hangs -> ~18s worst case measured locally, down from ~28s
-# at the previous 25s per-attempt timeout.
+# Keep the provider call bounded so a serverless request cannot wait
+# indefinitely. Network timeouts are not retried because repeating a
+# genuine hang only multiplies the wait.
 REQUEST_TIMEOUT_SECONDS = 15.0
 SCRIPT_TIMEOUT_SECONDS = 15.0
 
-# Same retry policy as api/ai-suggest.py's Gemini calls: 429 is rate
-# limiting, 503 is Gemini's transient-overload status. Auth/invalid-
-# request/model-not-found errors are never retried. A genuine network
-# timeout (as opposed to a fast 429/503 HTTP response) is also never
-# retried -- see the URLError/socket.timeout branch in call_gemini --
-# so retries cannot multiply a real hang into 3x the wait.
+# Retry transient provider overload/rate-limit responses only.
 MAX_PROVIDER_RETRIES = 2
 RETRY_BACKOFF_BASE_SECONDS = 0.5
 RETRYABLE_HTTP_STATUSES = (429, 503)
@@ -96,7 +59,6 @@ RUN_CHECKS_SCRIPT = SKILL_DIR / "scripts" / "run_checks.py"
 # ==========================================================
 
 def is_allowed_origin(origin):
-
     if not origin:
         return False
 
@@ -117,35 +79,26 @@ def is_allowed_origin(origin):
 # ==========================================================
 
 class AIProviderError(RuntimeError):
-    """Carries the HTTP status the handler should send to the browser,
-    separately from the human-readable message."""
+    """Carries the HTTP status the handler should send to the browser."""
 
     def __init__(self, status_code, message):
-
         super().__init__(message)
-
         self.status_code = status_code
 
 
 def log_diagnostic(label, detail):
-
-    # Server-side only (Vercel function logs) -- never sent to the
-    # browser. Never pass the API key or full document text here.
-
-    print(f"[agent-skill] {label}: {detail}"[:800], flush=True)
+    # Server-side only. Never log API keys or full document text.
+    print(f"[agent-skill] {label}: {detail}"[:1200], flush=True)
 
 
-def _extract_gemini_error_message(error_body):
-
+def extract_groq_error_message(error_body):
     try:
-
+        data = json.loads(error_body)
         return (
-            json.loads(error_body).get("error", {}).get("message")
+            data.get("error", {}).get("message")
             or "(no message)"
         )
-
-    except (json.JSONDecodeError, AttributeError):
-
+    except (json.JSONDecodeError, AttributeError, TypeError):
         return "(unparseable error body)"
 
 
@@ -154,17 +107,22 @@ def _extract_gemini_error_message(error_body):
 # ==========================================================
 
 def resolve_document_path(raw_path):
-    """Resolve a frontend-supplied site path (e.g.
-    "/UserGuide/manage-appointments/", from the current page's URL)
-    to a real Markdown source file inside docs/. Returns the resolved
-    Path, or None if no matching published file exists. Never
-    resolves to a path outside DOCS_DIR."""
+    """Resolve a frontend-supplied site path to a Markdown file in docs/.
+
+    Examples:
+        /UserGuide/manage-appointments/
+        /style-guide/
+        /
+
+    Never resolves to a path outside DOCS_DIR.
+    """
 
     if not raw_path:
         return None
 
     path = raw_path.split("?", 1)[0].split("#", 1)[0]
 
+    # Gracefully handle a full URL if one is supplied.
     if "://" in path:
         _, _, remainder = path.partition("://")
         _, _, path = remainder.partition("/")
@@ -183,7 +141,6 @@ def resolve_document_path(raw_path):
     )
 
     for candidate in candidates:
-
         resolved = candidate.resolve()
 
         try:
@@ -202,32 +159,38 @@ def resolve_document_path(raw_path):
 # ==========================================================
 
 def run_deterministic_checks(target_file):
-
     try:
-
         result = subprocess.run(
-            [sys.executable, str(RUN_CHECKS_SCRIPT), str(target_file)],
+            [
+                sys.executable,
+                str(RUN_CHECKS_SCRIPT),
+                str(target_file),
+            ],
             capture_output=True,
             text=True,
             timeout=SCRIPT_TIMEOUT_SECONDS,
         )
 
     except subprocess.TimeoutExpired:
-
         raise AIProviderError(
             500,
             "Documentation QA checks timed out while running."
         )
 
-    try:
+    if result.returncode != 0:
+        log_diagnostic(
+            "run_checks failed",
+            f"returncode={result.returncode} "
+            f"stderr={(result.stderr or '')[:500]}"
+        )
 
+    try:
         return json.loads(result.stdout)
 
     except json.JSONDecodeError:
-
         log_diagnostic(
             "run_checks non-JSON output",
-            (result.stdout + result.stderr)[:500]
+            (result.stdout + result.stderr)[:800]
         )
 
         raise AIProviderError(
@@ -241,16 +204,21 @@ def run_deterministic_checks(target_file):
 # ==========================================================
 
 def read_text_file(path):
-
     try:
         return path.read_text(encoding="utf-8")
-
-    except OSError:
+    except OSError as error:
+        log_diagnostic(
+            "file read failed",
+            f"path={path.name} error={error}"
+        )
         return ""
 
 
-def build_report_request(deterministic, document_text, document_label):
-
+def build_report_request(
+    deterministic,
+    document_text,
+    document_label,
+):
     skill_instructions = read_text_file(SKILL_MD_PATH)
     template = read_text_file(TEMPLATE_PATH)
 
@@ -260,6 +228,7 @@ def build_report_request(deterministic, document_text, document_label):
     )
 
     truncated_text = document_text[:MAX_DOCUMENT_CHARS]
+
     truncation_note = (
         "\n\n[... document truncated for length ...]"
         if len(document_text) > MAX_DOCUMENT_CHARS
@@ -270,7 +239,7 @@ def build_report_request(deterministic, document_text, document_label):
         f"REPORT TEMPLATE:\n{template}\n\n"
         "DETERMINISTIC FINDINGS (ground truth -- restate faithfully, "
         "never contradict a pass/fail verdict from this JSON):\n"
-        f"{json.dumps(deterministic)}\n\n"
+        f"{json.dumps(deterministic, ensure_ascii=False)}\n\n"
         f"DOCUMENT: {document_label}\n\n"
         f"DOCUMENT CONTENT:\n{truncated_text}{truncation_note}"
     )
@@ -279,115 +248,93 @@ def build_report_request(deterministic, document_text, document_label):
 
 
 # ==========================================================
-# AI Request (Google Gemini)
+# AI Request (Groq)
 # ==========================================================
 
-def call_gemini(api_key, system_prompt, user_message):
-
-    url = (
-        f"{GEMINI_API_BASE}/models/{GEMINI_MODEL}:generateContent"
-        f"?key={api_key}"
-    )
-
+def call_groq(api_key, system_prompt, user_message):
     request_body = {
-
-        "systemInstruction": {
-            "parts": [
-                {"text": system_prompt}
-            ]
-        },
-
-        "contents": [
+        "model": GROQ_MODEL,
+        "messages": [
+            {
+                "role": "system",
+                "content": system_prompt,
+            },
             {
                 "role": "user",
-                "parts": [
-                    {"text": user_message}
-                ]
-            }
+                "content": user_message,
+            },
         ],
-
-        "generationConfig": {
-            "temperature": 0.3,
-            "maxOutputTokens": MAX_REPORT_TOKENS,
-
-            # Same reasoning as api/ai-suggest.py: this is a
-            # template-filling task, not open-ended reasoning, so
-            # keep thinking minimal for a fast, reliable response.
-            # "thinkingLevel" (not the legacy "thinkingBudget") is
-            # the field gemini-flash-latest's current Gemini 3.x
-            # target actually respects; "low" is the lowest level
-            # confirmed to work for this model (see
-            # api/ai-suggest.py's call_gemini for why "minimal" was
-            # rejected).
-            "thinkingConfig": {
-                "thinkingLevel": "low"
-            }
-        }
-
+        "temperature": 0.1,
+        "max_tokens": MAX_REPORT_TOKENS,
     }
 
-    request_body_bytes = json.dumps(request_body).encode("utf-8")
+    request_body_bytes = json.dumps(
+        request_body,
+        ensure_ascii=False,
+    ).encode("utf-8")
 
     log_diagnostic(
         "provider config",
-        f"provider=gemini sdk=rest(urllib) endpoint={GEMINI_API_BASE} "
-        f"model={GEMINI_MODEL} timeout_s={REQUEST_TIMEOUT_SECONDS}"
+        f"provider=groq sdk=rest(urllib) "
+        f"model={GROQ_MODEL} "
+        f"timeout_s={REQUEST_TIMEOUT_SECONDS} "
+        f"max_tokens={MAX_REPORT_TOKENS}"
     )
 
     attempt = 0
 
     while True:
-
         attempt += 1
 
         request = Request(
-
-            url,
-
+            GROQ_API_URL,
             data=request_body_bytes,
-
             headers={
-                "Content-Type": "application/json"
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
             },
-
-            method="POST"
-
+            method="POST",
         )
 
         log_diagnostic(
             "provider request started",
-            f"model={GEMINI_MODEL} attempt={attempt}/{MAX_PROVIDER_RETRIES + 1}"
+            f"model={GROQ_MODEL} "
+            f"attempt={attempt}/{MAX_PROVIDER_RETRIES + 1}"
         )
 
         started_at = time.monotonic()
 
         try:
-
             with urlopen(
                 request,
-                timeout=REQUEST_TIMEOUT_SECONDS
+                timeout=REQUEST_TIMEOUT_SECONDS,
             ) as response:
-
                 response_body = response.read().decode("utf-8")
 
                 log_diagnostic(
                     "provider response",
-                    f"status={response.status} attempt={attempt} "
-                    f"duration_ms={int((time.monotonic() - started_at) * 1000)}"
+                    f"status={response.status} "
+                    f"attempt={attempt} "
+                    f"duration_ms="
+                    f"{int((time.monotonic() - started_at) * 1000)}"
                 )
 
             break
 
         except HTTPError as error:
-
             error_body = error.read().decode("utf-8")
-            duration_ms = int((time.monotonic() - started_at) * 1000)
+            duration_ms = int(
+                (time.monotonic() - started_at) * 1000
+            )
 
-            provider_message = _extract_gemini_error_message(error_body)
+            provider_message = extract_groq_error_message(
+                error_body
+            )
 
             log_diagnostic(
                 f"provider error type=http status={error.code}",
-                f"attempt={attempt} duration_ms={duration_ms} "
+                f"attempt={attempt} "
+                f"duration_ms={duration_ms} "
                 f"message={provider_message!r}"
             )
 
@@ -395,249 +342,247 @@ def call_gemini(api_key, system_prompt, user_message):
                 error.code in RETRYABLE_HTTP_STATUSES
                 and attempt <= MAX_PROVIDER_RETRIES
             ):
-
                 backoff_seconds = (
-                    RETRY_BACKOFF_BASE_SECONDS * (2 ** (attempt - 1))
+                    RETRY_BACKOFF_BASE_SECONDS
+                    * (2 ** (attempt - 1))
                 )
 
                 log_diagnostic(
                     "provider retry",
-                    f"status={error.code} attempt={attempt} "
+                    f"status={error.code} "
+                    f"attempt={attempt} "
                     f"backoff_s={backoff_seconds}"
                 )
 
                 time.sleep(backoff_seconds)
-
                 continue
 
-            raise describe_gemini_error(error.code, error_body)
+            raise describe_groq_error(
+                error.code,
+                error_body,
+            )
 
         except (URLError, socket.timeout) as error:
-
             reason = getattr(error, "reason", error)
 
             is_timeout = (
                 isinstance(reason, socket.timeout)
                 or "timed out" in str(reason).lower()
+                or "timeout" in str(reason).lower()
             )
 
             log_diagnostic(
-                f"provider error type={'timeout' if is_timeout else 'network'}",
+                (
+                    "provider error type=timeout"
+                    if is_timeout
+                    else "provider error type=network"
+                ),
                 f"attempt={attempt} "
-                f"duration_ms={int((time.monotonic() - started_at) * 1000)} "
+                f"duration_ms="
+                f"{int((time.monotonic() - started_at) * 1000)} "
                 f"reason={reason!r}"
             )
 
             if is_timeout:
-
                 raise AIProviderError(
                     504,
-                    "The AI provider request timed out. Please try again."
+                    "The AI Agent provider request timed out. "
+                    "Please try again."
                 )
 
             raise AIProviderError(
                 502,
-                "Could not reach the AI provider (network error)."
+                "Could not reach the AI provider "
+                "(network error)."
             )
 
     try:
-
         data = json.loads(response_body)
-
     except json.JSONDecodeError:
-
-        log_diagnostic("Gemini non-JSON 200 response", response_body)
+        log_diagnostic(
+            "Groq non-JSON 200 response",
+            response_body[:800],
+        )
 
         raise AIProviderError(
             502,
             "The AI provider returned an invalid response."
         )
 
-    return extract_gemini_text(data)
+    return extract_groq_text(data)
 
 
-def describe_gemini_error(status_code, error_body):
-    """Turns a Gemini HTTPError into an AIProviderError whose message
-    distinguishes the failure category without leaking the API key or
-    raw internal error payloads. Mirrors api/ai-suggest.py's
-    describe_gemini_error -- same provider, same error taxonomy."""
+def describe_groq_error(status_code, error_body):
+    """Convert a Groq HTTP error into a safe browser-facing error."""
 
     message = None
-    reason = None
+    error_type = None
+    error_code = None
 
     try:
-
         parsed = json.loads(error_body)
         error_obj = parsed.get("error", {}) or {}
 
-        message = error_obj.get("message")
-        reason = error_obj.get("status")
+        if isinstance(error_obj, dict):
+            message = error_obj.get("message")
+            error_type = error_obj.get("type")
+            error_code = error_obj.get("code")
 
-        for detail in error_obj.get("details", []) or []:
-
-            if detail.get("reason"):
-                reason = reason or detail["reason"]
-
-    except (json.JSONDecodeError, AttributeError):
-
+    except (json.JSONDecodeError, AttributeError, TypeError):
         pass
 
-    # --- Invalid / missing key -----------------------------------
+    # Invalid/missing/expired key.
+    if status_code in (401, 403):
+        lower_message = (message or "").lower()
 
-    if reason == "API_KEY_INVALID" or (
-        status_code in (400, 401) and message and "api key" in message.lower()
-    ):
+        if (
+            status_code == 401
+            or "authentication" in lower_message
+            or "api key" in lower_message
+            or "invalid" in lower_message
+        ):
+            return AIProviderError(
+                401,
+                "The configured GROQ_API_KEY is invalid "
+                "or missing. Check Vercel environment variables."
+            )
 
-        return AIProviderError(
-            401,
-            "The configured GEMINI_API_KEY is invalid. "
-            "Check the key value in Vercel's environment variables."
-        )
-
-    # --- Permission / access problem -------------------------------
-
-    if status_code == 403 or reason in (
-        "PERMISSION_DENIED",
-        "CONSUMER_SUSPENDED",
-        "SERVICE_DISABLED",
-    ):
-
+        # Groq can return 403 when the key cannot access a model.
         return AIProviderError(
             403,
-            "The configured GEMINI_API_KEY does not have permission "
-            f"to use the model '{GEMINI_MODEL}' (or the Generative "
-            "Language API is not enabled for this key's project)."
+            "The configured GROQ_API_KEY does not have permission "
+            f"to use model '{GROQ_MODEL}'. "
+            "Check the model access and project permissions "
+            "in the Groq Console."
         )
 
-    # --- Model not found / not available ---------------------------
-
-    if status_code == 404 or reason == "NOT_FOUND":
-
+    # Model not found / unavailable.
+    if status_code == 404:
         return AIProviderError(
             500,
-            f"The configured Gemini model ('{GEMINI_MODEL}') was not "
-            "found or is not available to this API key. Set the "
-            "GEMINI_MODEL environment variable to a model this key "
-            "can access."
+            f"The configured Groq model ('{GROQ_MODEL}') was "
+            "not found or is not available to this API key. "
+            "Check GROQ_MODEL and the model's availability."
         )
 
-    # --- Rate limit / quota -----------------------------------------
-
-    if status_code == 429 or reason == "RESOURCE_EXHAUSTED":
-
+    # Rate limit / quota.
+    if status_code == 429:
         return AIProviderError(
             429,
-            "Gemini rate limit or quota exceeded. Please try again "
-            "shortly."
+            "Groq rate limit or quota exceeded. "
+            "Please try again shortly."
         )
 
-    # --- Bad request (prompt/schema issue) --------------------------
-
+    # Invalid request.
     if status_code == 400:
-
-        return AIProviderError(
-            502,
-            "The AI provider rejected the request "
-            f"({message or 'invalid request'})."
+        safe_message = (
+            message
+            if message and len(message) < 300
+            else "invalid request"
         )
 
-    # --- Provider/server error ---------------------------------------
-
-    if status_code >= 500:
-
         return AIProviderError(
             502,
-            "The AI provider (Gemini) returned a server error "
+            f"The AI provider rejected the request "
+            f"({safe_message})."
+        )
+
+    # Provider/server error.
+    if status_code >= 500:
+        return AIProviderError(
+            502,
+            "The AI provider (Groq) returned a server error "
             f"(HTTP {status_code}). Please try again."
         )
 
+    # Avoid returning the complete raw provider response.
     return AIProviderError(
         502,
-        f"AI provider request failed ({status_code}): "
-        f"{message or 'unknown error'}"
+        f"AI provider request failed ({status_code})."
     )
 
 
-def extract_gemini_text(data):
+def extract_groq_text(data):
+    choices = data.get("choices") or []
 
-    candidates = data.get("candidates") or []
-
-    if not candidates:
-
-        feedback = data.get("promptFeedback", {})
-
-        block_reason = feedback.get("blockReason")
-
-        log_diagnostic("Gemini empty candidates", data)
-
-        if block_reason:
-
-            raise AIProviderError(
-                502,
-                "The AI provider blocked this request "
-                f"({block_reason})."
-            )
-
-        raise AIProviderError(502, "AI returned an empty response.")
-
-    first_candidate = candidates[0]
-
-    finish_reason = first_candidate.get("finishReason")
-
-    parts = (
-        first_candidate.get("content", {}).get("parts", [])
-    )
-
-    text = "".join(
-        part.get("text", "")
-        for part in parts
-    ).strip()
-
-    if not text:
-
+    if not choices:
         log_diagnostic(
-            "Gemini empty text",
-            f"finishReason={finish_reason} candidate={first_candidate}"
+            "Groq empty choices",
+            str(data)[:800],
         )
 
-        if finish_reason and finish_reason not in ("STOP", "MAX_TOKENS"):
+        raise AIProviderError(
+            502,
+            "AI returned an empty response."
+        )
 
-            raise AIProviderError(
-                502,
-                "The AI provider did not return usable text "
-                f"({finish_reason})."
-            )
+    first_choice = choices[0] or {}
+    message = first_choice.get("message") or {}
+    text = message.get("content")
 
-        raise AIProviderError(502, "AI returned an empty response.")
+    if isinstance(text, list):
+        # Defensive support for providers that return content parts.
+        text = "".join(
+            part.get("text", "")
+            for part in text
+            if isinstance(part, dict)
+        )
+
+    text = (text or "").strip()
+
+    finish_reason = first_choice.get("finish_reason")
+
+    if not text:
+        log_diagnostic(
+            "Groq empty text",
+            f"finish_reason={finish_reason}",
+        )
+
+        raise AIProviderError(
+            502,
+            "AI returned an empty response."
+        )
 
     return text
 
 
-def request_qa_report(deterministic, document_text, document_label):
-
-    api_key = os.environ.get("GEMINI_API_KEY")
+def request_qa_report(
+    deterministic,
+    document_text,
+    document_label,
+):
+    api_key = os.environ.get("GROQ_API_KEY")
 
     log_diagnostic(
         "selected provider/model",
-        f"provider=gemini model={GEMINI_MODEL} "
+        f"provider=groq model={GROQ_MODEL} "
         f"api_key_detected={bool(api_key)}"
     )
 
     if not api_key:
-
         raise AIProviderError(
             500,
-            "The AI Agent panel is not configured on the server "
-            "(missing GEMINI_API_KEY)."
+            "The AI Agent panel is not configured on the "
+            "server (missing GROQ_API_KEY)."
         )
 
     system_prompt, user_message = build_report_request(
         deterministic,
         document_text,
-        document_label
+        document_label,
     )
 
-    return call_gemini(api_key, system_prompt, user_message)
+    log_diagnostic(
+        "prompt prepared",
+        f"system_chars={len(system_prompt)} "
+        f"user_chars={len(user_message)}"
+    )
+
+    return call_groq(
+        api_key,
+        system_prompt,
+        user_message,
+    )
 
 
 # ==========================================================
@@ -645,11 +590,18 @@ def request_qa_report(deterministic, document_text, document_label):
 # ==========================================================
 
 def validate_payload(payload):
+    if not isinstance(payload, dict):
+        return "Invalid request payload."
 
-    document_path = (payload.get("document_path") or "").strip()
+    document_path = (
+        payload.get("document_path") or ""
+    ).strip()
 
     if not document_path:
         return "A document_path is required."
+
+    if len(document_path) > 1000:
+        return "The document_path is too long."
 
     return None
 
@@ -665,34 +617,32 @@ class handler(BaseHTTPRequestHandler):
     # ======================================================
 
     def send_cors_headers(self):
-
         origin = self.headers.get("Origin", "")
 
         if is_allowed_origin(origin):
-
             self.send_header(
                 "Access-Control-Allow-Origin",
-                origin
+                origin,
             )
 
         self.send_header(
             "Access-Control-Allow-Methods",
-            "POST, OPTIONS, GET"
+            "POST, OPTIONS, GET",
         )
 
         self.send_header(
             "Access-Control-Allow-Headers",
-            "Content-Type"
+            "Content-Type",
         )
 
         self.send_header(
             "Access-Control-Max-Age",
-            "86400"
+            "86400",
         )
 
         self.send_header(
             "Vary",
-            "Origin"
+            "Origin",
         )
 
     # ======================================================
@@ -700,14 +650,16 @@ class handler(BaseHTTPRequestHandler):
     # ======================================================
 
     def send_json(self, status_code, data):
-
-        response = json.dumps(data).encode("utf-8")
+        response = json.dumps(
+            data,
+            ensure_ascii=False,
+        ).encode("utf-8")
 
         self.send_response(status_code)
 
         self.send_header(
             "Content-Type",
-            "application/json"
+            "application/json; charset=utf-8",
         )
 
         self.send_cors_headers()
@@ -721,14 +673,15 @@ class handler(BaseHTTPRequestHandler):
     # ======================================================
 
     def do_GET(self):
-
         self.send_json(
             200,
             {
                 "success": True,
                 "message": "DocEngine Agent Skill API is running.",
-                "method": "GET"
-            }
+                "method": "GET",
+                "provider": "groq",
+                "model": GROQ_MODEL,
+            },
         )
 
     # ======================================================
@@ -736,23 +689,16 @@ class handler(BaseHTTPRequestHandler):
     # ======================================================
 
     def do_OPTIONS(self):
-
         origin = self.headers.get("Origin", "")
 
         if origin and not is_allowed_origin(origin):
-
             self.send_response(403)
-
             self.send_header("Vary", "Origin")
-
             self.end_headers()
-
             return
 
         self.send_response(204)
-
         self.send_cors_headers()
-
         self.end_headers()
 
     # ======================================================
@@ -760,140 +706,217 @@ class handler(BaseHTTPRequestHandler):
     # ======================================================
 
     def do_POST(self):
-
         try:
-
             content_length = int(
                 self.headers.get("Content-Length", "0")
             )
 
-            body = self.rfile.read(content_length)
+            if content_length <= 0:
+                self.send_json(
+                    400,
+                    {
+                        "success": False,
+                        "message": "Request body is required.",
+                    },
+                )
+                return
 
-            payload = json.loads(body.decode("utf-8"))
+            # Prevent accidentally accepting an extremely large
+            # request body. The endpoint only needs document_path.
+            if content_length > 100_000:
+                self.send_json(
+                    413,
+                    {
+                        "success": False,
+                        "message": "Request body is too large.",
+                    },
+                )
+                return
+
+            body = self.rfile.read(content_length)
+            payload = json.loads(
+                body.decode("utf-8")
+            )
 
         except (ValueError, json.JSONDecodeError):
-
             self.send_json(
                 400,
                 {
                     "success": False,
-                    "message": "Invalid request body."
-                }
+                    "message": "Invalid request body.",
+                },
             )
-
             return
-
-        document_path = (payload.get("document_path") or "").strip()
-
-        log_diagnostic(
-            "request received",
-            f"skill=documentation-qa document_path={document_path!r}"
-        )
 
         validation_error = validate_payload(payload)
 
         if validation_error:
-
             self.send_json(
                 400,
                 {
                     "success": False,
-                    "message": validation_error
-                }
+                    "message": validation_error,
+                },
             )
-
             return
 
-        target_file = resolve_document_path(document_path)
+        document_path = (
+            payload.get("document_path") or ""
+        ).strip()
+
+        log_diagnostic(
+            "request received",
+            "skill=documentation-qa "
+            f"document_path={document_path!r}",
+        )
+
+        target_file = resolve_document_path(
+            document_path
+        )
 
         if target_file is None:
-
             self.send_json(
                 404,
                 {
                     "success": False,
                     "message": (
                         f"Could not find a published page for "
-                        f"'{document_path}'. Documentation QA checks "
-                        "the last-published version of a page -- save "
-                        "and publish it at least once first."
-                    )
-                }
+                        f"'{document_path}'. Documentation QA "
+                        "checks the last-published version of a "
+                        "page -- save and publish it at least once "
+                        "first."
+                    ),
+                },
             )
-
             return
 
         total_started_at = time.monotonic()
 
         try:
+            # --------------------------------------------------
+            # Deterministic QA
+            # --------------------------------------------------
 
-            log_diagnostic("deterministic checks started", target_file.name)
+            log_diagnostic(
+                "deterministic checks started",
+                target_file.name,
+            )
 
             checks_started_at = time.monotonic()
 
-            deterministic = run_deterministic_checks(target_file)
+            deterministic = run_deterministic_checks(
+                target_file
+            )
 
             log_diagnostic(
                 "deterministic checks completed",
-                f"in {int((time.monotonic() - checks_started_at) * 1000)} ms"
+                "in "
+                f"{int((time.monotonic() - checks_started_at) * 1000)} ms",
             )
 
-            document_text = read_text_file(target_file)
+            # --------------------------------------------------
+            # Document
+            # --------------------------------------------------
 
-            started_at = time.monotonic()
+            document_text = read_text_file(
+                target_file
+            )
+
+            if not document_text:
+                raise AIProviderError(
+                    500,
+                    "The published documentation page is empty "
+                    "or could not be read."
+                )
+
+            # --------------------------------------------------
+            # AI QA Review
+            # --------------------------------------------------
+
+            ai_started_at = time.monotonic()
 
             report_text = request_qa_report(
                 deterministic,
                 document_text,
-                deterministic.get("file", document_path)
+                deterministic.get(
+                    "file",
+                    document_path,
+                ),
             )
 
-            duration_ms = int((time.monotonic() - started_at) * 1000)
+            ai_duration_ms = int(
+                (time.monotonic() - ai_started_at) * 1000
+            )
+
+            total_duration_ms = int(
+                (time.monotonic() - total_started_at) * 1000
+            )
+
+            log_diagnostic(
+                "AI report completed",
+                f"in {ai_duration_ms} ms",
+            )
 
             log_diagnostic(
                 "total request time",
-                f"{int((time.monotonic() - total_started_at) * 1000)} ms"
+                f"{total_duration_ms} ms",
             )
 
             self.send_json(
                 200,
                 {
                     "success": True,
-                    "model": GEMINI_MODEL,
+                    "model": GROQ_MODEL,
+                    "provider": "groq",
                     "deterministic": deterministic,
                     "report": report_text,
-                    "duration_ms": duration_ms,
-                }
+                    "duration_ms": total_duration_ms,
+                },
             )
 
         except AIProviderError as error:
-
-            print("Agent skill error:", error, flush=True)
+            print(
+                "Agent skill error:",
+                error,
+                flush=True,
+            )
 
             log_diagnostic(
                 "total request time (failed)",
-                f"{int((time.monotonic() - total_started_at) * 1000)} ms"
+                f"{int((time.monotonic() - total_started_at) * 1000)} ms",
             )
 
             self.send_json(
                 error.status_code,
                 {
                     "success": False,
-                    "message": str(error) or "Agent skill run failed."
-                }
+                    "message": (
+                        str(error)
+                        or "Agent skill run failed."
+                    ),
+                },
             )
 
         except Exception as error:
+            # Unknown application bug. Do not expose internal details
+            # to the browser.
+            print(
+                "Agent skill unexpected error:",
+                error,
+                flush=True,
+            )
 
-            # Anything not already classified into an AIProviderError
-            # (a genuine bug, not a known Gemini failure mode).
-
-            print("Agent skill unexpected error:", error, flush=True)
+            log_diagnostic(
+                "unexpected exception type",
+                type(error).__name__,
+            )
 
             self.send_json(
                 500,
                 {
                     "success": False,
-                    "message": "Agent skill run failed unexpectedly."
-                }
+                    "message": (
+                        "Agent skill run failed unexpectedly."
+                    ),
+                },
             )

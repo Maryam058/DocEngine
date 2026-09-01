@@ -107,6 +107,40 @@ def extract_groq_error_message(error_body):
         return "(unparseable error body)"
 
 
+def format_groq_error_diagnostic(error_body, api_key):
+    """Redacted, truncated diagnostic of a Groq error response body.
+
+    Only ever reads Groq's own response text -- never our request or
+    its headers -- but still strips the configured key defensively in
+    case Groq ever echoed it back. Never logs GROQ_API_KEY itself.
+    """
+
+    truncated_raw = error_body[:1000]
+
+    try:
+        error_obj = json.loads(error_body).get("error", {}) or {}
+
+        if isinstance(error_obj, dict):
+            diagnostic = (
+                f"error.message={error_obj.get('message')!r} "
+                f"error.type={error_obj.get('type')!r} "
+                f"error.code={error_obj.get('code')!r} "
+                f"raw={truncated_raw!r}"
+            )
+        else:
+            diagnostic = None
+    except (json.JSONDecodeError, AttributeError, TypeError):
+        diagnostic = None
+
+    if diagnostic is None:
+        diagnostic = f"raw(non-json)={truncated_raw!r}"
+
+    if api_key:
+        diagnostic = diagnostic.replace(api_key, "[REDACTED]")
+
+    return diagnostic
+
+
 # ==========================================================
 # Document Path Resolution
 # ==========================================================
@@ -371,6 +405,11 @@ def call_groq(api_key, system_prompt, user_message):
                 f"attempt={attempt} "
                 f"duration_ms={duration_ms} "
                 f"message={provider_message!r}"
+            )
+
+            log_diagnostic(
+                "provider error body",
+                format_groq_error_diagnostic(error_body, api_key),
             )
 
             if (

@@ -5,6 +5,7 @@ from urllib.error import HTTPError, URLError
 
 import json
 import os
+import re
 import socket
 import time
 
@@ -115,19 +116,55 @@ GROQ_API_BASE = "https://api.groq.com/openai/v1/chat/completions"
 
 # openai/gpt-oss-20b on Groq: 131,072 token context window, 65,536
 # max completion tokens (confirmed against Groq's own model docs, not
-# assumed). The full existing prompt (system prompt + full
-# style-guide.md + full glossary.md + up to MAX_CONTEXT_CHARS of
-# surrounding context + up to MAX_SELECTION_CHARS of selected text)
-# measures well under 10,000 characters (~2,500 tokens) for this
-# project's actual style-guide.md/glossary.md -- comfortably inside
-# the 131K window with no truncation needed. If either reference
-# file grows enough to approach that ceiling, re-check this comment
-# rather than assuming it still holds.
+# assumed). This context window is NOT the binding constraint,
+# though -- Groq's account-level rate limit (8,000 tokens per minute
+# for this key/model, confirmed via a production HTTP 413: "Current
+# request: 8,948 tokens") is much tighter, and was exceeded because
+# style-guide.md/glossary.md used to be injected into every prompt in
+# full with no cap. See the prompt-budgeting section below for the
+# fix -- it bounds every variable-size component so growth in any one
+# of them can't blow the request past that limit again.
 GROQ_CONTEXT_WINDOW_TOKENS = 131072
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 STYLE_GUIDE_PATH = PROJECT_ROOT / "docs" / "style-guide.md"
 GLOSSARY_PATH = PROJECT_ROOT / "docs" / "glossary.md"
+
+
+# ==========================================================
+# Prompt Budgeting (Groq input-size safety)
+# ==========================================================
+
+# Rough, conservative token estimate for prompt-budget math only (not
+# billing-accurate): ~4 characters per token for English/Markdown
+# text -- the same ratio already assumed in the GROQ_CONTEXT_WINDOW_
+# TOKENS comment above. Exact tokenization isn't needed to keep a
+# request safely under a token limit, just a consistent estimate.
+CHARS_PER_TOKEN_ESTIMATE = 4
+
+# Target well below the 8,000-token limit that produced the
+# production 413, so growth in ANY component (a bigger style guide, a
+# longer selection, more surrounding context) can never push a
+# request over it again. Enforced by allocate_chars() and
+# select_relevant_excerpt() below -- not by assuming any one
+# file/field stays small, which is what caused the original bug.
+MAX_INPUT_TOKENS_GROQ = 6000
+MAX_INPUT_CHARS_GROQ = MAX_INPUT_TOKENS_GROQ * CHARS_PER_TOKEN_ESTIMATE
+
+# Per-component ceilings applied *within* the overall budget above --
+# bounded/compact versions of what used to be sent in full. These are
+# upper bounds only: allocate_chars() shrinks them further (down to
+# zero) if higher-priority content has already used up the available
+# budget.
+MAX_STYLE_GUIDE_CHARS = 3000
+MAX_GLOSSARY_CHARS = 2000
+
+# Generous fixed allowance for the section labels build_user_message()
+# adds around each component ("STYLE GUIDE:\n", "SELECTED TEXT:\n",
+# ...) and the "\n\n" separators joining them -- reserved up front so
+# the fully assembled message (labels + content) never exceeds the
+# budget, not just the raw content by itself.
+LABEL_OVERHEAD_CHARS = 200
 
 
 # ==========================================================
@@ -162,6 +199,122 @@ def read_reference_file(path):
 
     except OSError:
         return ""
+
+
+# ==========================================================
+# Prompt Budgeting Helpers
+# ==========================================================
+
+def estimate_tokens(text):
+    """Conservative token estimate for prompt-budget math (see
+    CHARS_PER_TOKEN_ESTIMATE). Not exact -- good enough to keep
+    requests safely under a provider's token limit, which is all
+    prompt budgeting needs."""
+
+    if not text:
+        return 0
+
+    return -(-len(text) // CHARS_PER_TOKEN_ESTIMATE)  # ceil division
+
+
+def allocate_chars(remaining_budget, requested_chars, component_cap):
+    """Reusable priority-budget helper. A component asks for
+    `requested_chars` (how much content it actually has), bounded by
+    its own `component_cap` (how much of that content type is ever
+    useful) and by whatever is left of the overall budget. Returns
+    (chars_to_use, new_remaining_budget) so callers can allocate
+    several components in priority order -- highest priority first --
+    and the running total can never exceed the original budget."""
+
+    chars_to_use = max(
+        0,
+        min(requested_chars, component_cap, remaining_budget)
+    )
+
+    return chars_to_use, remaining_budget - chars_to_use
+
+
+_EXCERPT_STOPWORDS = {
+    "the", "and", "for", "with", "that", "this", "from", "into",
+    "your", "have", "has", "are", "was", "were", "will", "should",
+    "must", "not", "use", "used", "using", "each", "when", "then",
+    "than", "which", "while", "about", "also", "such", "these",
+    "those", "they", "them", "their",
+}
+
+
+def _excerpt_keywords(text):
+
+    return {
+        word for word in re.findall(r"[a-z]{4,}", text.lower())
+        if word not in _EXCERPT_STOPWORDS
+    }
+
+
+def select_relevant_excerpt(full_text, query_text, max_chars):
+    """Bounded/compact view of a reference document (style guide or
+    glossary) instead of blindly sending it in full or chopping off
+    the end: splits the document into sections by Markdown heading,
+    scores each section by keyword overlap with `query_text`
+    (selected text + surrounding context), and keeps the
+    highest-scoring sections -- in their original order -- until
+    max_chars is reached. Falls back to a plain head-truncation if the
+    document has no headings, or to a truncated slice of the single
+    best section if even that alone doesn't fit. Always returns at
+    most max_chars characters."""
+
+    if not full_text or max_chars <= 0:
+        return ""
+
+    if len(full_text) <= max_chars:
+        return full_text
+
+    sections = [
+        section
+        for section in re.split(r"(?=^#{1,6}\s)", full_text, flags=re.MULTILINE)
+        if section.strip()
+    ]
+
+    if len(sections) <= 1:
+        return full_text[:max_chars].rstrip()
+
+    query_keywords = _excerpt_keywords(query_text)
+
+    scored_sections = sorted(
+        enumerate(sections),
+        key=lambda item: (
+            -len(query_keywords & _excerpt_keywords(item[1])),
+            item[0],
+        )
+    )
+
+    selected_indexes = []
+    used_chars = 0
+
+    for index, section in scored_sections:
+
+        available = max_chars - used_chars
+
+        if available <= 0:
+            break
+
+        if len(section) <= available:
+            selected_indexes.append(index)
+            used_chars += len(section)
+
+    if not selected_indexes:
+
+        # Even the single highest-scoring section doesn't fit whole --
+        # take a truncated slice of it rather than send nothing.
+        best_index = scored_sections[0][0]
+
+        return sections[best_index][:max_chars].rstrip()
+
+    excerpt = "".join(
+        sections[index] for index in sorted(selected_indexes)
+    ).strip()
+
+    return excerpt[:max_chars].rstrip()
 
 
 # ==========================================================
@@ -202,42 +355,93 @@ def build_system_prompt(mode):
     )
 
 
-def build_user_message(mode, payload, style_guide, glossary):
-
-    parts = []
+def build_user_message(mode, payload, style_guide, glossary, system_prompt):
+    """Assembles the user message within MAX_INPUT_CHARS_GROQ, split
+    across components in priority order -- selected text, then
+    surrounding context, then style guide, then glossary -- so the
+    total size can never exceed the budget regardless of how large
+    any individual document/reference file grows."""
 
     document_title = (payload.get("documentTitle") or "Untitled").strip()
     document_path = (payload.get("documentPath") or "").strip()
-
-    parts.append(f"Document: {document_title} ({document_path})")
-
-    if style_guide:
-        parts.append(
-            "STYLE GUIDE:\n" + style_guide
-        )
-
-    if glossary:
-        parts.append(
-            "TERMINOLOGY GLOSSARY:\n" + glossary
-        )
-
-    context = (payload.get("context") or "").strip()
-
-    if context:
-        parts.append(
-            "SURROUNDING CONTEXT:\n" + context[:MAX_CONTEXT_CHARS]
-        )
+    document_line = f"Document: {document_title} ({document_path})"
 
     selected_text = payload.get("selectedText") or ""
-
-    parts.append(
-        "SELECTED TEXT:\n" + selected_text
+    context = (payload.get("context") or "").strip()
+    question = (
+        (payload.get("question") or "").strip() if mode == "ask" else ""
     )
 
-    if mode == "ask":
+    # Reserve room for the parts that are never truncated: the system
+    # prompt (sent alongside this message as its own "system" role
+    # message), the document title/path line, (in ask mode) the
+    # question, and the section labels/separators (LABEL_OVERHEAD_
+    # CHARS) added when the parts are joined below. Everything else is
+    # allocated from what's left, in priority order below.
+    fixed_chars = (
+        len(system_prompt)
+        + len(document_line)
+        + len(question)
+        + LABEL_OVERHEAD_CHARS
+    )
 
-        question = (payload.get("question") or "").strip()
+    remaining_budget = MAX_INPUT_CHARS_GROQ - fixed_chars
 
+    # Priority order: selected text (highest) > surrounding context >
+    # style guide > glossary (lowest). Each allocation spends only
+    # what's left after the higher-priority ones above it, so lower-
+    # priority content is truncated or omitted first.
+    selected_chars, remaining_budget = allocate_chars(
+        remaining_budget, len(selected_text), len(selected_text)
+    )
+    context_chars, remaining_budget = allocate_chars(
+        remaining_budget, len(context), MAX_CONTEXT_CHARS
+    )
+    style_guide_chars, remaining_budget = allocate_chars(
+        remaining_budget, len(style_guide), MAX_STYLE_GUIDE_CHARS
+    )
+    glossary_chars, remaining_budget = allocate_chars(
+        remaining_budget, len(glossary), MAX_GLOSSARY_CHARS
+    )
+
+    bounded_selected_text = selected_text[:selected_chars]
+    bounded_context = context[:context_chars]
+
+    relevance_query = selected_text + " " + context
+
+    bounded_style_guide = select_relevant_excerpt(
+        style_guide, relevance_query, style_guide_chars
+    )
+    bounded_glossary = select_relevant_excerpt(
+        glossary, relevance_query, glossary_chars
+    )
+
+    parts = [document_line]
+
+    if bounded_style_guide:
+        parts.append(
+            "STYLE GUIDE:\n" + bounded_style_guide
+        )
+
+    if bounded_glossary:
+        parts.append(
+            "TERMINOLOGY GLOSSARY:\n" + bounded_glossary
+        )
+
+    if bounded_context:
+        parts.append(
+            "SURROUNDING CONTEXT:\n" + bounded_context
+        )
+
+    # Always included, never dropped by the budget above -- an empty
+    # SELECTED TEXT section would make the suggestion meaningless.
+    # validate_payload() already guarantees selected_text is non-empty
+    # before this is reachable from the HTTP handler.
+    parts.append(
+        "SELECTED TEXT:\n" + bounded_selected_text
+    )
+
+    if question:
         parts.append(
             "QUESTION:\n" + question
         )
@@ -1026,7 +1230,16 @@ def request_ai_completion(mode, payload):
         mode,
         payload,
         style_guide,
-        glossary
+        glossary,
+        system_prompt
+    )
+
+    log_diagnostic(
+        "prompt budget",
+        f"estimated_input_tokens="
+        f"{estimate_tokens(system_prompt) + estimate_tokens(user_message)} "
+        f"budget_tokens={MAX_INPUT_TOKENS_GROQ} "
+        f"system_chars={len(system_prompt)} user_chars={len(user_message)}"
     )
 
     if AI_PROVIDER == "gemini":

@@ -8,6 +8,7 @@ import os
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 
 
@@ -34,6 +35,10 @@ GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 # The QA skill is intended to produce a short, readable report.
 MAX_REPORT_TOKENS = 700
 MAX_DOCUMENT_CHARS = 20000
+
+# Cap an unpublished draft's raw length (before AI-prompt truncation)
+# so a request body cannot be used to exhaust server resources.
+MAX_DOCUMENT_CONTENT_CHARS = 50000
 
 # Keep the provider call bounded so a serverless request cannot wait
 # indefinitely. Network timeouts are not retried because repeating a
@@ -197,6 +202,36 @@ def run_deterministic_checks(target_file):
             500,
             "Documentation QA checks failed to run."
         )
+
+
+def run_deterministic_checks_on_draft(document_content):
+    """Run the same deterministic checks against an unpublished draft.
+
+    The draft is written to a temporary Markdown file only so that
+    run_checks.py has a real file path to inspect. The file lives
+    outside docs/ and is always removed afterward -- the draft is
+    never persisted into the published site.
+    """
+
+    temp_file = tempfile.NamedTemporaryFile(
+        mode="w",
+        suffix=".md",
+        prefix="docengine-qa-draft-",
+        delete=False,
+        encoding="utf-8",
+    )
+
+    try:
+        temp_file.write(document_content)
+        temp_file.close()
+
+        return run_deterministic_checks(Path(temp_file.name))
+
+    finally:
+        try:
+            os.unlink(temp_file.name)
+        except OSError:
+            pass
 
 
 # ==========================================================
@@ -603,6 +638,15 @@ def validate_payload(payload):
     if len(document_path) > 1000:
         return "The document_path is too long."
 
+    document_content = payload.get("document_content")
+
+    if document_content is not None:
+        if not isinstance(document_content, str):
+            return "document_content must be a string."
+
+        if len(document_content) > MAX_DOCUMENT_CONTENT_CHARS:
+            return "The document_content is too long."
+
     return None
 
 
@@ -722,7 +766,8 @@ class handler(BaseHTTPRequestHandler):
                 return
 
             # Prevent accidentally accepting an extremely large
-            # request body. The endpoint only needs document_path.
+            # request body. The endpoint only needs document_path
+            # and, optionally, an unpublished draft's document_content.
             if content_length > 100_000:
                 self.send_json(
                     413,
@@ -764,17 +809,28 @@ class handler(BaseHTTPRequestHandler):
             payload.get("document_path") or ""
         ).strip()
 
+        raw_document_content = payload.get("document_content")
+
+        document_content = (
+            raw_document_content.strip()
+            if isinstance(raw_document_content, str)
+            else ""
+        )
+
         log_diagnostic(
             "request received",
             "skill=documentation-qa "
-            f"document_path={document_path!r}",
+            f"document_path={document_path!r} "
+            f"has_document_content={bool(document_content)}",
         )
 
         target_file = resolve_document_path(
             document_path
         )
 
-        if target_file is None:
+        published_baseline = target_file is not None
+
+        if not published_baseline and not document_content:
             self.send_json(
                 404,
                 {
@@ -783,12 +839,15 @@ class handler(BaseHTTPRequestHandler):
                         f"Could not find a published page for "
                         f"'{document_path}'. Documentation QA "
                         "checks the last-published version of a "
-                        "page -- save and publish it at least once "
-                        "first."
+                        "page -- save and publish it at least once, "
+                        "or include the unpublished draft as "
+                        "document_content."
                     ),
                 },
             )
             return
+
+        source = "published" if published_baseline else "draft"
 
         total_started_at = time.monotonic()
 
@@ -797,16 +856,27 @@ class handler(BaseHTTPRequestHandler):
             # Deterministic QA
             # --------------------------------------------------
 
-            log_diagnostic(
-                "deterministic checks started",
-                target_file.name,
-            )
+            if published_baseline:
+                log_diagnostic(
+                    "deterministic checks started",
+                    target_file.name,
+                )
+            else:
+                log_diagnostic(
+                    "deterministic checks started",
+                    "(unpublished draft)",
+                )
 
             checks_started_at = time.monotonic()
 
-            deterministic = run_deterministic_checks(
-                target_file
-            )
+            if published_baseline:
+                deterministic = run_deterministic_checks(
+                    target_file
+                )
+            else:
+                deterministic = run_deterministic_checks_on_draft(
+                    document_content
+                )
 
             log_diagnostic(
                 "deterministic checks completed",
@@ -818,16 +888,25 @@ class handler(BaseHTTPRequestHandler):
             # Document
             # --------------------------------------------------
 
-            document_text = read_text_file(
-                target_file
-            )
-
-            if not document_text:
-                raise AIProviderError(
-                    500,
-                    "The published documentation page is empty "
-                    "or could not be read."
+            if published_baseline:
+                document_text = read_text_file(
+                    target_file
                 )
+
+                if not document_text:
+                    raise AIProviderError(
+                        500,
+                        "The published documentation page is empty "
+                        "or could not be read."
+                    )
+
+                document_label = deterministic.get(
+                    "file",
+                    document_path,
+                )
+            else:
+                document_text = document_content
+                document_label = document_path
 
             # --------------------------------------------------
             # AI QA Review
@@ -838,10 +917,7 @@ class handler(BaseHTTPRequestHandler):
             report_text = request_qa_report(
                 deterministic,
                 document_text,
-                deterministic.get(
-                    "file",
-                    document_path,
-                ),
+                document_label,
             )
 
             ai_duration_ms = int(
@@ -868,6 +944,8 @@ class handler(BaseHTTPRequestHandler):
                     "success": True,
                     "model": GROQ_MODEL,
                     "provider": "groq",
+                    "source": source,
+                    "published_baseline": published_baseline,
                     "deterministic": deterministic,
                     "report": report_text,
                     "duration_ms": total_duration_ms,

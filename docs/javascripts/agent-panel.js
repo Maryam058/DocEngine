@@ -91,6 +91,65 @@ const AgentPanel = {
 
 
     /* ======================================================
+       Current Editor Content
+
+       Reads (never writes) the in-progress Quill editor content
+       via the existing DraftManager.getContent() accessor (the
+       same one publishDocument() uses) and converts it to
+       Markdown via PageChrome's existing HTML-to-Markdown
+       converter (the same one used by the "Download Markdown"
+       export), so an unpublished draft can be QA'd even before
+       it has a published page to check against.
+
+       AppState/DraftManager are declared with top-level `const`
+       in doc-authoring.js, which -- unlike `var` -- does not
+       attach them to `window`; they're referenced here as bare
+       identifiers since classic <script> tags share one global
+       scope. PageChrome does explicitly assign itself to
+       `window`, so either form works for it.
+
+       Returns "" when no editor is active (e.g. just viewing an
+       already-published page), matching prior behavior.
+    ====================================================== */
+
+    getCurrentDocumentContent() {
+
+        if (
+            typeof AppState === "undefined" ||
+            !AppState.editor
+        ) {
+            return "";
+        }
+
+        if (
+            typeof DraftManager === "undefined" ||
+            typeof PageChrome === "undefined" ||
+            typeof PageChrome.htmlToMarkdown !== "function"
+        ) {
+            return "";
+        }
+
+        const editorHtml =
+            DraftManager.getContent();
+
+        if (!editorHtml) {
+            return "";
+        }
+
+        const container =
+            document.createElement("div");
+
+        container.innerHTML =
+            editorHtml;
+
+        return PageChrome.htmlToMarkdown(
+            container
+        ).trim();
+
+    },
+
+
+    /* ======================================================
        Launcher Button
     ====================================================== */
 
@@ -452,6 +511,22 @@ const AgentPanel = {
 
         try {
 
+            const documentPath =
+                this.getCurrentDocumentPath();
+
+            const documentContent =
+                this.getCurrentDocumentContent();
+
+            const requestBody = {
+                document_path:
+                    documentPath
+            };
+
+            if (documentContent) {
+                requestBody.document_content =
+                    documentContent;
+            }
+
             const response =
                 await fetch(
 
@@ -466,10 +541,7 @@ const AgentPanel = {
                                 "application/json"
                         },
 
-                        body: JSON.stringify({
-                            document_path:
-                                this.getCurrentDocumentPath()
-                        }),
+                        body: JSON.stringify(requestBody),
 
                         signal:
                             controller.signal

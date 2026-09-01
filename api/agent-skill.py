@@ -361,6 +361,11 @@ def call_groq(api_key, system_prompt, user_message):
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
+                "Accept": "application/json",
+                "User-Agent": (
+                    "DocEngine-AgentSkill/1.0 "
+                    "(+https://doc-engine-nu.vercel.app)"
+                ),
             },
             method="POST",
         )
@@ -504,6 +509,19 @@ def describe_groq_error(status_code, error_body):
 
     except (json.JSONDecodeError, AttributeError, TypeError):
         pass
+
+    # Cloudflare's edge (in front of api.groq.com) can reject a request
+    # before it ever reaches Groq's application layer. That shows up as
+    # a plaintext (non-JSON) "error code: 1010" body, not Groq's normal
+    # {"error": {...}} JSON shape -- it is not a key/model permission
+    # decision at all, so it must not be reported as one.
+    if status_code == 403 and "error code: 1010" in error_body:
+        return AIProviderError(
+            502,
+            "The request to Groq was blocked by a Cloudflare security "
+            "rule (error 1010), not a Groq API key or model permission "
+            "issue. Please try again; contact support if this persists."
+        )
 
     # Invalid/missing/expired key.
     if status_code in (401, 403):

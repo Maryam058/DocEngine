@@ -13,6 +13,7 @@ Run with: python -m unittest tests.test_groq_error_diagnostics -v
 """
 
 import importlib.util
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -42,6 +43,39 @@ JSON_403_BODY = (
 )
 
 NON_JSON_403_BODY = "Forbidden"
+
+CLOUDFLARE_1010_BODY = "error code: 1010\n"
+
+
+class _FakeGroqResponse:
+    """Minimal stand-in for the context-managed object urlopen()
+    returns, just enough for call_groq()'s success path to complete."""
+
+    def __init__(self, body):
+        self.status = 200
+        self._body = body.encode("utf-8")
+
+    def read(self):
+        return self._body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args):
+        return False
+
+
+def _make_capturing_urlopen(captured_requests):
+    """Fake urlopen() that records the Request it was given instead of
+    making a real network call, so headers can be asserted on."""
+
+    def fake_urlopen(request, timeout=None):
+        captured_requests.append(request)
+        return _FakeGroqResponse(
+            json.dumps({"choices": [{"message": {"content": "ok"}}]})
+        )
+
+    return fake_urlopen
 
 
 class GroqErrorDiagnosticTests(unittest.TestCase):
@@ -96,6 +130,35 @@ class GroqErrorDiagnosticTests(unittest.TestCase):
         self.assertEqual(error.status_code, 403)
         self.assertIn("does not have permission", str(error))
 
+    def test_agent_skill_describe_groq_error_cloudflare_1010(self):
+        """A Cloudflare edge block must never be reported as a Groq
+        key/model permission problem."""
+
+        error = agent_skill.describe_groq_error(
+            403, CLOUDFLARE_1010_BODY
+        )
+        self.assertEqual(error.status_code, 502)
+        self.assertIn("Cloudflare", str(error))
+        self.assertNotIn("does not have permission", str(error))
+
+    def test_agent_skill_call_groq_sets_accept_and_user_agent_headers(self):
+        captured_requests = []
+        original_urlopen = agent_skill.urlopen
+        agent_skill.urlopen = _make_capturing_urlopen(captured_requests)
+
+        try:
+            agent_skill.call_groq(FAKE_API_KEY, "system prompt", "user")
+        finally:
+            agent_skill.urlopen = original_urlopen
+
+        self.assertEqual(len(captured_requests), 1)
+        request = captured_requests[0]
+        self.assertEqual(request.get_header("Accept"), "application/json")
+        self.assertEqual(
+            request.get_header("User-agent"),
+            "DocEngine-AgentSkill/1.0 (+https://doc-engine-nu.vercel.app)"
+        )
+
     # --- api/ai-suggest.py: _format_groq_error_diagnostic -----------
 
     def test_ai_suggest_json_error_body_exposes_fields(self):
@@ -131,6 +194,33 @@ class GroqErrorDiagnosticTests(unittest.TestCase):
         error = ai_suggest.describe_groq_error(403, JSON_403_BODY)
         self.assertEqual(error.status_code, 403)
         self.assertIn("does not have permission", str(error))
+
+    def test_ai_suggest_describe_groq_error_cloudflare_1010(self):
+        """A Cloudflare edge block must never be reported as a Groq
+        key/model permission problem."""
+
+        error = ai_suggest.describe_groq_error(403, CLOUDFLARE_1010_BODY)
+        self.assertEqual(error.status_code, 502)
+        self.assertIn("Cloudflare", str(error))
+        self.assertNotIn("does not have permission", str(error))
+
+    def test_ai_suggest_call_groq_sets_accept_and_user_agent_headers(self):
+        captured_requests = []
+        original_urlopen = ai_suggest.urlopen
+        ai_suggest.urlopen = _make_capturing_urlopen(captured_requests)
+
+        try:
+            ai_suggest.call_groq(FAKE_API_KEY, "system prompt", "user")
+        finally:
+            ai_suggest.urlopen = original_urlopen
+
+        self.assertEqual(len(captured_requests), 1)
+        request = captured_requests[0]
+        self.assertEqual(request.get_header("Accept"), "application/json")
+        self.assertEqual(
+            request.get_header("User-agent"),
+            "DocEngine-AISuggest/1.0 (+https://doc-engine-nu.vercel.app)"
+        )
 
 
 if __name__ == "__main__":
